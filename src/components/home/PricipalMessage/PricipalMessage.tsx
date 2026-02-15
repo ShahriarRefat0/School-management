@@ -12,7 +12,7 @@ import {
   Mail,
 } from "lucide-react";
 
-const Principal_Message = () => {
+const PrincipalMessage = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   // eti hoccce jokon modal on thakbe tar background blue hoye jabe ar off thakle hobe abr ager mto hoye jabe
@@ -247,4 +247,4 @@ const Principal_Message = () => {
   );
 };
 
-export default Principal_Message;
+export default PrincipalMessage;
