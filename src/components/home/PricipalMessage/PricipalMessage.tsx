@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import DefaultWeight from "@/components/shared/defaultWeight/DefaultWeight";
 
-const Principal_Message = () => {
+const PrincipalMessage = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   // মোডাল ওপেন থাকলে স্ক্রল বন্ধ রাখার জন্য
@@ -225,4 +225,5 @@ const Principal_Message = () => {
   );
 };
 
-export default Principal_Message;
+export default PrincipalMessage;
+
