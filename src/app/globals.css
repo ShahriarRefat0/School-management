@@ -7,9 +7,12 @@
   --color-border-light: #E2E8F0;
 
   /* লাইট থিমের জন্য ডার্ক টেক্সট */
-  --color-text-primary: #020617;   /* একদম গাঢ় ব্ল্যাক-ব্লু (Slate 950) - টাইটেলের জন্য */
-  --color-text-secondary: #334155; /* ডার্ক গ্রে (Slate 700) - বডি টেক্সটের জন্য */
-  --color-text-muted: #64748B;    /* সফট গ্রে (Slate 500) - সাব-টেক্সটের জন্য */
+  --color-text-primary: #020617;
+  /* একদম গাঢ় ব্ল্যাক-ব্লু (Slate 950) - টাইটেলের জন্য */
+  --color-text-secondary: #334155;
+  /* ডার্ক গ্রে (Slate 700) - বডি টেক্সটের জন্য */
+  --color-text-muted: #64748B;
+  /* সফট গ্রে (Slate 500) - সাব-টেক্সটের জন্য */
 
   --color-primary: #2563EB;
 }
@@ -21,9 +24,12 @@
   --color-border-light: #1E293B;
 
   /* ডার্ক থিমের জন্য লাইট টেক্সট */
-  --color-text-primary: #F8FAFC;   /* টাইটেল এখন সাদা */
-  --color-text-secondary: #CBD5E1; /* বডি এখন হালকা ধূসর */
-  --color-text-muted: #94A3B8;    /* মিউটেড আরও হালকা */
+  --color-text-primary: #F8FAFC;
+  /* টাইটেল এখন সাদা */
+  --color-text-secondary: #CBD5E1;
+  /* বডি এখন হালকা ধূসর */
+  --color-text-muted: #94A3B8;
+  /* মিউটেড আরও হালকা */
 }
 
 @theme {
@@ -43,8 +49,104 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   /* হেডিং সবসময় একদম গাঢ় (Slate 950) থাকবে */
   color: var(--color-text-primary);
   @apply font-bold;
+}
+
+/* --- Custom Animations --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -40px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.5);
+  }
+
+  50% {
+    opacity: .8;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.2);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.8s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+
+
+/* hero bg  */
+
+@keyframes particle-drift {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-110vh);
+    opacity: 0;
+  }
+}
+
+.animate-particle-drift {
+  animation-name: particle-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
