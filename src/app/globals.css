@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- LIGHT MODE (ডিফল্ট) --- */
+  --color-bg-page: #F8FAFC;
+  --color-bg-card: #FFFFFF;
+  --color-border-light: #E2E8F0;
+
+  /* লাইট থিমের জন্য ডার্ক টেক্সট */
+  --color-text-primary: #020617;   /* একদম গাঢ় ব্ল্যাক-ব্লু (Slate 950) - টাইটেলের জন্য */
+  --color-text-secondary: #334155; /* ডার্ক গ্রে (Slate 700) - বডি টেক্সটের জন্য */
+  --color-text-muted: #64748B;    /* সফট গ্রে (Slate 500) - সাব-টেক্সটের জন্য */
+
+  --color-primary: #2563EB;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  /* --- DARK MODE --- */
+  --color-bg-page: #020617;
+  --color-bg-card: #0F172A;
+  --color-border-light: #1E293B;
+
+  /* ডার্ক থিমের জন্য লাইট টেক্সট */
+  --color-text-primary: #F8FAFC;   /* টাইটেল এখন সাদা */
+  --color-text-secondary: #CBD5E1; /* বডি এখন হালকা ধূসর */
+  --color-text-muted: #94A3B8;    /* মিউটেড আরও হালকা */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  --color-bg-page: var(--color-bg-page);
+  --color-bg-card: var(--color-bg-card);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-border-light: var(--color-border-light);
+  --color-primary: var(--color-primary);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg-page);
+  /* বডি টেক্সট ডিফল্টভাবে সেকেন্ডারি (Slate 700) থাকবে যা পড়ার জন্য আরামদায়ক */
+  color: var(--color-text-secondary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4 {
+  /* হেডিং সবসময় একদম গাঢ় (Slate 950) থাকবে */
+  color: var(--color-text-primary);
+  @apply font-bold;
 }
