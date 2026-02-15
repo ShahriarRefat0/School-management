@@ -36,7 +36,7 @@ const Navbar = () => {
   if (!mounted) return <div className="h-20 bg-bg-card border-b border-border-light"></div>;
 
   return (
-    <nav className="sticky top-0 z-50 bg-bg-card/80 backdrop-blur-md border-b border-border-light transition-all duration-300">
+ <nav className="sticky top-0 z-50 bg-bg-card/80 backdrop-blur-md border-b border-border-light transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
@@ -134,6 +134,6 @@ const Navbar = () => {
         </div>
       )}
     </nav>
-  );
+   );
 }
 export default Navbar;
