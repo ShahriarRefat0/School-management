@@ -11,6 +11,7 @@ import {
   Target,
   Mail,
 } from "lucide-react";
+import DefaultWeight from "@/components/shared/defaultWeight/DefaultWeight";
 
 const PrincipalMessage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +26,7 @@ const PrincipalMessage = () => {
   }, [isOpen]);
 
   return (
+    <DefaultWeight>
     <section className="relative py-24 overflow-hidden bg-white">
       {/* Background Decorations */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-blue-50/50 -skew-x-12 translate-x-1/4 -z-10" />
@@ -244,6 +246,7 @@ const PrincipalMessage = () => {
         </div>
       )}
     </section>
+     </DefaultWeight>
   );
 };
 
