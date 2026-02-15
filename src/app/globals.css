@@ -1,56 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  /* Branding Colors */
-  --color-primary: #1E7EF5;
-  --color-primary-hover: #1666CC;
-  --color-secondary: #EAF3FF;
-
-  /* UI Colors */
+  /* --- LIGHT MODE (ডিফল্ট) --- */
   --color-bg-page: #F8FAFC;
   --color-bg-card: #FFFFFF;
-  --color-border-light: #E5E7EB;
+  --color-border-light: #E2E8F0;
 
-  /* Text Colors */
-  --color-text-dark: #0F172A;
-  --color-text-body: #334155;
-  --color-text-muted: #64748B;
+  /* লাইট থিমের জন্য ডার্ক টেক্সট */
+  --color-text-primary: #020617;   /* একদম গাঢ় ব্ল্যাক-ব্লু (Slate 950) - টাইটেলের জন্য */
+  --color-text-secondary: #334155; /* ডার্ক গ্রে (Slate 700) - বডি টেক্সটের জন্য */
+  --color-text-muted: #64748B;    /* সফট গ্রে (Slate 500) - সাব-টেক্সটের জন্য */
 
-  /* Status Colors */
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
+  --color-primary: #2563EB;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg-page: #0F172A;
-    --color-bg-card: #1E293B;
-    --color-text-dark: #F8FAFC;
-    --color-text-body: #CBD5E1;
-    --color-border-light: #334155;
-  }
+.dark {
+  /* --- DARK MODE --- */
+  --color-bg-page: #020617;
+  --color-bg-card: #0F172A;
+  --color-border-light: #1E293B;
+
+  /* ডার্ক থিমের জন্য লাইট টেক্সট */
+  --color-text-primary: #F8FAFC;   /* টাইটেল এখন সাদা */
+  --color-text-secondary: #CBD5E1; /* বডি এখন হালকা ধূসর */
+  --color-text-muted: #94A3B8;    /* মিউটেড আরও হালকা */
 }
 
 @theme {
-  --color-primary: var(--color-primary);
-  --color-primary-hover: var(--color-primary-hover);
-  --color-secondary: var(--color-secondary);
-  
   --color-bg-page: var(--color-bg-page);
   --color-bg-card: var(--color-bg-card);
-  
-  --color-text-dark: var(--color-text-dark);
-  --color-text-body: var(--color-text-body);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
   --color-text-muted: var(--color-text-muted);
-  
-  --color-success: var(--color-success);
-  --color-warning: var(--color-warning);
-  --color-error: var(--color-error);
+  --color-border-light: var(--color-border-light);
+  --color-primary: var(--color-primary);
 }
 
 body {
   background-color: var(--color-bg-page);
-  color: var(--color-text-body);
-  font-family: 'Inter', sans-serif;
+  /* বডি টেক্সট ডিফল্টভাবে সেকেন্ডারি (Slate 700) থাকবে যা পড়ার জন্য আরামদায়ক */
+  color: var(--color-text-secondary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4 {
+  /* হেডিং সবসময় একদম গাঢ় (Slate 950) থাকবে */
+  color: var(--color-text-primary);
+  @apply font-bold;
 }
