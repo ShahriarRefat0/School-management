@@ -5,13 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight, Play } from "lucide-react";
-import DefaultWeight from "../shared/defaultWeight/DefaultWeight";
 import Herobackground from "./Herobackground";
 
 const HeroSection = () => {
   return (
-    <DefaultWeight>
-      <div className="relative min-h-screen w-full flex items-center overflow-hidden bg-bg-page transition-colors duration-300">
+    
+      <div className="relative w-full flex items-center overflow-hidden bg-bg-page transition-colors duration-300">
         {/* 🔹 Particle Background */}
         <Herobackground />
         {/* Background Gradient */}
@@ -142,7 +141,7 @@ const HeroSection = () => {
           </div>
         </motion.div>
       </div>
-    </DefaultWeight>
+    
   );
 };
 

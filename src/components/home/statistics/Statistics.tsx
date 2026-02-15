@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, GraduationCap, TrendingUp, Award, Sparkles } from "lucide-react";
-
+import { motion } from "framer-motion";
 interface CounterProps {
   end: number;
   suffix?: string;
@@ -192,40 +192,23 @@ export default function Statistics() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header with Decorative Elements */}
         <div className="text-center mb-20 md:mb-24 relative">
-          {/* Decorative Top Line */}
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-12 h-px bg-gradient-to-r from-transparent to-teal-500" />
-            <Sparkles className="w-5 h-5 text-teal-500 dark:text-teal-400 animate-pulse" />
-            <div className="w-12 h-px bg-gradient-to-l from-transparent to-teal-500" />
-          </div>
 
-          <div className="inline-block mb-6 relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-blue-500/20 dark:from-teal-500/10 dark:to-blue-500/10 blur-xl" />
-            <span className="relative px-6 py-3 rounded-full bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-950/50 dark:to-blue-950/50 text-teal-700 dark:text-teal-300 text-sm font-bold tracking-widest uppercase border-2 border-teal-200/50 dark:border-teal-800/50 shadow-lg backdrop-blur-sm">
-              ✦ Our Impact ✦
-            </span>
-          </div>
-
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight relative">
-            <span className="text-text-primary block mb-2">Excellence in</span>
-            <span className="relative inline-block">
-              <span className="absolute inset-0 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 dark:from-teal-400 dark:via-blue-400 dark:to-purple-400 blur-2xl opacity-30" />
-              <span className="relative bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 dark:from-teal-400 dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+          <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-text-primary leading-tight mb-6"
+            >
+              Excellence in{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-500">
                 Education
               </span>
-            </span>
-          </h2>
-          
-          <p className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto leading-relaxed font-medium">
+            </motion.h1>
+
+          <p className="text-lg md:text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed font-medium">
             Transforming lives through quality education and dedicated teaching
           </p>
-
-          {/* Decorative Bottom Elements */}
-          <div className="flex items-center justify-center gap-2 mt-8">
-            <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse animation-delay-200" />
-            <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse animation-delay-400" />
-          </div>
+      
         </div>
 
         {/* Statistics Grid with Staggered Layout */}
@@ -276,7 +259,7 @@ export default function Statistics() {
             Join our growing community of learners and achievers
           </p>
           
-          <button className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-teal-600 via-blue-600 to-purple-600 dark:from-teal-500 dark:via-blue-500 dark:to-purple-500 text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/40 dark:hover:shadow-teal-400/30 hover:scale-105 hover:-translate-y-1">
+          <button className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 text-white text-lg font-bold rounded-full overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/40 dark:hover:shadow-teal-400/30 hover:scale-105 hover:-translate-y-1">
             {/* Shimmer Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
             
