@@ -11,9 +11,9 @@ const HomePage = () => {
       <HeroSection></HeroSection>
       <PrincipalMessage />
       <Features />
-      
+
       <Statistics></Statistics>
-      
+
       <NoticeBoard></NoticeBoard>
     </div>
   );
