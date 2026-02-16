@@ -10,8 +10,10 @@ const HomePage = () => {
     <div className="space-y-10">
       <HeroSection></HeroSection>
       <PrincipalMessage />
-      <Features/>
+      <Features />
+      
       <Statistics></Statistics>
+      
       <NoticeBoard></NoticeBoard>
     </div>
   );
