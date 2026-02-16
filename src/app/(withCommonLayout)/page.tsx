@@ -9,7 +9,7 @@ import TestimonialsSection from "@/components/home/TestimonialsSection/Testimoni
 const HomePage = () => {
   return (
     <div className="space-y-10">
-      <HeroSection></HeroSection>
+        <HeroSection></HeroSection>
       <PrincipalMessage />
       <Statistics></Statistics>
       <NoticeBoard></NoticeBoard>
