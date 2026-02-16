@@ -26,8 +26,9 @@ const PrincipalMessage = () => {
   }, [isOpen]);
 
   return (
-    // bg-bg-page ব্যবহার করা হয়েছে যা আপনার লাইট মোডে #F8FAFC দেখাবে
-    <section className="relative py-24 overflow-hidden bg-bg-page transition-colors duration-300">
+   <DefaultWeight>
+     {/* // bg-bg-page ব্যবহার করা হয়েছে যা আপনার লাইট মোডে #F8FAFC দেখাবে */}
+    <section className="relative py-17 overflow-hidden bg-bg-page transition-colors duration-300">
       
       {/* Background Decorations - আপনার থিমের প্রাইমারি কালার অনুযায়ী */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 -skew-x-12 translate-x-1/4 -z-10" />
@@ -221,7 +222,9 @@ const PrincipalMessage = () => {
             </div>
           </div>
         )}
-    </section>
+      </section>
+   </DefaultWeight>
+    
   );
 };
 

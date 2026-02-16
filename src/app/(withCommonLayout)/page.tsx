@@ -1,15 +1,20 @@
-import NoticeBoard from "@/components/home/NoticeBoard/NoticeBoard";
-import PrincipalMessage from "@/components/home/PricipalMessage/PricipalMessage";
+import HeroSection from "@/components/heroSection/HeroSection";
+import NoticeBoard from "@/components/home/noticeBoard/NoticeBoard";
+import PrincipalMessage from "@/components/home/PrincipalMessage/PrincipalMessage";
 
-import React from "react";
-import Teampage from "../allpages/team/page";
+import Statistics from "@/components/home/statistics/Statistics";
+
+
+
 
 const HomePage = () => {
+   
   return (
     <div className="space-y-10">
-      <Teampage></Teampage>
-      {/* <PrincipalMessage /> */}
-      <NoticeBoard />
+          <HeroSection></HeroSection>
+      <PrincipalMessage />
+        <Statistics></Statistics>
+      <NoticeBoard></NoticeBoard>
     </div>
   );
 };
