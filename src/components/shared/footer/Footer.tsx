@@ -34,6 +34,7 @@ const Footer = () => {
         {/* ২. নেভিগেশন লিঙ্কস */}
         <nav className="flex flex-wrap justify-center gap-x-10 gap-y-4 mb-12 text-text-secondary font-semibold">
           <a href="#features" className="hover:text-primary transition-colors">Features</a>
+          <a href="/gallery" className="hover:text-primary transition-colors">Gallery</a>
           <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
           <a href="#support" className="hover:text-primary transition-colors">Support</a>
           <a href="#privacy" className="hover:text-primary transition-colors">Privacy</a>
