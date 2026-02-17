@@ -46,7 +46,8 @@ const dummyNotices: Notice[] = [
 const NoticeBoard = () => {
     return (
         <DefaultWeight>
-            <section >
+            <section className="py-20 px-6">
+            <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-between mb-10">
                     <div className="flex items-center gap-3">
                         <div className="bg-primary/10 p-3 rounded-2xl">
@@ -96,8 +97,10 @@ const NoticeBoard = () => {
                         </div>
                     ))}
                 </div>
+            </div>
         </section>
-        </DefaultWeight>   
+        </DefaultWeight>
+        
     );
 };
 
