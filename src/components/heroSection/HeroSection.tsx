@@ -10,8 +10,8 @@ import Herobackground from "./Herobackground";
 
 const HeroSection = () => {
   return (
-    <DefaultWeight>
-      <div className="relative min-h-screen w-full flex items-center overflow-hidden bg-bg-page transition-colors duration-300">
+
+      <div className="relative w-full flex items-center overflow-hidden bg-bg-page transition-colors duration-300">
         {/* 🔹 Particle Background */}
         <Herobackground />
         {/* Background Gradient */}
@@ -142,7 +142,6 @@ const HeroSection = () => {
           </div>
         </motion.div>
       </div>
-    </DefaultWeight>
   );
 };
 
