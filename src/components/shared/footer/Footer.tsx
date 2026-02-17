@@ -1,10 +1,28 @@
-"use client";
+'use client';
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+  Facebook,
+  Linkedin,
+  Github,
+  MapPin,
+  Phone,
+  Send,
+  Smartphone,
+  Monitor,
+  Apple,
+  LayoutTemplate,
+  Chrome,
+  Terminal,
+  Grid2x2,
+} from 'lucide-react';
+import PlayStoreIcon from '@/components/icon/PlayStore';
+import WindowsIcon from '@/components/icon/Windows';
+import LinuxIcon from '@/components/icon/LinuxIcon';
 
 const Footer = () => {
   const [mounted, setMounted] = useState(false);
 
-  // Hydration fix
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -12,64 +30,238 @@ const Footer = () => {
   if (!mounted) return null;
 
   return (
-    <footer className="bg-bg-card pt-16 pb-10 px-6 border-t border-border-light transition-colors duration-300">
-      <div className="max-w-7xl mx-auto flex flex-col items-center">
-        
-        {/* ১. লোগো এবং ব্র্যান্ড নাম */}
-        <div className="flex items-center gap-3 mb-8 group cursor-pointer">
-          <div className="bg-primary p-2 rounded-xl shadow-sm transition-transform group-hover:scale-105">
-            <svg 
-              className="w-6 h-6 text-white" 
-              fill="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.85 9.58l8.15 4.44 8.15-4.44L12 5.14 3.85 9.58z" />
-            </svg>
+    <footer className="bg-bg-card pt-20 pb-8 px-6 border-t border-border-light transition-colors duration-300 relative overflow-hidden">
+      {/* Background Glow Decorations */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2" />
+
+      <div className="max-w-300 mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.85 9.58l8.15 4.44 8.15-4.44L12 5.14 3.85 9.58z" />
+                </svg>
+              </div>
+              <span className="text-2xl font-black text-text-primary tracking-tight">
+                Schoology <span className="text-primary">BD</span>
+              </span>
+            </div>
+            <p className="text-text-secondary leading-relaxed">
+              Leading the digital transformation of schools globally with
+              innovative management tools and seamless experiences.
+            </p>
+
+            <div className="pt-4">
+              <h4 className="text-sm font-bold text-text-primary uppercase tracking-widest mb-4">
+                Connect With Us
+              </h4>
+              <div className="flex gap-3">
+                {[
+                  {
+                    icon: <Facebook size={18} />,
+                    link: '#',
+                    color: 'hover:bg-blue-600',
+                  },
+                  {
+                    icon: <Linkedin size={18} />,
+                    link: '#',
+                    color: 'hover:bg-blue-700',
+                  },
+                  {
+                    icon: <Github size={18} />,
+                    link: '#',
+                    color: 'hover:bg-blue-700',
+                  },
+                ].map((social, idx) => (
+                  <a
+                    key={idx}
+                    href={social.link}
+                    className={`w-10 h-10 rounded-xl border border-border-light flex items-center justify-center text-text-muted transition-all duration-300 hover:text-white hover:border-transparent ${social.color}`}
+                  >
+                    {social.icon}
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
-          <span className="text-2xl font-bold text-text-primary tracking-tight">
-            Schoology <span className="text-primary">BD</span>
-          </span>
+
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-bold text-text-primary mb-5 flex items-center gap-2">
+                <Smartphone size={20} className="text-primary" /> Mobile Apps
+              </h3>
+              <div className="grid grid-cols-1 gap-3">
+                <button className="flex items-center gap-3 bg-bg-page border border-border-light p-3 rounded-2xl hover:border-primary/50 transition-all group">
+                  <div className="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors flex items-center justify-center">
+                    <PlayStoreIcon size={20} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase font-bold text-text-muted leading-none">
+                      Get it on
+                    </p>
+                    <p className="text-sm font-bold text-text-primary">
+                      Google Play
+                    </p>
+                  </div>
+                </button>
+                <button className="flex items-center gap-3 bg-bg-page border border-border-light p-3 rounded-2xl hover:border-primary/50 transition-all group">
+                  <div className="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <Apple size={20} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] uppercase font-bold text-text-muted leading-none">
+                      Download on the
+                    </p>
+                    <p className="text-sm font-bold text-text-primary">
+                      App Store
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold text-text-primary mb-5 flex items-center gap-2">
+                <Monitor size={20} className="text-primary" /> Desktop Apps
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { name: 'Windows', icon: <WindowsIcon size={16} /> },
+                  { name: 'macOS', icon: <Apple size={16} /> },
+                  { name: 'Linux', icon: <Terminal size={16} /> },
+                  { name: 'Chrome', icon: <Chrome size={16} /> },
+                ].map((app) => (
+                  <button
+                    key={app.name}
+                    className="flex items-center gap-2 bg-secondary/50 border border-border-light px-3 py-2 rounded-xl text-xs font-bold text-text-secondary hover:text-primary hover:border-primary transition-all"
+                  >
+                    {app.icon} {app.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:pl-8">
+            <h3 className="text-lg font-bold text-text-primary mb-6">
+              Information
+            </h3>
+            <ul className="space-y-4">
+              {[
+                'About Schoology',
+                'Blogs & News',
+                'Success Stories',
+                'Exam Suite',
+                'Hostel & Transport',
+                'Contact Us',
+              ].map((item) => (
+                <li key={item}>
+                  <a
+                    href="#"
+                    className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-all" />
+                    {item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-bold text-text-primary mb-6">
+                Newsletter
+              </h3>
+              <p className="text-sm text-text-muted mb-4">
+                Stay updated with the latest features.
+              </p>
+              <div className="relative group">
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  className="w-full bg-bg-page border border-border-light rounded-2xl py-4 px-5 focus:outline-none focus:border-primary text-text-primary transition-all"
+                />
+                <button className="absolute right-2 top-2 p-2.5 bg-primary text-white rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all">
+                  <Send size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4 border-t border-border-light pt-6">
+              <div className="flex items-start gap-3">
+                <MapPin className="text-primary shrink-0" size={18} />
+                <span className="text-sm text-text-secondary">
+                  103, Oxford House, Manchester, UK
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Phone className="text-primary shrink-0" size={18} />
+                <span className="text-sm font-bold text-text-primary">
+                  +880 1234 567 890
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* ২. নেভিগেশন লিঙ্কস */}
-        <nav className="flex flex-wrap justify-center gap-x-10 gap-y-4 mb-12 text-text-secondary font-semibold">
-          <a href="#features" className="hover:text-primary transition-colors">Features</a>
-          <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
-          <a href="#support" className="hover:text-primary transition-colors">Support</a>
-          <a href="#privacy" className="hover:text-primary transition-colors">Privacy</a>
-        </nav>
+        <div className="py-10 border-t border-border-light overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-between min-w-200 opacity-60 hover:opacity-100 transition-opacity">
+            <div className="text-xs font-black tracking-widest text-text-muted uppercase">
+              Forbes Featured
+            </div>
+            <div className="text-xs font-black tracking-widest text-text-muted uppercase">
+              Capterra Rated 4.8
+            </div>
+            <div className="text-xs font-black tracking-widest text-text-muted uppercase">
+              AppStore Foundations
+            </div>
+            <div className="text-xs font-black tracking-widest text-text-muted uppercase">
+              QS Reimagine Education
+            </div>
+          </div>
+        </div>
 
-        {/* ৩. ডিভাইডার */}
-        <div className="w-full max-w-4xl h-px bg-border-light mb-8"></div>
-
-        {/* ৪. কপিরাইট এবং ক্রেডিট */}
-        <div className="text-center space-y-2">
+        <div className="pt-8 border-t border-border-light flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-text-muted text-sm font-medium">
-            © {new Date().getFullYear()} Schoology BD. All rights reserved.
+            © {new Date().getFullYear()}{' '}
+            <span className="text-text-primary font-bold">
+              Schoology BD Inc.
+            </span>{' '}
+            All rights reserved.
           </p>
-          <p className="text-text-muted/70 text-xs italic">
-            Made with <span className="text-error">❤</span> for excellence in smart schools.
-          </p>
-        </div>
-      </div>
 
-      {/* ৫. ফ্লোটিং চ্যাট বাটন */}
-      <div className="fixed bottom-8 right-8 z-40">
-        <button 
-          aria-label="Chat Support"
-          className="bg-primary hover:bg-primary-hover text-white p-4 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 group"
-        >
-          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          {/* টুলেটিপ ডার্ক মোড ফ্রেন্ডলি */}
-          <span className="absolute right-16 top-1/2 -translate-y-1/2 bg-text-primary text-bg-page text-xs py-1.5 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">
-            Need help?
-          </span>
-        </button>
+          <div className="flex items-center gap-3">
+            {['Visa', 'Mastercard', 'bKash', 'Nagad'].map((pay) => (
+              <span
+                key={pay}
+                className="px-3 py-1 bg-bg-page border border-border-light rounded-lg text-[10px] font-black text-text-muted uppercase tracking-tighter"
+              >
+                {pay}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </footer>
   );
-}
+};
+
+const PlayCircle = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M5 3.5L19 12L5 20.5V3.5Z" fill="currentColor" />
+  </svg>
+);
 
 export default Footer;
