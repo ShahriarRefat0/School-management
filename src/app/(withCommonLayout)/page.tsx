@@ -14,9 +14,9 @@ const HomePage = () => {
       <PrincipalMessage />
       <Features />
       <Statistics></Statistics>
-      <Contact></Contact>
       <NoticeBoard></NoticeBoard>
       <TestimonialsSection></TestimonialsSection>
+      <Contact></Contact>
     </div>
   );
 };
