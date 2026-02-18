@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { MapPin, Phone, Mail, Globe, Send } from "lucide-react";
-import DefaultWeight from "@/components/shared/defaultWeight/DefaultWeight";
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -24,192 +23,180 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <DefaultWeight>
-      <section className="py-24 relative overflow-hidden bg-bg-page transition-colors duration-300 perspective-[2000px]">
-        {/* Advanced Magical Background */}
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
-          <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[100px] animate-pulse delay-700"></div>
-
-          {/* Drifting Geometric Shapes */}
-          <div className="absolute top-[10%] left-[5%] w-12 h-12 border-2 border-primary/10 rounded-xl rotate-12 animate-[spin_10s_linear_infinite]"></div>
-          <div className="absolute bottom-[20%] right-[10%] w-24 h-24 border border-blue-600/10 rounded-full animate-[bounce_8s_ease-in-out_infinite]"></div>
+    <section id="contact" className="py-20 bg-bg-page border-border-light transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Header Section: Same style as Features and Statistics */}
+        <div className="mb-16">
+          <p className="text-primary font-bold tracking-[0.2em] text-[11px] uppercase mb-3">
+            Get In Touch
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-text-primary tracking-tight">
+            Contact <span className="text-primary">Us</span>
+          </h2>
+          <div className="w-12 h-1 bg-primary mt-4 rounded-full" />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Main Container: Form + Map */}
-          <div className="flex flex-col md:flex-row bg-bg-card/70 backdrop-blur-2xl rounded-[3rem] shadow-[0_80px_150px_-30px_rgba(0,0,0,0.1)] min-h-[650px] mb-16 transition-all duration-1000 hover:shadow-[0_100px_200px_-40px_rgba(0,0,0,0.15)] overflow-hidden group/main [transform-style:preserve-3d] hover:rotate-x-1 hover:rotate-y-1 border border-border-light">
-            {/* Left: Contact Form */}
-            <div className="w-full md:w-1/2 bg-bg-card/40 backdrop-blur-sm p-10 md:p-14 lg:p-16 relative">
-              <h1 className="text-[32px] md:text-[42px] font-black text-text-primary mb-12 tracking-tighter leading-[0.9] uppercase">
-                Contact
-                <span className="text-primary">Us</span>
-              </h1>
-
-              <form onSubmit={handleSubmit} className="space-y-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-16">
-                  <div className="space-y-8">
-                    <label className="block text-[11px] font-[800] text-text-muted uppercase tracking-[0.15em]">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      placeholder="Name"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      className="w-full bg-bg-page p-2 rounded-2xl px-8 py-7 text-[15px] focus:outline-none focus:bg-bg-card focus:shadow-[0_20px_40px_-10px_rgba(37,99,235,0.1)] transition-all duration-500 placeholder:text-text-muted/40 text-text-secondary dark:text-gray-100 shadow-sm"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-8">
-                    <label className="block text-[11px] font-[800] text-text-muted uppercase tracking-[0.15em]">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full bg-bg-page p-2 rounded-2xl px-8 py-7 text-[15px] focus:outline-none focus:bg-bg-card focus:shadow-[0_20px_40px_-10px_rgba(37,99,235,0.1)] transition-all duration-500 placeholder:text-text-muted/40 text-text-secondary dark:text-gray-100 shadow-sm"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-8">
-                  <label className="block text-[11px] font-[800] text-text-muted uppercase tracking-[0.15em]">
-                    Subject
+        {/* Main Container: Form + Map */}
+        <div className="flex flex-col lg:flex-row bg-bg-card border border-border-light rounded-2xl overflow-hidden mb-16 shadow-sm">
+          {/* Left: Contact Form */}
+          <div className="w-full lg:w-1/2 p-8 md:p-10">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider">
+                    Full Name
                   </label>
                   <input
                     type="text"
-                    name="subject"
-                    placeholder="Subject"
-                    value={formData.subject}
+                    name="fullName"
+                    placeholder="Enter your name"
+                    value={formData.fullName}
                     onChange={handleChange}
-                    className="w-full bg-bg-page p-2 rounded-2xl px-8 py-7 text-[15px] focus:outline-none focus:bg-bg-card focus:shadow-[0_20px_40px_-10px_rgba(37,99,235,0.1)] transition-all duration-500 placeholder:text-text-muted/40 text-text-secondary dark:text-gray-100 shadow-sm"
-                  />
-                </div>
-
-                <div className="space-y-8">
-                  <label className="block text-[11px] font-[800] text-text-muted uppercase tracking-[0.15em]">
-                    Message
-                  </label>
-                  <textarea
-                    name="message"
-                    placeholder="Message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={3}
-                    className="w-full bg-bg-page p-2 rounded-2xl px-8 py-7 text-[15px] focus:outline-none focus:bg-bg-card focus:shadow-[0_20px_40px_-10px_rgba(37,99,235,0.1)] transition-all duration-500 placeholder:text-text-muted/40 text-text-secondary dark:text-gray-100 resize-none shadow-sm"
+                    className="w-full bg-bg-page border border-border-light rounded-xl px-5 py-3 text-sm focus:outline-none focus:border-primary/30 focus:bg-bg-card transition-all duration-300 placeholder:text-text-muted/40 text-text-secondary"
                     required
                   />
                 </div>
-
-                <div className="pt-10">
-                  <button
-                    type="submit"
-                    className="inline-flex items-center justify-center gap-3 bg-primary hover:bg-blue-700 text-white px-12 py-6 rounded-2xl font-bold text-sm uppercase tracking-widest shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)] active:scale-95 transition-all duration-500 group relative overflow-hidden z-20"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                    <span className="relative  z-10">Send Message</span>
-                    <Send className="w-5 h-5 relative z-10 transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1" />
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Right: Map Integration */}
-            <div className="w-full md:w-1/2 min-h-[350px] md:min-h-full relative overflow-hidden group/map">
-              <iframe
-                title="Location Map"
-                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3651.902!2d90.410!3d23.770!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s&q=23.770315,90.410076"
-                width="100%"
-                height="100%"
-                className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover/map:scale-110"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-              ></iframe>
-              <div className="absolute inset-0 pointer-events-none border-l border-border-light hidden md:block"></div>
-            </div>
-          </div>
-
-          <div className="bg-bg-page py-20">
-            <div className="max-w-7xl mx-auto px-6">
-              <div
-                className="
-        flex
-        flex-nowrap
-        justify-between
-        items-start
-        gap-16
-        text-center
-      "
-              >
-                {/* Address */}
-                <div className="flex flex-col items-center space-y-4 w-[220px]">
-                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <p className="text-sm font-medium text-text-primary">
-                    Address
-                  </p>
-                  <p className="text-sm text-text-muted leading-relaxed">
-                    Gulshan 2 গুলশান ২,
-                    <br />
-                    Dhaka 1212
-                  </p>
-                </div>
-
-                {/* Phone */}
-                <div className="flex flex-col items-center space-y-4 w-[220px]">
-                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <p className="text-sm font-medium text-text-primary">Phone</p>
-                  <a href="tel:+1235235598" className="text-sm text-primary">
-                    + 1235 2355 98
-                  </a>
-                </div>
-
-                {/* Email */}
-                <div className="flex flex-col items-center space-y-4 w-[220px]">
-                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <p className="text-sm font-medium text-text-primary">Email</p>
-                  <a
-                    href="mailto:info@schoologybd.com"
-                    className="text-sm text-primary break-all"
-                  >
-                    schoologybd.com
-                  </a>
-                </div>
-
-                {/* Website */}
-                <div className="flex flex-col items-center space-y-4 w-[220px]">
-                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white">
-                    <Globe className="w-5 h-5" />
-                  </div>
-                  <p className="text-sm font-medium text-text-primary">
-                    Website
-                  </p>
-                  <a
-                    href="https://SchoologyBD.com"
-                    target="_blank"
-                    className="text-sm text-primary"
-                  >
-                    SchoologyBD.com
-                  </a>
+                <div className="space-y-2">
+                  <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full bg-bg-page border border-border-light rounded-xl px-5 py-3 text-sm focus:outline-none focus:border-primary/30 focus:bg-bg-card transition-all duration-300 placeholder:text-text-muted/40 text-text-secondary"
+                    required
+                  />
                 </div>
               </div>
-            </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  name="subject"
+                  placeholder="Enter subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="w-full bg-bg-page border border-border-light rounded-xl px-5 py-3 text-sm focus:outline-none focus:border-primary/30 focus:bg-bg-card transition-all duration-300 placeholder:text-text-muted/40 text-text-secondary"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider">
+                  Message
+                </label>
+                <textarea
+                  name="message"
+                  placeholder="Type your message here..."
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows={5}
+                  className="w-full bg-bg-page border border-border-light rounded-xl px-5 py-3 text-sm focus:outline-none focus:border-primary/30 focus:bg-bg-card transition-all duration-300 placeholder:text-text-muted/40 text-text-secondary resize-none"
+                  required
+                />
+              </div>
+
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-wider shadow-lg shadow-primary/10 active:scale-95 transition-all duration-300 group"
+                >
+                  Send Message
+                  <Send className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Right: Map Integration */}
+          <div className="w-full lg:w-1/2 min-h-[400px] lg:min-h-full relative overflow-hidden bg-bg-card border-t lg:border-t-0 lg:border-l border-border-light">
+            <iframe
+              title="Location Map"
+              src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3651.902!2d90.410!3d23.770!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s&q=23.770315,90.410076"
+              width="100%"
+              height="100%"
+              className="w-full h-full min-h-[400px] object-cover"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+            ></iframe>
           </div>
         </div>
-      </section>
-    </DefaultWeight>
+
+        {/* Contact Info Cards: Matching Features card style */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Address Card */}
+          <div className="group bg-bg-card border border-border-light p-8 rounded-2xl hover:border-primary/30 transition-all duration-300 shadow-sm text-center">
+            <div className="w-12 h-12 mx-auto rounded-xl bg-bg-page border border-border-light flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+              <MapPin className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-text-primary mb-3 group-hover:text-primary transition-colors duration-300">
+              Address
+            </h3>
+            <p className="text-text-muted text-sm leading-relaxed group-hover:text-text-primary transition-colors duration-300">
+              Gulshan 2, Dhaka 1212
+              <br />
+              Bangladesh
+            </p>
+          </div>
+
+          {/* Phone Card */}
+          <div className="group bg-bg-card border border-border-light p-8 rounded-2xl hover:border-primary/30 transition-all duration-300 shadow-sm text-center">
+            <div className="w-12 h-12 mx-auto rounded-xl bg-bg-page border border-border-light flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+              <Phone className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-text-primary mb-3 group-hover:text-primary transition-colors duration-300">
+              Phone
+            </h3>
+            <a
+              href="tel:+1235235598"
+              className="text-text-muted text-sm group-hover:text-primary transition-colors duration-300"
+            >
+              +123 5235 598
+            </a>
+          </div>
+
+          {/* Email Card */}
+          <div className="group bg-bg-card border border-border-light p-8 rounded-2xl hover:border-primary/30 transition-all duration-300 shadow-sm text-center">
+            <div className="w-12 h-12 mx-auto rounded-xl bg-bg-page border border-border-light flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+              <Mail className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-text-primary mb-3 group-hover:text-primary transition-colors duration-300">
+              Email
+            </h3>
+            <a
+              href="mailto:info@schoologybd.com"
+              className="text-text-muted text-sm group-hover:text-primary transition-colors duration-300 break-all"
+            >
+              info@schoologybd.com
+            </a>
+          </div>
+
+          {/* Website Card */}
+          <div className="group bg-bg-card border border-border-light p-8 rounded-2xl hover:border-primary/30 transition-all duration-300 shadow-sm text-center">
+            <div className="w-12 h-12 mx-auto rounded-xl bg-bg-page border border-border-light flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+              <Globe className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-text-primary mb-3 group-hover:text-primary transition-colors duration-300">
+              Website
+            </h3>
+            <a
+              href="https://SchoologyBD.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-muted text-sm group-hover:text-primary transition-colors duration-300"
+            >
+              SchoologyBD.com
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

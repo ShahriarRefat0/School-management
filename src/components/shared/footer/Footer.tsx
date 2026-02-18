@@ -34,7 +34,7 @@ const Footer = () => {
       {/* Background Glow Decorations */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2" />
 
-      <div className="max-w-300 mx-auto">
+      <div className="max-w-307.5 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div className="space-y-6">
             <div className="flex items-center gap-2">
