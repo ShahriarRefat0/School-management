@@ -213,7 +213,7 @@ export default function TeacherOverview() {
 
         {/* Sidebar Cards for Dashboard */}
         <div className="space-y-8">
-          {/* Attendance Section */}
+        
           <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
               <UserCheck size={80} />
