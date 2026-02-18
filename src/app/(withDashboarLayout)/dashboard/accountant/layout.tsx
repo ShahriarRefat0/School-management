@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import { usePathname } from "next/navigation";
+import Logo from "@/components/shared/logo/logo";
 import {
   LayoutDashboard,
   Wallet,
@@ -102,12 +103,7 @@ export default function AccountantLayout({ children }: LayoutProps) {
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-600/30">
-                <Calculator className="text-white" size={16} />
-              </div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
-                Finance Panel
-              </h1>
+              <Logo variant="dark" />
             </div>
           </div>
 
@@ -126,19 +122,10 @@ export default function AccountantLayout({ children }: LayoutProps) {
           {/* Logo Section */}
           <div className="p-6 border-b border-slate-100">
             <Link href={"/"} className="group">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/30 group-hover:shadow-emerald-600/50 transition-all duration-300 group-hover:scale-110">
-                  <Calculator className="text-white" size={20} />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-700 bg-clip-text text-transparent">
-                    Finance Panel
-                  </h1>
-                  <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest">
-                    হিসাবরক্ষক ড্যাশবোর্ড
-                  </p>
-                </div>
-              </div>
+              <Logo variant="dark" />
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-1 ml-12">
+                হিসাবরক্ষক ড্যাশবোর্ড
+              </p>
             </Link>
           </div>
 
@@ -286,16 +273,7 @@ export default function AccountantLayout({ children }: LayoutProps) {
             ></div>
             <aside className="lg:hidden fixed left-0 top-0 bottom-0 w-72 bg-white z-50 shadow-2xl animate-slideInLeft">
               <div className="p-6 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <Calculator className="text-white" size={20} />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
-                      Finance Panel
-                    </h1>
-                  </div>
-                </div>
+                <Logo variant="dark" />
               </div>
               <nav className="p-4 overflow-y-auto h-full">
                 <ul className="space-y-2">

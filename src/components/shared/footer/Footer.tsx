@@ -19,6 +19,7 @@ import {
 import PlayStoreIcon from '@/components/icon/PlayStore';
 import WindowsIcon from '@/components/icon/Windows';
 import LinuxIcon from '@/components/icon/LinuxIcon';
+import Logo from '@/components/shared/logo/logo';
 
 const Footer = () => {
   const [mounted, setMounted] = useState(false);
@@ -37,20 +38,7 @@ const Footer = () => {
       <div className="max-w-300 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.85 9.58l8.15 4.44 8.15-4.44L12 5.14 3.85 9.58z" />
-                </svg>
-              </div>
-              <span className="text-2xl font-black text-text-primary tracking-tight">
-                Schoology <span className="text-primary">BD</span>
-              </span>
-            </div>
+            <Logo variant="dark" />
             <p className="text-text-secondary leading-relaxed">
               Leading the digital transformation of schools globally with
               innovative management tools and seamless experiences.

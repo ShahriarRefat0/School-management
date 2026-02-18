@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Logo from "@/components/shared/logo/logo";
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -42,19 +44,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-20">
           {/* ১. লোগো সেকশন - এখানে text-text-dark নিশ্চিত করা হয়েছে */}
           <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer group">
-              <div className="bg-primary p-2 rounded-lg shadow-sm group-hover:rotate-3 transition-transform">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24">
-                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.85 9.58l8.15 4.44 8.15-4.44L12 5.14 3.85 9.58z" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-text-primary tracking-tight">
-                Schoology <span className="text-primary">BD</span>
-              </span>
-            </div>
+            <Logo variant="dark" />
           </Link>
 
           {/* ২. ডেস্কটপ মেনু - text-text-secondary ব্যবহার করা হয়েছে */}
@@ -157,14 +147,14 @@ const Navbar = () => {
         <div className="md:hidden bg-bg-card border-b border-border-light shadow-xl animate-in slide-in-from-top duration-300">
           <div className="px-4 pt-2 pb-6 space-y-2">
             {["Features", "Pricing", "Support", "Privacy"].map((item) => (
-  <Link
-    key={item}
-    href={`/${item.toLowerCase()}`}
-    className="text-text-secondary font-semibold hover:text-primary transition-colors relative group"
-  >
-    {item}
-  </Link>
-))}
+              <Link
+                key={item}
+                href={`/${item.toLowerCase()}`}
+                className="text-text-secondary font-semibold hover:text-primary transition-colors relative group"
+              >
+                {item}
+              </Link>
+            ))}
 
             <div className="pt-4 flex flex-col gap-3">
               <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">
