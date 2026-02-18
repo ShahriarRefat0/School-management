@@ -68,13 +68,13 @@ const staggerContainer = {
 const Features = () => {
   return (
     <DefaultWeight>
-      <section className="py-24 px-6 bg-bg-page transition-colors duration-300">
+      <section className="bg-bg-page transition-colors duration-300">
         <div className="max-w-7xl mx-auto">
           {/* Header Animation */}
           <motion.div
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
+            viewport={{ once: true, margin:'-100px' }}
             // variants={fadeInUp}
             className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6"
           >

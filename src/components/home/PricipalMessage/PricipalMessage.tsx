@@ -26,8 +26,9 @@ const PrincipalMessage = () => {
   }, [isOpen]);
 
   return (
-    // bg-bg-page ব্যবহার করা হয়েছে যা আপনার লাইট মোডে #F8FAFC দেখাবে
-    <section className="relative py-24 overflow-hidden bg-bg-page transition-colors duration-300">
+    <DefaultWeight>
+    {/* // bg-bg-page ব্যবহার করা হয়েছে যা আপনার লাইট মোডে #F8FAFC দেখাবে */}
+    <section className="relative pb-18 overflow-hidden bg-bg-page transition-colors duration-300">
       
       {/* Background Decorations - আপনার থিমের প্রাইমারি কালার অনুযায়ী */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 -skew-x-12 translate-x-1/4 -z-10" />
@@ -41,7 +42,7 @@ const PrincipalMessage = () => {
                 {/* border-bg-card ব্যবহার করা হয়েছে যা লাইট মোডে সাদা দেখাবে */}
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-8 border-bg-card bg-bg-card">
                   <Image
-                    src="/mahfuz.jpeg"
+                    src="https://i.ibb.co.com/JjGQ1xTX/1766077214962.jpg"
                     alt="Principal"
                     width={600}
                     height={800}
@@ -222,7 +223,7 @@ const PrincipalMessage = () => {
           </div>
         )}
       </section>
-    
+    </DefaultWeight>
   );
 };
 

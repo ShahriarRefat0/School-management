@@ -157,14 +157,15 @@ const Navbar = () => {
         <div className="md:hidden bg-bg-card border-b border-border-light shadow-xl animate-in slide-in-from-top duration-300">
           <div className="px-4 pt-2 pb-6 space-y-2">
             {["Features", "Pricing", "Support", "Privacy"].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="block px-4 py-3 rounded-lg text-text-primary font-semibold hover:bg-secondary hover:text-primary transition-all"
-                onClick={() => setIsOpen(false)}>
-                {item}
-              </a>
-            ))}
+  <Link
+    key={item}
+    href={`/${item.toLowerCase()}`}
+    className="text-text-secondary font-semibold hover:text-primary transition-colors relative group"
+  >
+    {item}
+  </Link>
+))}
+
             <div className="pt-4 flex flex-col gap-3">
               <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">
                 Login
