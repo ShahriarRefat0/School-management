@@ -42,7 +42,7 @@ const PrincipalMessage = () => {
                 {/* border-bg-card ব্যবহার করা হয়েছে যা লাইট মোডে সাদা দেখাবে */}
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-8 border-bg-card bg-bg-card">
                   <Image
-                    src="/mahfuz.jpeg"
+                    src="https://i.ibb.co.com/JjGQ1xTX/1766077214962.jpg"
                     alt="Principal"
                     width={600}
                     height={800}
