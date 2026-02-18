@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import { ReactNode, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -9,9 +10,6 @@ import {
   CreditCard,
   Bell,
   Menu,
-  ChevronDown,
-  LogOut,
-  User,
   Settings,
   ClipboardList,
   MessageCircle,
@@ -24,15 +22,13 @@ interface LayoutProps {
 
 export default function ParentLayout({ children }: LayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const pathname = usePathname();
 
-  // আপনার ফোল্ডার স্ট্রাকচার অনুযায়ী সঠিক পাথগুলো এখানে দেওয়া হলো
   const menuItems = [
     {
       icon: LayoutDashboard,
       label: 'Dashboard',
-      path: '/dashboard/parents', // মূল ফোল্ডার parents হওয়ায় এখানে s যুক্ত হতে পারে, আপনার প্রজেক্ট অনুযায়ী চেক করে নিন
+      path: '/dashboard/parents',
     },
     {
       icon: UserCheck,
@@ -70,7 +66,6 @@ export default function ParentLayout({ children }: LayoutProps) {
     },
   ];
 
-  // রাউট চেক করার ফাংশন: এটি বর্তমান পাথ এবং মেনুর পাথ মিলিয়ে দেখে
   const isActive = (path: string) => {
     if (path === '/dashboard/parents') {
       return pathname === path;
@@ -82,166 +77,122 @@ export default function ParentLayout({ children }: LayoutProps) {
     classes.filter(Boolean).join(' ');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-50">
-      {/* Mobile Sidebar Overlay */}
+    <div className="min-h-screen bg-bg-page">
+      {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-emerald-100 p-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-bg-card border-b border-border-light p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-emerald-700 p-2 rounded-xl hover:bg-emerald-50 active:scale-95 transition-all"
-            >
-              <Menu size={20} />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center shadow-lg">
-                <GraduationCap className="text-white" size={16} />
-              </div>
-              <h1 className="text-lg font-bold text-emerald-700">
-                Parent Portal
-              </h1>
-            </div>
-          </div>
-          <button className="relative p-2">
-            <Bell className="text-slate-600" size={20} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 text-text-primary"
+          >
+            <Menu size={20} />
           </button>
+
+          <div className="flex items-center gap-2">
+            <GraduationCap size={18} className="text-primary" />
+            <h1 className="font-bold text-text-primary">Parent Portal</h1>
+          </div>
+
+          <Bell size={20} className="text-text-muted" />
         </div>
       </div>
 
       <div className="flex pt-16 lg:pt-0">
-        {/* Sidebar (Desktop & Mobile) */}
+        {/* Sidebar */}
         <aside
           className={cn(
-            'fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200/50 transition-transform duration-300 transform lg:translate-x-0 lg:static lg:h-screen sticky top-0 shadow-xl flex flex-col',
+            'fixed inset-y-0 left-0 z-50 w-64 bg-bg-card border-r border-border-light transition-transform duration-300 lg:translate-x-0 lg:static',
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
           )}
         >
-          <div className="p-6 border-b border-slate-100">
-            <Link
-              href="/dashboard/parents"
-              className="flex items-center gap-3 group"
-            >
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
-                <GraduationCap size={20} />
-              </div>
+          {/* Logo */}
+          <div className="p-6 border-b border-border-light">
+            <Link href="/dashboard/parents" className="flex items-center gap-2">
+              <GraduationCap size={20} className="text-primary" />
               <div>
-                <h1 className="text-xl font-bold text-emerald-700">
+                <h1 className="text-lg font-bold text-text-primary">
                   Parent Portal
                 </h1>
-                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                <p className="text-[10px] text-text-muted uppercase tracking-widest">
                   অভিভাবক ড্যাশবোর্ড
                 </p>
               </div>
             </Link>
           </div>
 
-          <nav className="flex-1 p-4 overflow-y-auto">
-            <ul className="space-y-1.5">
-              {menuItems.map((item, idx) => {
-                const active = isActive(item.path);
-                return (
-                  <li key={idx}>
-                    <Link
-                      href={item.path}
-                      onClick={() => setIsSidebarOpen(false)} // মোবাইল মোডে ক্লিক করলে সাইডবার বন্ধ হবে
-                      className={cn(
-                        'flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group',
-                        active
-                          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30 translate-x-1'
-                          : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:translate-x-1',
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <item.icon
-                          size={19}
-                          className={cn(
-                            'transition-colors',
-                            active
-                              ? 'text-white'
-                              : 'text-slate-400 group-hover:text-emerald-600',
-                          )}
-                        />
-                        <span className="font-medium">{item.label}</span>
-                      </div>
-                      {item.badge && (
-                        <span
-                          className={cn(
-                            'px-2 py-0.5 text-[10px] font-bold rounded-full transition-colors',
-                            active
-                              ? 'bg-white/20 text-white'
-                              : 'bg-red-100 text-red-600 group-hover:bg-red-600 group-hover:text-white',
-                          )}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+          {/* Menu */}
+          <nav className="p-4 space-y-1">
+            {menuItems.map((item, idx) => {
+              const active = isActive(item.path);
+
+              return (
+                <Link
+                  key={idx}
+                  href={item.path}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={cn(
+                    'flex items-center justify-between px-4 py-3 rounded-lg transition',
+                    active
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-text-secondary hover:bg-primary/5 hover:text-primary',
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon size={18} />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </div>
+
+                  {item.badge && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* User Profile / Student Card */}
-          <div className="p-4 border-t border-slate-100">
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white border-2 border-emerald-200 flex items-center justify-center font-bold text-emerald-700 shadow-sm">
-                  S
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">
-                    সাকিব আহমেদ
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    Class: 8 | Roll: 05
-                  </p>
-                </div>
-              </div>
+          {/* Student Info */}
+          <div className="mt-auto p-4 border-t border-border-light">
+            <div className="bg-primary/5 rounded-xl p-4 border border-border-light">
+              <p className="text-sm font-semibold text-text-primary">
+                সাকিব আহমেদ
+              </p>
+              <p className="text-xs text-text-muted">Class: 8 | Roll: 05</p>
             </div>
           </div>
         </aside>
 
-        {/* Main Content Area */}
-        <main className="flex-1 min-w-0 min-h-screen">
-          <header className="hidden lg:block sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 px-8 py-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-slate-800">
-                {menuItems.find((item) => isActive(item.path))?.label ||
-                  'Overview'}
-              </h2>
-              <div className="flex items-center gap-4">
-                <button className="p-2 text-slate-400 hover:text-emerald-600 transition-colors">
-                  <Bell size={22} />
-                </button>
-                <div className="w-px h-6 bg-slate-200 mx-2" />
-                <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl border border-slate-200/50">
-                  <div className="text-right">
-                    <p className="font-bold text-sm text-slate-800">
-                      রহিম আহমেদ
-                    </p>
-                    <span className="text-[10px] text-emerald-600 font-bold uppercase">
-                      অভিভাবক
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md">
-                    RA
-                  </div>
-                </div>
+        {/* Main */}
+        <main className="flex-1 min-h-screen">
+          {/* Desktop Header */}
+          <header className="hidden lg:flex sticky top-0 z-40 bg-bg-card border-b border-border-light px-8 py-5 justify-between items-center">
+            <h2 className="text-xl font-bold text-text-primary">
+              {menuItems.find((item) => isActive(item.path))?.label ||
+                'Overview'}
+            </h2>
+
+            <div className="flex items-center gap-6">
+              <Bell size={20} className="text-text-muted" />
+
+              <div className="text-right">
+                <p className="text-sm font-semibold text-text-primary">
+                  রহিম আহমেদ
+                </p>
+                <span className="text-xs text-text-muted">অভিভাবক</span>
               </div>
             </div>
           </header>
 
-          <div className="p-4 lg:p-8 animate-fadeIn">{children}</div>
+          <div className="p-4 lg:p-8">{children}</div>
         </main>
       </div>
     </div>

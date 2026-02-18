@@ -1,50 +1,45 @@
 'use client';
+
 import {
-  LineChart,
+  LineChart as LineIcon,
   CheckCircle2,
   GraduationCap,
   CreditCard,
   TrendingUp,
   BookOpen,
-  Clock,
   Bell,
-  AlertCircle,
   MessageSquare,
-  History,
 } from 'lucide-react';
 
-const cn = (...classes: (string | boolean | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
 
-const StatCard = ({ title, value, badge, icon: Icon, iconBg, index }: any) => (
+const StatCard = ({ title, value, badge, icon: Icon, index }: any) => (
   <div
-    className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-xl transition-all duration-500 group"
+    className="bg-bg-card p-6 rounded-xl border border-border-light transition hover:border-primary/40"
     style={{ animationDelay: `${index * 100}ms` }}
   >
-    <div className="flex items-start justify-between mb-4">
-      <div
-        className={cn(
-          'w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-110',
-          iconBg,
-        )}
-      >
-        <Icon className="text-white" size={24} />
+    <div className="flex items-center justify-between mb-4">
+      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+        <Icon className="text-primary" size={20} />
       </div>
+
       {badge && (
-        <span
-          className={cn(
-            'text-xs font-bold px-3 py-1.5 rounded-full border animate-pulse',
-            badge === 'বকেয়া'
-              ? 'text-red-600 bg-red-50 border-red-200'
-              : 'text-emerald-600 bg-emerald-50 border-emerald-200',
-          )}
-        >
+        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary">
           {badge}
         </span>
       )}
     </div>
-    <h3 className="text-sm font-medium text-slate-600">{title}</h3>
-    <p className="text-3xl font-bold text-slate-900">{value}</p>
+
+    <h3 className="text-sm text-text-muted">{title}</h3>
+    <p className="text-2xl font-bold text-text-primary">{value}</p>
   </div>
 );
 
@@ -54,21 +49,18 @@ export default function ParentOverview() {
       title: 'মোট উপস্থিতি',
       value: '৯৪%',
       icon: CheckCircle2,
-      iconBg: 'bg-emerald-500',
-      badge: 'নিয়মিত',
+      badge: 'নিয়মিত',
     },
     {
       title: 'সর্বশেষ জিপিএ',
       value: '৪.৮৫',
       icon: GraduationCap,
-      iconBg: 'bg-blue-500',
     },
     {
       title: 'ফি স্ট্যাটাস',
       value: '৳ ৩,৫০০',
       icon: CreditCard,
-      iconBg: 'bg-orange-500',
-      badge: 'বকেয়া',
+      badge: 'বকেয়া',
     },
   ];
 
@@ -79,84 +71,118 @@ export default function ParentOverview() {
       title: 'আজকের উপস্থিতি',
       desc: 'সন্তান ১০:১৫ মিনিটে স্কুলে প্রবেশ করেছে।',
       icon: CheckCircle2,
-      color: 'bg-emerald-500',
     },
     {
       id: 2,
       date: '১৫ ফেব',
       title: 'পরীক্ষার ফলাফল',
-      desc: 'গণিত পরীক্ষায় প্রাপ্ত নম্বর: ৯৫',
-      icon: LineChart,
-      color: 'bg-blue-500',
+      desc: 'গণিত পরীক্ষায় প্রাপ্ত নম্বর: ৯৫',
+      icon: LineIcon,
     },
   ];
 
+  // GPA Data
+  const gpaData = [
+    { exam: 'Jan', gpa: 4.2 },
+    { exam: 'Feb', gpa: 4.4 },
+    { exam: 'Mar', gpa: 4.3 },
+    { exam: 'Apr', gpa: 4.6 },
+    { exam: 'May', gpa: 4.85 },
+  ];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-bg-page min-h-screen p-6">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="text-3xl font-bold text-text-primary">
             সন্তানের অগ্রগতি
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-text-muted">
             ছাত্র: সাকিব আহমেদ • ক্লাস: ৮
           </p>
         </div>
-        <div className="flex gap-3">
-          <button className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold flex items-center gap-2 shadow-lg shadow-emerald-600/20">
-            <MessageSquare size={18} /> শিক্ষককে মেসেজ দিন
-          </button>
-        </div>
+
+        <button className="px-5 py-2.5 bg-primary text-white rounded-lg font-semibold flex items-center gap-2 transition hover:opacity-90">
+          <MessageSquare size={18} />
+          শিক্ষককে মেসেজ দিন
+        </button>
       </div>
 
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((s, i) => (
           <StatCard key={i} {...s} index={i} />
         ))}
       </div>
 
+      {/* Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Section */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm h-64 flex flex-col items-center justify-center text-slate-400">
-            <TrendingUp size={48} className="opacity-20 mb-2" />
-            <p>পারফরম্যান্স গ্রাফ লোড হচ্ছে...</p>
+          {/* Chart Section */}
+          <div className="bg-bg-card p-6 rounded-xl border border-border-light">
+            <div className="flex items-center gap-2 mb-6">
+              <TrendingUp size={18} className="text-primary" />
+              <h3 className="font-semibold text-text-primary">GPA Progress</h3>
+            </div>
+
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={gpaData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(100,116,139,0.2)"
+                  />
+                  <XAxis dataKey="exam" stroke="#64748B" />
+                  <YAxis domain={[3.5, 5]} stroke="#64748B" />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="gpa"
+                    stroke="var(--color-primary)"
+                    strokeWidth={3}
+                    dot={{ r: 5 }}
+                    activeDot={{ r: 7 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-4">
-              <BookOpen className="text-emerald-600" />
-              <div>
-                <p className="text-xs font-bold text-slate-500">
-                  আগামীকালকের পরীক্ষা
-                </p>
-                <p className="font-bold text-slate-800">ইংরেজি ২য় পত্র</p>
-              </div>
+
+          {/* Upcoming Exam */}
+          <div className="p-4 bg-bg-card rounded-xl border border-border-light flex items-center gap-4">
+            <BookOpen className="text-primary" />
+            <div>
+              <p className="text-xs font-semibold text-text-muted">
+                আগামীকালকের পরীক্ষা
+              </p>
+              <p className="font-semibold text-text-primary">ইংরেজি ২য় পত্র</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-6">
-          <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
-            <Bell size={18} /> সাম্প্রতিক আপডেট
+        {/* Notifications */}
+        <div className="bg-bg-card rounded-xl border border-border-light p-6">
+          <h3 className="font-semibold text-text-primary mb-6 flex items-center gap-2">
+            <Bell size={18} className="text-primary" />
+            সাম্প্রতিক আপডেট
           </h3>
+
           <div className="space-y-6">
             {notifications.map((n) => (
-              <div
-                key={n.id}
-                className="relative pl-8 border-l border-slate-100 pb-6 last:pb-0"
-              >
-                <div
-                  className={cn(
-                    'absolute -left-4 top-0 w-8 h-8 rounded-full flex items-center justify-center text-white border-4 border-white',
-                    n.color,
-                  )}
-                >
-                  <n.icon size={12} />
+              <div key={n.id} className="flex gap-4">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <n.icon size={14} className="text-primary" />
                 </div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">
-                  {n.date}
-                </p>
-                <p className="font-bold text-slate-800 text-sm">{n.title}</p>
-                <p className="text-xs text-slate-500">{n.desc}</p>
+
+                <div>
+                  <p className="text-xs text-text-muted">{n.date}</p>
+                  <p className="font-semibold text-text-primary text-sm">
+                    {n.title}
+                  </p>
+                  <p className="text-xs text-text-muted">{n.desc}</p>
+                </div>
               </div>
             ))}
           </div>
