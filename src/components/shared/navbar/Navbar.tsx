@@ -165,7 +165,7 @@ const Navbar = () => {
 
             {/* Login */}
             <Link
-              href="/login"
+              href="/Login"
               className="hidden sm:block text-sm font-bold text-text-secondary hover:text-primary px-4 py-2 transition-colors"
             >
               Login
