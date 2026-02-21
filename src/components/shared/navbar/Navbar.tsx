@@ -44,8 +44,11 @@ const Navbar = () => {
           <div className="flex items-center gap-3 sm:gap-5">
             <ThemeToggle />
 
-            <Link href="/login" className="hidden sm:flex items-center gap-2 text-text-secondary font-bold hover:text-primary px-4 py-2 transition-colors text-sm">
-              <LogIn size={18} />
+
+            <a
+              href="/login"
+              className="hidden sm:block text-primary font-bold hover:text-primary-hover px-4 py-2 transition-colors">
+
               Login
             </Link>
 
