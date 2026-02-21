@@ -8,7 +8,7 @@ import {
   Award,
   ArrowRight,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 interface CounterProps {
   end: number;
@@ -111,7 +111,7 @@ function Counter({
 }
 
 // Stagger animation variants
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -121,7 +121,7 @@ const staggerContainer = {
   },
 };
 
-const fadeInUp = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,

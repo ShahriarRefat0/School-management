@@ -4,4 +4,5 @@ export interface Notice {
     date: string;
     description: string;
     category?: 'Academic' | 'Administrative' | 'Event' | 'Holiday';
+    details?: Record<string, string>;
 }

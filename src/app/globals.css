@@ -8,13 +8,13 @@
   --color-bg-card: #FFFFFF;
   --color-border-light: #E2E8F0;
 
-  /* লাইট থিমের জন্য ডার্ক টেক্সট */
-  --color-text-primary: #020617;
-  /* একদম গাঢ় ব্ল্যাক-ব্লু (Slate 950) - টাইটেলের জন্য */
+  /* লাইট থিমের জন্য প্রফেশনাল টেক্সট কালার */
+  --color-text-primary: #0F172A;
+  /* Slate 900 - টাইটেলের জন্য */
   --color-text-secondary: #334155;
-  /* ডার্ক গ্রে (Slate 700) - বডি টেক্সটের জন্য */
-  --color-text-muted: #64748B;
-  /* সফট গ্রে (Slate 500) - সাব-টেক্সটের জন্য */
+  /* Slate 700 - বডি টেক্সটের জন্য */
+  --color-text-muted: #475569;
+  /* Slate 600 - সাব-টেক্সটের জন্য (পড়ার সুবিধা বাড়াবে) */
 
   --color-primary: #2563EB;
 
@@ -36,29 +36,36 @@
 }
 
 .dark {
-  /* --- DARK MODE --- */
-  --color-bg-page: #020617;
+  /* --- DARK MODE (Enhanced Palette) --- */
+  --color-bg-page: #030712;
+  /* Very Deep Navy-Black (Slate 950) */
   --color-bg-card: #0F172A;
+  /* Dark Card background (Slate 900) */
   --color-border-light: #1E293B;
+  /* Border for cards (Slate 800) */
 
-  /* ডার্ক থিমের জন্য লাইট টেক্সট */
-  --color-text-primary: #F8FAFC;
-  /* টাইটেল এখন সাদা */
-  --color-text-secondary: #CBD5E1;
-  /* বডি এখন হালকা ধূসর */
+  /* ডার্ক থিমের জন্য রিডেবল টেক্সট */
+  --color-text-primary: #FFFFFF;
+  /* Pure white for headers */
+  --color-text-secondary: #E2E8F0;
+  /* Lightest gray for body (Slate 200) */
   --color-text-muted: #94A3B8;
-  /* মিউটেড আরও হালকা */
-  --sidebar: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  /* Muted text (Slate 400) */
+
+  --sidebar: #020617;
+  /* Even darker for sidebar */
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #3B82F6;
+  /* Brighter blue for primary */
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: #F8FAFC;
+  --sidebar-border: #1E293B;
+  --sidebar-ring: #3B82F6;
 }
 
 @theme {
+  /* Core Colors */
   --color-bg-page: var(--color-bg-page);
   --color-bg-card: var(--color-bg-card);
   --color-text-primary: var(--color-text-primary);
@@ -66,11 +73,20 @@
   --color-text-muted: var(--color-text-muted);
   --color-border-light: var(--color-border-light);
   --color-primary: var(--color-primary);
+
+  /* Sidebar Colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 body {
   background-color: var(--color-bg-page);
-  /* বডি টেক্সট ডিফল্টভাবে সেকেন্ডারি (Slate 700) থাকবে যা পড়ার জন্য আরামদায়ক */
   color: var(--color-text-secondary);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -79,7 +95,6 @@ h1,
 h2,
 h3,
 h4 {
-  /* হেডিং সবসময় একদম গাঢ় (Slate 950) থাকবে */
   color: var(--color-text-primary);
   @apply font-bold;
 }
@@ -153,16 +168,17 @@ h4 {
   animation-delay: 0.3s;
 }
 
-/* hero bg  */
-
+/* Particle Animation for Hero BG */
 @keyframes particle-drift {
   0% {
     transform: translateY(0);
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   100% {
     transform: translateY(-110vh);
     opacity: 0;
@@ -174,41 +190,3 @@ h4 {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
-
-@theme inline {
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
-}
-

@@ -12,7 +12,7 @@ export default function StudentDashboardLayout({
     const [isMobileOpen, setIsMobileOpen] = useState(false)
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC]">
+        <div className="min-h-screen bg-bg-page transition-colors duration-300">
 
             {/* Desktop Sidebar (Always Visible) */}
             <div className="hidden md:block fixed inset-y-0 left-0 z-50 w-64 bg-slate-950 border-r border-white/5">
