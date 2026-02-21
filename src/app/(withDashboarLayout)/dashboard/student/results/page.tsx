@@ -50,7 +50,7 @@ const examResults = [
 export default function ResultsPage() {
     return (
         <div className="space-y-8">
-            <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-text-primary tracking-tight flex items-center gap-2">
                 Results & Grades
             </h1>
 
@@ -86,27 +86,27 @@ export default function ResultsPage() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col justify-center space-y-6">
-                    <h3 className="text-lg font-bold text-slate-800">Stats Overview</h3>
+                <div className="bg-bg-card rounded-xl border border-border-light p-6 shadow-sm flex flex-col justify-center space-y-6">
+                    <h3 className="text-lg font-bold text-text-primary">Stats Overview</h3>
                     <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-slate-500">Total Credits Earned</span>
-                            <span className="font-bold text-slate-800">124/140</span>
+                            <span className="text-text-muted">Total Credits Earned</span>
+                            <span className="font-bold text-text-primary">124/140</span>
                         </div>
-                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-2 w-full bg-bg-page rounded-full overflow-hidden">
                             <div className="h-full bg-blue-600 w-[88%] rounded-full"></div>
                         </div>
                     </div>
                     <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                            <span className="text-slate-500">Attendance Score</span>
-                            <span className="font-bold text-slate-800">92%</span>
+                            <span className="text-text-muted">Attendance Score</span>
+                            <span className="font-bold text-text-primary">92%</span>
                         </div>
-                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-2 w-full bg-bg-page rounded-full overflow-hidden">
                             <div className="h-full bg-emerald-500 w-[92%] rounded-full"></div>
                         </div>
                     </div>
-                    <div className="pt-2 flex items-center gap-2 text-sm text-slate-500">
+                    <div className="pt-2 flex items-center gap-2 text-sm text-text-muted">
                         <TrendingUp className="h-4 w-4 text-emerald-500" />
                         <span>Improved by <span className="font-bold text-emerald-600">0.2</span> since last term</span>
                     </div>
@@ -120,15 +120,15 @@ export default function ResultsPage() {
                 </h3>
 
                 {examResults.map((exam) => (
-                    <div key={exam.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                        <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex flex-row items-center justify-between">
+                    <div key={exam.id} className="bg-bg-card border border-border-light rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        <div className="bg-bg-page/50 px-6 py-4 border-b border-border-light flex flex-row items-center justify-between">
                             <div>
-                                <h4 className="text-lg font-bold text-slate-800">{exam.examName}</h4>
-                                <p className="text-sm text-slate-500">{exam.date}</p>
+                                <h4 className="text-lg font-bold text-text-primary">{exam.examName}</h4>
+                                <p className="text-sm text-text-muted">{exam.date}</p>
                             </div>
                             <span className={`
                                 px-3 py-1 rounded-full text-xs font-bold uppercase
-                                ${exam.status === "Passed" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}
+                                ${exam.status === "Passed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}
                             `}>
                                 {exam.status}
                             </span>
@@ -136,29 +136,29 @@ export default function ResultsPage() {
 
                         <div className="p-6">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center md:text-left">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">GPA</p>
-                                    <p className="text-2xl font-bold text-slate-900 mt-1">{exam.gpa}</p>
+                                <div className="p-4 rounded-xl bg-bg-page/50 border border-border-light text-center md:text-left">
+                                    <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">GPA</p>
+                                    <p className="text-2xl font-bold text-text-primary mt-1">{exam.gpa}</p>
                                 </div>
-                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center md:text-left">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Marks</p>
-                                    <p className="text-2xl font-bold text-slate-900 mt-1">{exam.totalMarks}</p>
+                                <div className="p-4 rounded-xl bg-bg-page/50 border border-border-light text-center md:text-left">
+                                    <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Total Marks</p>
+                                    <p className="text-2xl font-bold text-text-primary mt-1">{exam.totalMarks}</p>
                                 </div>
-                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center md:text-left">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Grade</p>
-                                    <p className="text-2xl font-bold text-slate-900 mt-1">{exam.grade}</p>
+                                <div className="p-4 rounded-xl bg-bg-page/50 border border-border-light text-center md:text-left">
+                                    <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Grade</p>
+                                    <p className="text-2xl font-bold text-text-primary mt-1">{exam.grade}</p>
                                 </div>
-                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center md:text-left">
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Class Rank</p>
-                                    <p className="text-2xl font-bold text-blue-600 mt-1">#{exam.rank}</p>
+                                <div className="p-4 rounded-xl bg-bg-page/50 border border-border-light text-center md:text-left">
+                                    <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Class Rank</p>
+                                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">#{exam.rank}</p>
                                 </div>
                             </div>
 
                             {exam.subjects ? (
                                 <>
-                                    <div className="overflow-x-auto border border-slate-100 rounded-xl">
-                                        <table className="w-full text-sm text-left text-slate-600">
-                                            <thead className="text-xs text-slate-500 uppercase bg-slate-50">
+                                    <div className="overflow-x-auto border border-border-light rounded-xl">
+                                        <table className="w-full text-sm text-left text-text-secondary">
+                                            <thead className="text-xs text-text-muted uppercase bg-bg-page/50">
                                                 <tr>
                                                     <th className="px-6 py-3 font-semibold">Subject</th>
                                                     <th className="px-6 py-3 font-semibold">Marks</th>
@@ -167,19 +167,19 @@ export default function ResultsPage() {
                                                     <th className="px-6 py-3 font-semibold">Remarks</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-100">
+                                            <tbody className="divide-y divide-border-light">
                                                 {exam.subjects.map((subject, idx) => (
-                                                    <tr key={idx} className="bg-white hover:bg-slate-50 transition-colors">
-                                                        <td className="px-6 py-4 font-medium text-slate-900">{subject.name}</td>
+                                                    <tr key={idx} className="bg-bg-card hover:bg-bg-page/50 transition-colors">
+                                                        <td className="px-6 py-4 font-medium text-text-primary">{subject.name}</td>
                                                         <td className="px-6 py-4">{subject.marks}</td>
                                                         <td className="px-6 py-4">
-                                                            <span className={`font-bold ${subject.grade.startsWith('A') ? 'text-emerald-600' :
-                                                                subject.grade.startsWith('B') ? 'text-blue-600' :
-                                                                    'text-slate-600'
+                                                            <span className={`font-bold ${subject.grade.startsWith('A') ? 'text-emerald-600 dark:text-emerald-400' :
+                                                                subject.grade.startsWith('B') ? 'text-blue-600 dark:text-blue-400' :
+                                                                    'text-text-muted'
                                                                 }`}>{subject.grade}</span>
                                                         </td>
                                                         <td className="px-6 py-4">{subject.points.toFixed(2)}</td>
-                                                        <td className="px-6 py-4 text-xs italic text-slate-400">Excellent</td>
+                                                        <td className="px-6 py-4 text-xs italic text-text-muted">Excellent</td>
                                                     </tr>
                                                 ))}
                                             </tbody>

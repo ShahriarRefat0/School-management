@@ -36,11 +36,13 @@ export function StudentSidebar({ onLinkClick }: StudentSidebarProps) {
     }
 
     return (
-        <aside className="flex flex-col h-full w-full bg-slate-950 border-r border-white/5 transition-all duration-300">
+        <aside className="flex flex-col h-full w-full bg-sidebar border-r border-sidebar-border transition-all duration-300">
 
             {/* Header: Logo */}
-            <div className="h-20 flex items-center px-6 border-b border-white/5">
-                <Logo />
+            <div className="h-20 flex items-center px-6 border-b border-sidebar-border">
+                <Link href="/">
+                    <Logo variant="dark" />
+                </Link>
             </div>
 
             {/* Navigation Content */}

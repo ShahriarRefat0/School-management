@@ -7,7 +7,7 @@ interface LayoutProps {
 
 /**
  * Dashboard Root Layout
- * This layout only wraps dashboard routes without adding any UI
+ * This layout only wraps dashboard routes without adding any Ui
  * Each role (accountant, admin, teacher, etc.) has its own layout
  */
 export default function DashboardLayout({ children }: LayoutProps) {

@@ -26,14 +26,19 @@ const cn = (...classes: (string | boolean | undefined)[]) => {
 };
 
 // Card Component
-const Card = ({ 
-  children, 
-  className = "" 
-}: { 
-  children: React.ReactNode; 
-  className?: string 
+const Card = ({
+  children,
+  className = "",
+  style = {}
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
 }) => (
-  <div className={cn("bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-xl hover:border-emerald-200/60 transition-all duration-500", className)}>
+  <div
+    className={cn("bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-xl hover:border-emerald-200/60 transition-all duration-500", className)}
+    style={style}
+  >
     {children}
   </div>
 );
@@ -62,7 +67,7 @@ const StatCard = ({
   badge?: string;
   index: number;
 }) => (
-  <Card 
+  <Card
     className="group hover:scale-[1.02] cursor-pointer overflow-hidden"
     style={{ animationDelay: `${index * 100}ms` }}
   >
@@ -269,8 +274,8 @@ export default function AccountantOverview() {
               { label: "আংশিক পেমেন্ট", value: "১৫", icon: Clock },
               { label: "এই সপ্তাহ", value: "৮৯", icon: TrendingUp },
             ].map((item, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="text-center space-y-2 animate-fadeInSlide"
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
@@ -385,13 +390,13 @@ export default function AccountantOverview() {
                         className={cn(
                           "px-3 py-1.5 text-xs font-bold rounded-full",
                           transaction.statusColor === "emerald" &&
-                            "bg-emerald-100 text-emerald-700 border border-emerald-200",
+                          "bg-emerald-100 text-emerald-700 border border-emerald-200",
                           transaction.statusColor === "blue" &&
-                            "bg-blue-100 text-blue-700 border border-blue-200",
+                          "bg-blue-100 text-blue-700 border border-blue-200",
                           transaction.statusColor === "orange" &&
-                            "bg-orange-100 text-orange-700 border border-orange-200",
+                          "bg-orange-100 text-orange-700 border border-orange-200",
                           transaction.statusColor === "red" &&
-                            "bg-red-100 text-red-700 border border-red-200"
+                          "bg-red-100 text-red-700 border border-red-200"
                         )}
                       >
                         {transaction.status}

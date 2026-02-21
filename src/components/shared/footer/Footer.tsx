@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Facebook,
@@ -18,7 +19,6 @@ import {
 } from "lucide-react";
 import PlayStoreIcon from "@/components/icon/PlayStore";
 import WindowsIcon from "@/components/icon/Windows";
-import LinuxIcon from "@/components/icon/LinuxIcon";
 import Logo from "@/components/shared/logo/logo";
 
 const Footer = () => {
@@ -143,16 +143,16 @@ const Footer = () => {
                 "Blogs & News",
                 "Success Stories",
                 "Exam Suite",
-                "Hostel & Transport",
+                "Portal Login",
                 "Contact Us",
               ].map((item) => (
                 <li key={item}>
-                  <a
-                    href="#"
+                  <Link
+                    href={item === "Portal Login" ? "/login" : "#"}
                     className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center gap-2 group">
                     <span className="w-1 h-1 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-all" />
                     {item}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

@@ -10,7 +10,7 @@ const HeroSection = () => {
   return (
     <section
       id="home"
-      className="py-20 bg-bg-page border-border-light transition-colors duration-300 overflow-hidden"
+      className="pt-28 pb-20 bg-bg-page border-border-light transition-colors duration-300 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">

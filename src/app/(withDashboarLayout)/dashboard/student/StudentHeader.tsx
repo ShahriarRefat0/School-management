@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import Link from "next/link"
 import {
     Bell,
     Search,
@@ -8,6 +9,7 @@ import {
     Menu,
 } from "lucide-react"
 import Logo from "@/components/shared/logo/logo"
+import ThemeToggle from "@/components/theme/ThemeToggle"
 
 interface StudentHeaderProps {
     title: string
@@ -18,7 +20,7 @@ export function StudentHeader({ title, onMenuClick }: StudentHeaderProps) {
     const [isProfileOpen, setIsProfileOpen] = useState(false)
 
     return (
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80 transition-colors">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border-light bg-bg-card/80 px-6 backdrop-blur-md transition-colors">
             {/* Mobile Menu & Logo */}
             <div className="flex items-center gap-3 md:hidden">
                 <button
@@ -27,45 +29,50 @@ export function StudentHeader({ title, onMenuClick }: StudentHeaderProps) {
                 >
                     <Menu className="h-6 w-6" />
                 </button>
-                <Logo variant="dark" className="scale-75 origin-left" />
+                <Link href="/">
+                    <Logo variant="dark" className="scale-75 origin-left" />
+                </Link>
             </div>
 
             <div className="flex-1">
-                <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight hidden sm:block md:block">{title}</h1>
+                <h1 className="text-xl font-black text-text-primary tracking-tight hidden sm:block md:block">{title}</h1>
             </div>
 
             <div className="flex items-center gap-4">
                 {/* Search Bar */}
                 <div className="relative hidden md:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                     <input
                         type="search"
                         placeholder="Search..."
-                        className="h-9 w-64 rounded-full bg-slate-100 dark:bg-slate-900 border-none pl-10 focus:ring-2 focus:ring-blue-500 font-medium text-slate-700 dark:text-slate-300 outline-none"
+                        className="h-10 w-64 rounded-xl bg-bg-page border border-border-light pl-10 focus:ring-2 focus:ring-blue-500 font-bold text-text-secondary outline-none transition-all"
                     />
                 </div>
 
+                {/* Theme Toggle */}
+                <ThemeToggle />
+
                 {/* Notification */}
-                <button className="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                <button className="relative p-2.5 text-text-secondary hover:bg-bg-page rounded-xl transition-colors">
                     <Bell className="h-5 w-5" />
-                    <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-950"></span>
+                    <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-bg-card"></span>
                 </button>
 
                 {/* Profile Dropdown */}
                 <div className="relative">
                     <button
                         onClick={() => setIsProfileOpen(!isProfileOpen)}
-                        className="flex items-center gap-3 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 pl-1.5 pr-4 bg-white dark:bg-slate-950 shadow-sm transition-all"
+                        className="flex items-center gap-3 h-11 rounded-xl hover:bg-bg-page border border-border-light pl-1.5 pr-4 bg-bg-card shadow-sm transition-all"
                     >
-                        <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                        <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-blue-600/20">
                             AS
                         </div>
 
                         <div className="hidden flex-col items-start gap-0 md:flex">
-                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">Alex Smith</span>
-                            <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Class 10 - A</span>
+                            <span className="text-sm font-black text-text-primary leading-none">Alex Smith</span>
+                            <span className="text-[10px] uppercase tracking-widest text-text-muted font-black mt-1">Class 10 - A</span>
                         </div>
-                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                        <ChevronDown className="h-4 w-4 text-text-muted" />
                     </button>
 
                     {isProfileOpen && (
