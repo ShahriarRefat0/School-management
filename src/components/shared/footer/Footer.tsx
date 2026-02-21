@@ -1,6 +1,6 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+"use client";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   Facebook,
   Linkedin,
@@ -15,10 +15,11 @@ import {
   Chrome,
   Terminal,
   Grid2x2,
-} from 'lucide-react';
-import PlayStoreIcon from '@/components/icon/PlayStore';
-import WindowsIcon from '@/components/icon/Windows';
-import LinuxIcon from '@/components/icon/LinuxIcon';
+} from "lucide-react";
+import PlayStoreIcon from "@/components/icon/PlayStore";
+import WindowsIcon from "@/components/icon/Windows";
+import LinuxIcon from "@/components/icon/LinuxIcon";
+import Logo from "@/components/shared/logo/logo";
 
 const Footer = () => {
   const [mounted, setMounted] = useState(false);
@@ -37,20 +38,7 @@ const Footer = () => {
       <div className="max-w-307.5 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.85 9.58l8.15 4.44 8.15-4.44L12 5.14 3.85 9.58z" />
-                </svg>
-              </div>
-              <span className="text-2xl font-black text-text-primary tracking-tight">
-                Schoology <span className="text-primary">BD</span>
-              </span>
-            </div>
+            <Logo variant="dark" />
             <p className="text-text-secondary leading-relaxed">
               Leading the digital transformation of schools globally with
               innovative management tools and seamless experiences.
@@ -64,25 +52,24 @@ const Footer = () => {
                 {[
                   {
                     icon: <Facebook size={18} />,
-                    link: '#',
-                    color: 'hover:bg-blue-600',
+                    link: "#",
+                    color: "hover:bg-blue-600",
                   },
                   {
                     icon: <Linkedin size={18} />,
-                    link: '#',
-                    color: 'hover:bg-blue-700',
+                    link: "#",
+                    color: "hover:bg-blue-700",
                   },
                   {
                     icon: <Github size={18} />,
-                    link: '#',
-                    color: 'hover:bg-blue-700',
+                    link: "#",
+                    color: "hover:bg-blue-700",
                   },
                 ].map((social, idx) => (
                   <a
                     key={idx}
                     href={social.link}
-                    className={`w-10 h-10 rounded-xl border border-border-light flex items-center justify-center text-text-muted transition-all duration-300 hover:text-white hover:border-transparent ${social.color}`}
-                  >
+                    className={`w-10 h-10 rounded-xl border border-border-light flex items-center justify-center text-text-muted transition-all duration-300 hover:text-white hover:border-transparent ${social.color}`}>
                     {social.icon}
                   </a>
                 ))}
@@ -131,15 +118,14 @@ const Footer = () => {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { name: 'Windows', icon: <WindowsIcon size={16} /> },
-                  { name: 'macOS', icon: <Apple size={16} /> },
-                  { name: 'Linux', icon: <Terminal size={16} /> },
-                  { name: 'Chrome', icon: <Chrome size={16} /> },
+                  { name: "Windows", icon: <WindowsIcon size={16} /> },
+                  { name: "macOS", icon: <Apple size={16} /> },
+                  { name: "Linux", icon: <Terminal size={16} /> },
+                  { name: "Chrome", icon: <Chrome size={16} /> },
                 ].map((app) => (
                   <button
                     key={app.name}
-                    className="flex items-center gap-2 bg-secondary/50 border border-border-light px-3 py-2 rounded-xl text-xs font-bold text-text-secondary hover:text-primary hover:border-primary transition-all"
-                  >
+                    className="flex items-center gap-2 bg-secondary/50 border border-border-light px-3 py-2 rounded-xl text-xs font-bold text-text-secondary hover:text-primary hover:border-primary transition-all">
                     {app.icon} {app.name}
                   </button>
                 ))}
@@ -153,18 +139,17 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4">
               {[
-                'About Schoology',
-                'Blogs & News',
-                'Success Stories',
-                'Exam Suite',
-                'Hostel & Transport',
-                'Contact Us',
+                "About Schoology",
+                "Blogs & News",
+                "Success Stories",
+                "Exam Suite",
+                "Hostel & Transport",
+                "Contact Us",
               ].map((item) => (
                 <li key={item}>
                   <a
                     href="#"
-                    className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center gap-2 group"
-                  >
+                    className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center gap-2 group">
                     <span className="w-1 h-1 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-all" />
                     {item}
                   </a>
@@ -229,19 +214,18 @@ const Footer = () => {
 
         <div className="pt-8 border-t border-border-light flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-text-muted text-sm font-medium">
-            © {new Date().getFullYear()}{' '}
+            © {new Date().getFullYear()}{" "}
             <span className="text-text-primary font-bold">
               Schoology BD Inc.
-            </span>{' '}
+            </span>{" "}
             All rights reserved.
           </p>
 
           <div className="flex items-center gap-3">
-            {['Visa', 'Mastercard', 'bKash', 'Nagad'].map((pay) => (
+            {["Visa", "Mastercard", "bKash", "Nagad"].map((pay) => (
               <span
                 key={pay}
-                className="px-3 py-1 bg-bg-page border border-border-light rounded-lg text-[10px] font-black text-text-muted uppercase tracking-tighter"
-              >
+                className="px-3 py-1 bg-bg-page border border-border-light rounded-lg text-[10px] font-black text-text-muted uppercase tracking-tighter">
                 {pay}
               </span>
             ))}
@@ -258,8 +242,7 @@ const PlayCircle = () => (
     height="20"
     viewBox="0 0 24 24"
     fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+    xmlns="http://www.w3.org/2000/svg">
     <path d="M5 3.5L19 12L5 20.5V3.5Z" fill="currentColor" />
   </svg>
 );
