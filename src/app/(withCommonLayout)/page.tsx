@@ -5,7 +5,10 @@ import Statistics from "@/components/home/statistics/Statistics";
 import TestimonialsSection from "@/components/home/TestimonialsSection/TestimonialsSection";
 import Features from "@/components/home/Features/Features";
 import PrincipalMessage from "@/components/home/PricipalMessage/PricipalMessage";
-import Support from "@/app/(withCommonLayout)/Support/page";
+import LoginPage from "../(auth)/Login/page";
+import RegisterPage from "../(auth)/register/page";
+
+
 
 const HomePage = () => {
   return (
@@ -17,6 +20,8 @@ const HomePage = () => {
       <NoticeBoard></NoticeBoard>
       <TestimonialsSection></TestimonialsSection>
       <Contact></Contact>
+      {/* <LoginPage></LoginPage>
+      <RegisterPage></RegisterPage>       */}
     </div>
   );
 };
