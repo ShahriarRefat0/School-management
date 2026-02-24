@@ -4,6 +4,7 @@ import './globals.css';
 import SmoothScroll from '@/components/ui/SmoothScroll';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import Herobackground from '@/components/heroSection/Herobackground';
+import { AuthProvider } from '@/context/AuthProvider';
 
 // ২. ইন্টার ফন্টটি কম্পোনেন্টের বাইরে এভাবে ডিফাইন করো
 const inter = Inter({ 
@@ -51,10 +52,12 @@ export default function RootLayout({
         <ThemeProvider>
           <Herobackground />
           <SmoothScroll>
+            <AuthProvider>
             {/* ৪. bg-[var(--color-bg-page)] ব্যবহার করো যাতে ডার্ক মোডে সাদা না দেখায় */}
             <main className="flex-grow bg-[var(--color-bg-page)] transition-colors duration-300">
               {children}
             </main>
+            </AuthProvider>
           </SmoothScroll>
         </ThemeProvider>
       </body>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRoleGuard } from '@/hooks/useRoleGurad';
 import {
   TrendingUp,
   Users,
@@ -38,6 +39,10 @@ const StatCard = ({ title, value, desc, icon: Icon }: any) => (
 
 /* ---------------- Page ---------------- */
 export default function PrincipalDashboard() {
+const {loading} = useRoleGuard("school_admin")
+
+if(loading) return <p>Loading.......</p>
+
   /* KPI Data */
   const stats = [
     {
