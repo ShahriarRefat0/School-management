@@ -9,15 +9,12 @@ import {
   Calendar,
   AlertCircle,
   DollarSign,
-  ArrowUpRight,
-  ArrowDownRight,
   Download,
   Filter,
   Search,
   MoreVertical,
   Clock,
   CheckCircle2,
-  Users2,
 } from "lucide-react";
 
 // Simple className merger
@@ -36,14 +33,17 @@ const Card = ({
   style?: React.CSSProperties;
 }) => (
   <div
-    className={cn("bg-white rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-xl hover:border-emerald-200/60 transition-all duration-500", className)}
+    className={cn(
+      "bg-bg-card rounded-2xl border border-border-light shadow-sm hover:shadow-xl hover:border-blue-200/60 transition-all duration-500",
+      className
+    )}
     style={style}
   >
     {children}
   </div>
 );
 
-// Stat Card Component
+// Stat Card Component (Card 2 Style)
 const StatCard = ({
   title,
   value,
@@ -55,58 +55,67 @@ const StatCard = ({
   subtitle,
   badge,
   index,
-}: {
-  title: string;
-  value: string;
-  change?: string;
-  changeType?: "up" | "down";
-  icon: any;
-  iconBg: string;
-  iconColor: string;
-  subtitle?: string;
-  badge?: string;
-  index: number;
-}) => (
+}: any) => (
   <Card
-    className="group hover:scale-[1.02] cursor-pointer overflow-hidden"
+    className="group relative overflow-hidden p-6 rounded-3xl border border-border-light shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500"
     style={{ animationDelay: `${index * 100}ms` }}
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-emerald-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-    <div className="p-6 relative">
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-3", iconBg)}>
-          <Icon className={iconColor} size={24} />
-        </div>
-        {badge && (
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 animate-pulse">
-            {badge}
-          </span>
+    {/* Background glow circle */}
+    <div
+      className={cn(
+        "absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:opacity-20 transition-opacity bg-gradient-to-br",
+        iconBg
+      )}
+    ></div>
+
+    <div className="flex flex-col gap-4 relative z-10">
+      {/* Icon */}
+      <div
+        className={cn(
+          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3",
+          iconBg
         )}
+      >
+        <Icon className={iconColor} size={24} />
       </div>
-      <div className="space-y-1">
-        <h3 className="text-sm font-medium text-slate-600">{title}</h3>
-        <p className="text-3xl font-bold text-slate-900 tracking-tight">{value}</p>
-        {change && (
-          <div className="flex items-center gap-1.5 pt-1">
-            {changeType === "up" ? (
-              <ArrowUpRight className="text-emerald-600" size={16} />
-            ) : (
-              <ArrowDownRight className="text-red-600" size={16} />
-            )}
+
+      {/* Content */}
+      <div>
+        <p className="text-sm font-semibold text-text-muted uppercase tracking-wider">
+          {title}
+        </p>
+
+        <div className="flex items-baseline gap-2 mt-1">
+          <h3 className="text-2xl font-black text-text-primary">{value}</h3>
+
+          {change && (
             <span
               className={cn(
-                "text-sm font-semibold",
-                changeType === "up" ? "text-emerald-600" : "text-red-600"
+                "text-[10px] font-bold flex items-center gap-0.5",
+                changeType === "up" ? "text-emerald-500" : "text-red-500"
               )}
             >
+              {changeType === "up" ? (
+                <TrendingUp size={10} />
+              ) : (
+                <TrendingDown size={10} />
+              )}
               {change}
             </span>
-            {subtitle && (
-              <span className="text-xs text-slate-500">{subtitle}</span>
-            )}
-          </div>
+          )}
+        </div>
+
+        {subtitle && (
+          <p className="text-xs text-text-muted mt-1">{subtitle}</p>
         )}
       </div>
+
+      {/* Badge */}
+      {badge && (
+        <span className="absolute top-0 right-0 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200 animate-pulse">
+          {badge}
+        </span>
+      )}
     </div>
   </Card>
 );
@@ -114,176 +123,139 @@ const StatCard = ({
 export default function AccountantOverview() {
   const stats = [
     {
-      title: "আজকের মোট ফি সংগ্রহ",
-      value: "৳ ১,২৫,০০০",
-      change: "+১৮%",
-      changeType: "up" as const,
-      subtitle: "গতকালের তুলনায়",
+      title: "Today's Total Collection",
+      value: "৳ 1,25,000",
+      change: "+18%",
+      changeType: "up",
+      subtitle: "vs yesterday",
       icon: DollarSign,
-      iconBg: "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/30",
-      iconColor: "text-white",
-      badge: "আজ",
+      iconBg: "bg-blue-500/10 to-indigo-600 shadow-blue-500/30",
+      iconColor: "text-blue-500",
+      badge: "Today",
     },
     {
-      title: "এই মাসের মোট সংগ্রহ",
-      value: "৳ ৮,৫০,০০০",
-      change: "+১২%",
-      changeType: "up" as const,
-      subtitle: "গত মাসের তুলনায়",
+      title: "Monthly Collection",
+      value: "৳ 8,50,000",
+      change: "+12%",
+      changeType: "up",
+      subtitle: "vs last month",
       icon: Calendar,
-      iconBg: "bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/30",
-      iconColor: "text-white",
+      iconBg: "bg-indigo-600/10 to-indigo-500 shadow-blue-500/30",
+      iconColor: "text-indigo-600",
     },
     {
-      title: "মোট বেতন প্রদান",
-      value: "৳ ৪,২০,০০০",
+      title: "Total Salary Paid",
+      value: "৳ 4,20,000",
       icon: Wallet,
-      iconBg: "bg-gradient-to-br from-purple-500 to-pink-600 shadow-purple-500/30",
-      iconColor: "text-white",
-      subtitle: "৩২ জন শিক্ষক",
+      iconBg: "bg-indigo-500/10 to-blue-600 shadow-indigo-500/30",
+      iconColor: "text-indigo-500",
+      subtitle: "32 teachers",
     },
     {
-      title: "মোট খরচ",
-      value: "৳ ১,৮৫,০০০",
-      change: "-৮%",
-      changeType: "down" as const,
-      subtitle: "গত মাসের তুলনায়",
+      title: "Total Expenses",
+      value: "৳ 1,85,000",
+      change: "-8%",
+      changeType: "down",
+      subtitle: "vs last month",
       icon: TrendingDown,
-      iconBg: "bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/30",
-      iconColor: "text-white",
+      iconBg: "bg-orange-600/10 to-orange-500 shadow-amber-500/30",
+      iconColor: "text-amber-500",
     },
     {
-      title: "বকেয়া ফি",
-      value: "৳ ৩,২৫,০০০",
+      title: "Due Fees",
+      value: "৳ 3,25,000",
       icon: AlertCircle,
-      iconBg: "bg-gradient-to-br from-red-500 to-rose-600 shadow-red-500/30",
-      iconColor: "text-white",
-      subtitle: "৪৮ জন ছাত্র",
-      badge: "জরুরি",
+      iconBg: "bg-red-500/10 to-pink-500 shadow-red-500/30",
+      iconColor: "text-red-500",
+      subtitle: "48 students",
+      badge: "Urgent",
     },
     {
-      title: "নিট ব্যালেন্স",
-      value: "৳ ২,৪৫,০০০",
-      change: "+২২%",
-      changeType: "up" as const,
+      title: "Net Balance",
+      value: "৳ 2,45,000",
+      change: "+22%",
+      changeType: "up",
       icon: TrendingUp,
-      iconBg: "bg-gradient-to-br from-emerald-600 to-teal-700 shadow-emerald-600/30",
-      iconColor: "text-white",
-      subtitle: "মুনাফা",
+      iconBg: "bg-green-600/10 to-green-700 shadow-green-600/30",
+      iconColor: "text-green-600",
+      subtitle: "Profit",
     },
   ];
 
   const recentTransactions = [
     {
       id: 1,
-      date: "১৭ ফেব, ২০২৬",
-      time: "১০:৩০ AM",
-      name: "মোহাম্মদ রফিক",
-      type: "মাসিক ফি",
-      amount: "+ ৳ ৫,০০০",
-      status: "সম্পন্ন",
+      date: "17 Feb, 2026",
+      time: "10:30 AM",
+      name: "Mohammad Rafiq",
+      type: "Monthly Fee",
+      amount: "+ ৳ 5,000",
+      status: "Completed",
       statusColor: "emerald",
       icon: Receipt,
     },
     {
       id: 2,
-      date: "১৭ ফেব, ২০২৬",
-      time: "০৯:১৫ AM",
-      name: "জনাব আলম",
-      type: "বেতন",
-      amount: "- ৳ ১৫,০০০",
-      status: "প্রদত্ত",
+      date: "17 Feb, 2026",
+      time: "09:15 AM",
+      name: "Mr. Alam",
+      type: "Salary",
+      amount: "- ৳ 15,000",
+      status: "Paid",
       statusColor: "blue",
       icon: Wallet,
-    },
-    {
-      id: 3,
-      date: "১৬ ফেব, ২০২৬",
-      time: "০৩:৪৫ PM",
-      name: "বিদ্যুৎ বিল",
-      type: "খরচ",
-      amount: "- ৳ ৮,৫০০",
-      status: "পরিশোধিত",
-      statusColor: "orange",
-      icon: TrendingDown,
-    },
-    {
-      id: 4,
-      date: "১৬ ফেব, ২০২৬",
-      time: "০২:২০ PM",
-      name: "সাকিব হাসান",
-      type: "পরীক্ষার ফি",
-      amount: "+ ৳ ২,৫০০",
-      status: "সম্পন্ন",
-      statusColor: "emerald",
-      icon: Receipt,
-    },
-    {
-      id: 5,
-      date: "১৬ ফেব, ২০২৬",
-      time: "১১:০০ AM",
-      name: "রক্ষণাবেক্ষণ",
-      type: "খরচ",
-      amount: "- ৳ ১২,০০০",
-      status: "বিলম্বিত",
-      statusColor: "red",
-      icon: Clock,
     },
   ];
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* Page Header */}
+
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 via-emerald-900 to-teal-900 bg-clip-text text-transparent">
-            আর্থিক ড্যাশবোর্ড
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary via-blue-700 to-indigo-700 text-text-muted bg-clip-text text-transparent">
+            Financial Dashboard
           </h1>
-          <p className="text-sm text-slate-500 flex items-center gap-2">
+          <p className="text-sm text-text-muted flex items-center gap-2">
             <Calendar size={14} />
-            আজকের তারিখ: ১৭ ফেব্রুয়ারি, ২০২৬ • মঙ্গলবার
+            Today's Date: 17 February, 2026 • Tuesday
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 hover:border-emerald-200 transition-all duration-300 flex items-center gap-2 group">
-            <Filter size={18} className="group-hover:text-emerald-600 transition-colors" />
-            <span className="text-sm font-medium">ফিল্টার</span>
+          <button className="px-4 py-2.5 bg-bg-card border border-border-light text-text-secondary hover:bg-bg-page rounded-xl  transition-all duration-300 flex items-center gap-2">
+            <Filter size={18} />
+            <span className="text-sm font-medium">Filter</span>
           </button>
-          <button className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:shadow-lg hover:shadow-emerald-600/30 transition-all duration-300 flex items-center gap-2 group">
-            <Receipt size={18} className="group-hover:rotate-12 transition-transform" />
-            <span className="text-sm font-semibold">নতুন লেনদেন</span>
+
+          <button className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:shadow-blue-600/30 transition-all duration-300 flex items-center gap-2">
+            <Receipt size={18} />
+            <span className="text-sm font-semibold">New Transaction</span>
           </button>
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
           <StatCard key={index} {...stat} index={index} />
         ))}
       </div>
 
-      {/* Quick Stats Banner */}
+      {/* Quick Banner */}
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 p-6">
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 p-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { label: "মোট ছাত্র", value: "৩২০", icon: Users },
-              { label: "পেমেন্ট আপডেট", value: "২৭২", icon: CheckCircle2 },
-              { label: "আংশিক পেমেন্ট", value: "১৫", icon: Clock },
-              { label: "এই সপ্তাহ", value: "৮৯", icon: TrendingUp },
+              { label: "Total Students", value: "320", icon: Users },
+              { label: "Payments Updated", value: "272", icon: CheckCircle2 },
+              { label: "Partial Payments", value: "15", icon: Clock },
+              { label: "This Week", value: "89", icon: TrendingUp },
             ].map((item, idx) => (
-              <div
-                key={idx}
-                className="text-center space-y-2 animate-fadeInSlide"
-                style={{ animationDelay: `${idx * 100}ms` }}
-              >
+              <div key={idx} className="text-center space-y-2">
                 <div className="flex items-center justify-center gap-2">
                   <item.icon className="text-white/80" size={18} />
-                  <p className="text-xs text-white/80 font-medium uppercase tracking-wide">
-                    {item.label}
-                  </p>
+                  <p className="text-xs text-white/80 uppercase">{item.label}</p>
                 </div>
                 <p className="text-3xl font-bold text-white">{item.value}</p>
               </div>
@@ -293,164 +265,156 @@ export default function AccountantOverview() {
       </Card>
 
       {/* Recent Transactions */}
-      <Card>
-        <div className="p-6 border-b border-slate-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">সাম্প্রতিক লেনদেন</h3>
-              <p className="text-sm text-slate-500 mt-1">সর্বশেষ আর্থিক কার্যক্রম</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="খুঁজুন..."
-                  className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300"
-                />
-              </div>
-              <button className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
-                <Download className="text-slate-600" size={20} />
-              </button>
-            </div>
-          </div>
+<Card>
+  <div className="p-6 border-b border-border-light">
+    <div className="flex items-center justify-between">
+      <div>
+        <h3 className="text-lg font-bold text-text-primary">Recent Transactions</h3>
+        <p className="text-sm text-text-muted mt-1">Latest financial activities</p>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="relative">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            size={18}
+          />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="pl-10 pr-4 py-2 bg-bg-page border-border-light text-text-muted  border  rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
+          />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gradient-to-r from-slate-50 to-emerald-50/30">
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  তারিখ ও সময়
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  ব্যক্তি/প্রতিষ্ঠান
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  ধরন
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  পরিমাণ
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  স্ট্যাটাস
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  অ্যাকশন
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {recentTransactions.map((transaction, idx) => {
-                const Icon = transaction.icon;
-                return (
-                  <tr
-                    key={transaction.id}
-                    className="hover:bg-emerald-50/30 transition-all duration-300 group animate-fadeInSlide cursor-pointer"
-                    style={{ animationDelay: `${idx * 50}ms` }}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-900">
-                          {transaction.date}
-                        </span>
-                        <span className="text-xs text-slate-500 flex items-center gap-1">
-                          <Clock size={12} />
-                          {transaction.time}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-emerald-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <Icon className="text-emerald-600" size={18} />
-                        </div>
-                        <span className="text-sm font-semibold text-slate-800">
-                          {transaction.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-600">{transaction.type}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={cn(
-                          "text-sm font-bold",
-                          transaction.amount.startsWith("+")
-                            ? "text-emerald-600"
-                            : "text-red-600"
-                        )}
-                      >
-                        {transaction.amount}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={cn(
-                          "px-3 py-1.5 text-xs font-bold rounded-full",
-                          transaction.statusColor === "emerald" &&
-                          "bg-emerald-100 text-emerald-700 border border-emerald-200",
-                          transaction.statusColor === "blue" &&
-                          "bg-blue-100 text-blue-700 border border-blue-200",
-                          transaction.statusColor === "orange" &&
-                          "bg-orange-100 text-orange-700 border border-orange-200",
-                          transaction.statusColor === "red" &&
-                          "bg-red-100 text-red-700 border border-red-200"
-                        )}
-                      >
-                        {transaction.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-                        <MoreVertical className="text-slate-600" size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <button className="p-2 hover:bg-slate-50 hover:text-slate-500 rounded-xl transition-colors">
+          <Download className="" size={20} />
+        </button>
+      </div>
+    </div>
+  </div>
 
-        <div className="p-6 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
-              সর্বমোট <span className="font-bold text-slate-900">১২৮</span> টি লেনদেন
-            </p>
-            <button className="px-4 py-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-all duration-300">
-              সব দেখুন →
-            </button>
-          </div>
-        </div>
-      </Card>
+  <div className="overflow-x-auto">
+    <table className="w-full">
+      <thead>
+        <tr className="bg-bg-page text-text-muted">
+          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Date & Time
+          </th>
+          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Person / Organization
+          </th>
+          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Type
+          </th>
+          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Amount
+          </th>
+          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Status
+          </th>
+          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Action
+          </th>
+        </tr>
+      </thead>
 
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
+      <tbody className="divide-y divide-border-light">
+        {recentTransactions.map((transaction, idx) => {
+          const Icon = transaction.icon;
 
-        @keyframes fadeInSlide {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+          return (
+            <tr
+              key={transaction.id}
+              className="hover:bg-bg-page transition-all duration-300 group animate-fadeInSlide cursor-pointer"
+              style={{ animationDelay: `${idx * 50}ms` }}
+            >
+              <td className="px-6 py-4">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-text-primary">
+                    {transaction.date}
+                  </span>
+                  <span className="text-xs text-text-muted flex items-center gap-1">
+                    <Clock size={12} />
+                    {transaction.time}
+                  </span>
+                </div>
+              </td>
 
-        .animate-fadeIn {
-          animation: fadeIn 0.7s ease-out;
-        }
+              <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <Icon className="text-blue-600" size={18} />
+                  </div>
+                  <span className="text-sm font-medium text-text-primary ">
+                    {transaction.name}
+                  </span>
+                </div>
+              </td>
 
-        .animate-fadeInSlide {
-          animation: fadeInSlide 0.5s ease-out forwards;
-        }
-      `}</style>
+              <td className="px-6 py-4">
+                <span className="text-sm ">
+                  {transaction.type}
+                </span>
+              </td>
+
+              <td className="px-6 py-4">
+                <span
+                  className={cn(
+                    "text-sm font-bold",
+                    transaction.amount.startsWith("+")
+                      ? "text-emerald-600"
+                      : "text-red-600"
+                  )}
+                >
+                  {transaction.amount}
+                </span>
+              </td>
+
+              <td className="px-6 py-4">
+                <span
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-bold rounded-full",
+                    transaction.statusColor === "emerald" &&
+                      "bg-emerald-100 text-emerald-700 border border-emerald-200",
+                    transaction.statusColor === "blue" &&
+                      "bg-blue-100 text-blue-700 border border-blue-200",
+                    transaction.statusColor === "orange" &&
+                      "bg-orange-100 text-orange-700 border border-orange-200",
+                    transaction.statusColor === "red" &&
+                      "bg-red-100 text-red-700 border border-red-200"
+                  )}
+                >
+                  {transaction.status}
+                </span>
+              </td>
+
+              <td className="px-6 py-4">
+                <button className="p-2 bg-gray-500/10 rounded-lg transition-colors ">
+                  <MoreVertical className="" size={18} />
+                </button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+
+  <div className="p-6 border-t border-border-light border-border-light bg-bg-page
+text-text-secondary">
+    <div className="flex items-center justify-between">
+      <p className="text-sm ">
+        Total <span className="font-bold text-text-primary">128</span> transactions
+      </p>
+
+      <button className="px-4 py-2 text-sm font-semibold text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-300">
+        View All →
+      </button>
+    </div>
+  </div>
+</Card>
+
+    
     </div>
   );
 }
