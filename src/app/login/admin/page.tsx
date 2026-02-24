@@ -45,6 +45,34 @@ const AdminLoginPage = () => {
         }else {
             alert("Unauthorize access");
         }
+
+//use this in  a combinde login page. where not need to select role.
+// const { role } = useAuth();
+
+// if (role === "super_admin") {
+//   router.push("/dashboard/super-admin");
+// }
+
+// if (role === "admin") {
+//   router.push("/dashboard/admin");
+// }
+
+// if (role === "teacher") {
+//   router.push("/dashboard/teacher");
+// }
+
+// if (role === "student") {
+//   router.push("/dashboard/student");
+// }
+
+// if (role === "accountant") {
+//   router.push("/dashboard/accountant");
+// }
+
+// if (role === "parent") {
+//   router.push("/dashboard/parent");
+// }
+
     };
 
     return (
