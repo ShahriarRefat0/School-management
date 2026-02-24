@@ -1,0 +1,136 @@
+"use client"
+import React from 'react'
+import Link from 'next/link'
+import { 
+  CheckCircle2, Plus, Zap, Shield, Crown, 
+  Trash2, Users, UserRound, HardDrive, LayoutGrid, Edit, Hash 
+} from 'lucide-react'
+
+// Mock Data with specific IDs
+const plans = [
+  { 
+    id: "plan_9921", // নির্দিষ্ট আইডি
+    name: "Basic", 
+    price: "৳2,000", 
+    duration: "1 Month", 
+    icon: Zap, 
+    color: "text-blue-500", 
+    students: "200", 
+    teachers: "20", 
+    storage: "5GB",
+    modules: ["Attendance", "Basic Reports"] 
+  },
+  { 
+    id: "plan_4452", // নির্দিষ্ট আইডি
+    name: "Pro", 
+    price: "৳5,000", 
+    duration: "1 Month", 
+    icon: Shield, 
+    color: "text-purple-500", 
+    students: "1000", 
+    teachers: "100", 
+    storage: "50GB",
+    modules: ["Attendance", "Exams", "Finance", "SMS"] 
+  },
+]
+
+export default function PlansSetup() {
+  
+  // ডিলিট করার ফাংশন যেখানে ID পাস হবে
+  const handleDeletePlan = (id: string) => {
+    const confirmDelete = confirm(`Are you sure you want to delete plan ID: ${id}?`);
+    if (confirmDelete) {
+      console.log(`Deleting plan with ID: ${id}`);
+      // এখানে তোমার API কল হবে: axios.delete(`/api/plans/${id}`)
+      alert(`Plan ${id} deleted successfully!`);
+    }
+  };
+
+  return (
+    <div className="space-y-8  animate-fade-in-up">
+      {/* Header */}
+      <div className="flex border justify-between items-end">
+        <div>
+          <h2 className="text-3xl font-black text-[var(--color-text-primary)] tracking-tight">Subscription Plans</h2>
+          <p className="text-[var(--color-text-muted)] font-medium">Manage your SaaS packages by unique ID.</p>
+        </div>
+        <Link href="/dashboard/super-admin/plans/new" className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-blue-600/20 hover:scale-105 transition-all">
+          <Plus size={18} /> Create New Plan
+        </Link>
+      </div>
+
+      <div className="grid border grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {plans.map((plan) => (
+          <div key={plan.id} className="bg-[var(--color-bg-card)] rounded-3xl border border-[var(--color-border-light)] p-8 relative group hover:border-[var(--color-primary)] transition-all shadow-sm">
+            
+            {/* ID Badge & Action Icons */}
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex flex-col gap-1">
+                <div className={`p-3 rounded-2xl bg-[var(--color-bg-page)] w-fit`}>
+                  <plan.icon className={`h-8 w-8 ${plan.color}`} />
+                </div>
+                <div className="flex items-center gap-1 text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-tighter mt-2">
+                  <Hash size={10} /> {plan.id}
+                </div>
+              </div>
+
+              {/* এডিট এবং ডিলিট আইকন বাটন */}
+              <div className="flex gap-2">
+                <Link 
+                  href={`/dashboard/super-admin/plans/${plan.id}/edit`} 
+                  title="Edit Plan"
+                  className="p-2.5 bg-blue-500/10 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                >
+                  <Edit size={18} />
+                </Link>
+                <button 
+                  onClick={() => handleDeletePlan(plan.id)}
+                  title="Delete Plan"
+                  className="p-2.5 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+
+            <h3 className="text-2xl font-black text-[var(--color-text-primary)] mb-1">{plan.name}</h3>
+            <div className="flex items-baseline gap-1 mb-6">
+              <span className="text-3xl font-black text-[var(--color-text-primary)]">{plan.price}</span>
+              <span className="text-xs text-[var(--color-text-muted)] font-black uppercase tracking-widest">/ {plan.duration}</span>
+            </div>
+
+            {/* Limits Summary */}
+            <div className="grid grid-cols-3 gap-2 mb-8 border-y border-[var(--color-border-light)] py-4">
+               <div className="text-center">
+                  <Users size={18} className="mx-auto text-[var(--color-text-muted)] mb-1" />
+                  <p className="text-[11px] font-black text-[var(--color-text-primary)]">{plan.students} Std</p>
+               </div>
+               <div className="text-center border-x border-[var(--color-border-light)]">
+                  <UserRound size={18} className="mx-auto text-[var(--color-text-muted)] mb-1" />
+                  <p className="text-[11px] font-black text-[var(--color-text-primary)]">{plan.teachers} Teach</p>
+               </div>
+               <div className="text-center">
+                  <HardDrive size={18} className="mx-auto text-[var(--color-text-muted)] mb-1" />
+                  <p className="text-[11px] font-black text-[var(--color-text-primary)]">{plan.storage}</p>
+               </div>
+            </div>
+            
+            {/* Modules */}
+            <div className="space-y-3">
+              <p className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest flex items-center gap-2">
+                <LayoutGrid size={12} /> Modules Included
+              </p>
+              <ul className="grid grid-cols-1 gap-2">
+                {plan.modules.map((mod, i) => (
+                  <li key={i} className="flex items-center gap-2 text-xs font-bold text-[var(--color-text-secondary)]">
+                    <CheckCircle2 size={14} className="text-green-500" /> {mod}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
