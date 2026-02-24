@@ -1,5 +1,5 @@
-"use client";
 import React from 'react';
+import Link from 'next/link';
 import {
   BookOpen,
   UserCheck,
@@ -213,7 +213,7 @@ export default function TeacherOverview() {
 
         {/* Sidebar Cards for Dashboard */}
         <div className="space-y-8">
-        
+
           <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
               <UserCheck size={80} />
@@ -224,9 +224,24 @@ export default function TeacherOverview() {
             <p className="text-indigo-100/80 text-sm mb-6 leading-relaxed">
               You have 2 classes attendance pending today. Please complete them on time.
             </p>
-            <button className="w-full py-3 bg-white text-indigo-700 rounded-xl font-bold text-sm shadow-lg hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2 active:scale-95 duration-200">
+            <Link href="/dashboard/teacher/attendance" className="w-full py-3 bg-white text-indigo-700 rounded-xl font-bold text-sm shadow-lg hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2 active:scale-95 duration-200">
               Record Now <ArrowRight size={16} />
-            </button>
+            </Link>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-600 to-violet-700 rounded-3xl p-6 text-white shadow-xl shadow-purple-600/20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <GraduationCap size={80} />
+            </div>
+            <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+              <GraduationCap size={20} /> Result Entry
+            </h3>
+            <p className="text-purple-100/80 text-sm mb-6 leading-relaxed">
+              Term exam results for Class X are pending. Start entering marks now.
+            </p>
+            <Link href="/dashboard/teacher/results" className="w-full py-3 bg-white text-purple-700 rounded-xl font-bold text-sm shadow-lg hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 active:scale-95 duration-200">
+              Enter Marks <ArrowRight size={16} />
+            </Link>
           </div>
 
           {/* Notices Section */}
