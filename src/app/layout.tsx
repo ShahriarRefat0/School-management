@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter } from 'next/font/google'; // ১. ইমপোর্ট চেক করো
 import './globals.css';
 import SmoothScroll from '@/components/ui/SmoothScroll';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import Herobackground from '@/components/heroSection/Herobackground';
 
-const inter = Inter({ subsets: ['latin'] });
+// ২. ইন্টার ফন্টটি কম্পোনেন্টের বাইরে এভাবে ডিফাইন করো
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap', // এটি পারফরম্যান্সের জন্য ভালো
+});
 
 export const metadata: Metadata = {
   title: 'Schoology BD | Smart School Management Platform',
@@ -40,13 +44,15 @@ export default function RootLayout({
           }}
         />
       </head>
+      {/* ৩. এখানে className={`${inter.className}`} ব্যবহার করো */}
       <body
-        className={`${inter.className} antialiased flex flex-col min-h-screen`}
+        className={`${inter.className} antialiased flex flex-col min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]`}
       >
         <ThemeProvider>
           <Herobackground />
           <SmoothScroll>
-            <main className="flex-grow bg-bg-page transition-colors duration-300">
+            {/* ৪. bg-[var(--color-bg-page)] ব্যবহার করো যাতে ডার্ক মোডে সাদা না দেখায় */}
+            <main className="flex-grow bg-[var(--color-bg-page)] transition-colors duration-300">
               {children}
             </main>
           </SmoothScroll>
