@@ -45,7 +45,7 @@ const Navbar = () => {
             <ThemeToggle />
 
 
-            <a
+            <Link
               href="/login"
               className="hidden sm:block text-primary font-bold hover:text-primary-hover px-4 py-2 transition-colors">
 

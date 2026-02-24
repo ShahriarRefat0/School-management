@@ -12,18 +12,44 @@ import {
 import Navbar from "@/components/shared/navbar/Navbar";
 import Footer from "@/components/shared/footer/Footer";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/lib/supabase/client";
+
 
 const RegisterAdmin = () => {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
+    const [fullName, setFullName] = useState("")
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+const [loading, setLoading] = useState(false)
 
     const handleNext = () => setStep(prev => prev + 1);
     const handleBack = () => setStep(prev => prev - 1);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setStep(3); // Success step
+        setLoading(true);
+        
+        const {error} = await supabase.auth.signUp({
+            email,
+            password,
+            options:{
+                data: {
+                    full_nae: fullName,
+                    role: "admin",
+                },
+            },
+        });
+
+        setLoading(false)
+
+        if(error) {
+            alert(error.message);
+            return;
+        }
+
+         setStep(3); // Success step
     };
 
     return (
@@ -146,6 +172,8 @@ const RegisterAdmin = () => {
                                                 </div>
                                                 <input
                                                     type="text"
+                                                    value={fullName}
+                                                    onChange={(e) => setFullName(e.target.value)}
                                                     placeholder="Your professional name"
                                                     className="w-full h-14 pl-14 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-text-primary"
                                                     required
@@ -161,6 +189,8 @@ const RegisterAdmin = () => {
                                                 </div>
                                                 <input
                                                     type="email"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
                                                     placeholder="admin@school.com"
                                                     className="w-full h-14 pl-14 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-text-primary"
                                                     required
@@ -176,6 +206,8 @@ const RegisterAdmin = () => {
                                                 </div>
                                                 <input
                                                     type={showPassword ? "text" : "password"}
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
                                                     placeholder="••••••••"
                                                     className="w-full h-14 pl-14 pr-14 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-text-primary"
                                                     required

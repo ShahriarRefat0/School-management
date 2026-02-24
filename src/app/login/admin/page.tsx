@@ -12,16 +12,39 @@ import {
 import Navbar from "@/components/shared/navbar/Navbar";
 import Footer from "@/components/shared/footer/Footer";
 import { motion } from "framer-motion";
+import { supabase } from '@/lib/supabase/client';
 
 const AdminLoginPage = () => {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        router.push('/dashboard/admin');
+        setLoading(true);
+        const {data, error} = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+        setLoading(false);
+        if(error){
+            alert(error.message);
+            return;
+        }
+
+        const role = data.user?.user_metadata?.role;
+     
+        //role base redirect
+        if (role === 'admin') {
+            router.push('/dashboard/principal');
+        }else if(role === 'pending_admin'){
+            alert("Your account is under review process. Please wait or try again later.")
+        }else {
+            alert("Unauthorize access");
+        }
     };
 
     return (
