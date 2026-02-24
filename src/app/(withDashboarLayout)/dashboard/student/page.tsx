@@ -27,7 +27,7 @@ const recentActivities = [
 
 export default function StudentDashboardPage() {
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8">
             {/* Welcome Section */}
             <div className="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-10 text-white shadow-2xl relative overflow-hidden">
                 <div className="relative z-10">
