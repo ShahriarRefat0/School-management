@@ -57,36 +57,28 @@ const StatCard = ({
   index,
 }: any) => (
   <Card
-    className="group relative overflow-hidden p-6 rounded-3xl border border-border-light shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500"
-    style={{ animationDelay: `${index * 100}ms` }}
+    className="relative p-6 rounded-2xl border border-border-light shadow-sm hover:shadow-md transition-all duration-200"
   >
-    {/* Background glow circle */}
-    <div
-      className={cn(
-        "absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:opacity-20 transition-opacity bg-gradient-to-br",
-        iconBg
-      )}
-    ></div>
 
     <div className="flex flex-col gap-4 relative z-10">
       {/* Icon */}
       <div
         className={cn(
-          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3",
+          "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
           iconBg
         )}
       >
-        <Icon className={iconColor} size={24} />
+        <Icon className={iconColor} size={20} />
       </div>
 
       {/* Content */}
       <div>
-        <p className="text-sm font-semibold text-text-muted uppercase tracking-wider">
+        <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
           {title}
         </p>
 
         <div className="flex items-baseline gap-2 mt-1">
-          <h3 className="text-2xl font-black text-text-primary">{value}</h3>
+          <h3 className="text-2xl font-bold text-text-primary">{value}</h3>
 
           {change && (
             <span
@@ -110,9 +102,8 @@ const StatCard = ({
         )}
       </div>
 
-      {/* Badge */}
       {badge && (
-        <span className="absolute top-0 right-0 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200 animate-pulse">
+        <span className="absolute top-4 right-4 text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
           {badge}
         </span>
       )}
@@ -213,8 +204,8 @@ export default function AccountantOverview() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-text-primary via-blue-700 to-indigo-700 text-text-muted bg-clip-text text-transparent">
-            Financial Dashboard
+          <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+            Financial Overview
           </h1>
           <p className="text-sm text-text-muted flex items-center gap-2">
             <Calendar size={14} />
@@ -265,156 +256,156 @@ export default function AccountantOverview() {
       </Card>
 
       {/* Recent Transactions */}
-<Card>
-  <div className="p-6 border-b border-border-light">
-    <div className="flex items-center justify-between">
-      <div>
-        <h3 className="text-lg font-bold text-text-primary">Recent Transactions</h3>
-        <p className="text-sm text-text-muted mt-1">Latest financial activities</p>
-      </div>
+      <Card>
+        <div className="p-6 border-b border-border-light">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-text-primary">Recent Transactions</h3>
+              <p className="text-sm text-text-muted mt-1">Latest financial activities</p>
+            </div>
 
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            size={18}
-          />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="pl-10 pr-4 py-2 bg-bg-page border-border-light text-text-muted  border  rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
-          />
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="pl-10 pr-4 py-2 bg-bg-page border-border-light text-text-muted  border  rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
+                />
+              </div>
+
+              <button className="p-2 hover:bg-slate-50 hover:text-slate-500 rounded-xl transition-colors">
+                <Download className="" size={20} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <button className="p-2 hover:bg-slate-50 hover:text-slate-500 rounded-xl transition-colors">
-          <Download className="" size={20} />
-        </button>
-      </div>
-    </div>
-  </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-bg-page text-text-muted">
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Date & Time
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Person / Organization
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Amount
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Action
+                </th>
+              </tr>
+            </thead>
 
-  <div className="overflow-x-auto">
-    <table className="w-full">
-      <thead>
-        <tr className="bg-bg-page text-text-muted">
-          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Date & Time
-          </th>
-          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Person / Organization
-          </th>
-          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Type
-          </th>
-          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Amount
-          </th>
-          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Status
-          </th>
-          <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Action
-          </th>
-        </tr>
-      </thead>
+            <tbody className="divide-y divide-border-light">
+              {recentTransactions.map((transaction, idx) => {
+                const Icon = transaction.icon;
 
-      <tbody className="divide-y divide-border-light">
-        {recentTransactions.map((transaction, idx) => {
-          const Icon = transaction.icon;
+                return (
+                  <tr
+                    key={transaction.id}
+                    className="hover:bg-bg-page transition-all duration-300 group animate-fadeInSlide cursor-pointer"
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-text-primary">
+                          {transaction.date}
+                        </span>
+                        <span className="text-xs text-text-muted flex items-center gap-1">
+                          <Clock size={12} />
+                          {transaction.time}
+                        </span>
+                      </div>
+                    </td>
 
-          return (
-            <tr
-              key={transaction.id}
-              className="hover:bg-bg-page transition-all duration-300 group animate-fadeInSlide cursor-pointer"
-              style={{ animationDelay: `${idx * 50}ms` }}
-            >
-              <td className="px-6 py-4">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-text-primary">
-                    {transaction.date}
-                  </span>
-                  <span className="text-xs text-text-muted flex items-center gap-1">
-                    <Clock size={12} />
-                    {transaction.time}
-                  </span>
-                </div>
-              </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <Icon className="text-blue-600" size={18} />
+                        </div>
+                        <span className="text-sm font-medium text-text-primary ">
+                          {transaction.name}
+                        </span>
+                      </div>
+                    </td>
 
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="text-blue-600" size={18} />
-                  </div>
-                  <span className="text-sm font-medium text-text-primary ">
-                    {transaction.name}
-                  </span>
-                </div>
-              </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm ">
+                        {transaction.type}
+                      </span>
+                    </td>
 
-              <td className="px-6 py-4">
-                <span className="text-sm ">
-                  {transaction.type}
-                </span>
-              </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={cn(
+                          "text-sm font-bold",
+                          transaction.amount.startsWith("+")
+                            ? "text-emerald-600"
+                            : "text-red-600"
+                        )}
+                      >
+                        {transaction.amount}
+                      </span>
+                    </td>
 
-              <td className="px-6 py-4">
-                <span
-                  className={cn(
-                    "text-sm font-bold",
-                    transaction.amount.startsWith("+")
-                      ? "text-emerald-600"
-                      : "text-red-600"
-                  )}
-                >
-                  {transaction.amount}
-                </span>
-              </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={cn(
+                          "px-3 py-1.5 text-xs font-bold rounded-full",
+                          transaction.statusColor === "emerald" &&
+                          "bg-emerald-100 text-emerald-700 border border-emerald-200",
+                          transaction.statusColor === "blue" &&
+                          "bg-blue-100 text-blue-700 border border-blue-200",
+                          transaction.statusColor === "orange" &&
+                          "bg-orange-100 text-orange-700 border border-orange-200",
+                          transaction.statusColor === "red" &&
+                          "bg-red-100 text-red-700 border border-red-200"
+                        )}
+                      >
+                        {transaction.status}
+                      </span>
+                    </td>
 
-              <td className="px-6 py-4">
-                <span
-                  className={cn(
-                    "px-3 py-1.5 text-xs font-bold rounded-full",
-                    transaction.statusColor === "emerald" &&
-                      "bg-emerald-100 text-emerald-700 border border-emerald-200",
-                    transaction.statusColor === "blue" &&
-                      "bg-blue-100 text-blue-700 border border-blue-200",
-                    transaction.statusColor === "orange" &&
-                      "bg-orange-100 text-orange-700 border border-orange-200",
-                    transaction.statusColor === "red" &&
-                      "bg-red-100 text-red-700 border border-red-200"
-                  )}
-                >
-                  {transaction.status}
-                </span>
-              </td>
+                    <td className="px-6 py-4">
+                      <button className="p-2 bg-gray-500/10 rounded-lg transition-colors ">
+                        <MoreVertical className="" size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
-              <td className="px-6 py-4">
-                <button className="p-2 bg-gray-500/10 rounded-lg transition-colors ">
-                  <MoreVertical className="" size={18} />
-                </button>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  </div>
-
-  <div className="p-6 border-t border-border-light border-border-light bg-bg-page
+        <div className="p-6 border-t border-border-light border-border-light bg-bg-page
 text-text-secondary">
-    <div className="flex items-center justify-between">
-      <p className="text-sm ">
-        Total <span className="font-bold text-text-primary">128</span> transactions
-      </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm ">
+              Total <span className="font-bold text-text-primary">128</span> transactions
+            </p>
 
-      <button className="px-4 py-2 text-sm font-semibold text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-300">
-        View All →
-      </button>
-    </div>
-  </div>
-</Card>
+            <button className="px-4 py-2 text-sm font-semibold text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-300">
+              View All →
+            </button>
+          </div>
+        </div>
+      </Card>
 
-    
+
     </div>
   );
 }

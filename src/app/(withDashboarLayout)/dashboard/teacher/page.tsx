@@ -114,8 +114,8 @@ export default function TeacherOverview() {
       {/* Welcome Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
-            Welcome, <span className="text-primary italic">Abu Raihan</span>! 👋
+          <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+            Welcome, <span className="text-slate-900 dark:text-blue-400">Abu Raihan</span>! 👋
           </h1>
           <p className="text-text-muted mt-2 font-medium">
             Check your class schedule and updates for today.
@@ -134,18 +134,17 @@ export default function TeacherOverview() {
         {stats.map((stat, idx) => (
           <div
             key={idx}
-            className="group bg-bg-card p-6 rounded-3xl border border-border-light shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500 relative overflow-hidden"
+            className="bg-bg-card p-6 rounded-2xl border border-border-light shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <div className={cn("absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 group-hover:opacity-20 transition-opacity bg-gradient-to-br", stat.color)}></div>
-            <div className="flex flex-col gap-4 relative z-10">
-              <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3", stat.lightColor)}>
-                <stat.icon className={stat.textColor} size={24} />
+            <div className="flex flex-col gap-4">
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", stat.lightColor)}>
+                <stat.icon className={stat.textColor} size={20} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-text-muted uppercase tracking-wider">{stat.title}</p>
+                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{stat.title}</p>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <h3 className="text-2xl font-black text-text-primary">{stat.value}</h3>
-                  <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-0.5">
+                  <h3 className="text-2xl font-bold text-text-primary">{stat.value}</h3>
+                  <span className={cn("text-[10px] font-bold flex items-center gap-0.5", stat.textColor)}>
                     <TrendingUp size={10} /> {stat.subValue}
                   </span>
                 </div>

@@ -24,24 +24,29 @@ import {
   Cell,
 } from 'recharts';
 
+const cn = (...classes: (string | boolean | undefined)[]) => {
+  return classes.filter(Boolean).join(" ");
+};
+
 /* ---------------- KPI Card ---------------- */
-const StatCard = ({ title, value, desc, icon: Icon }: any) => (
-  <div className="bg-bg-card p-6 rounded-xl border border-border-light">
+const StatCard = ({ title, value, desc, icon: Icon, colorClass = "bg-blue-50 text-blue-600" }: any) => (
+  <div className="bg-bg-card p-6 rounded-xl border border-border-light shadow-sm">
     <div className="flex items-center justify-between mb-4">
-      <Icon className="text-primary" />
-      <TrendingUp className="text-emerald-400" size={16} />
+      <div className={cn("p-2 rounded-lg", colorClass)}>
+        <Icon size={20} />
+      </div>
     </div>
-    <h3 className="text-sm text-text-muted">{title}</h3>
-    <p className="text-2xl font-bold text-text-primary">{value}</p>
+    <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{title}</h3>
+    <p className="text-2xl font-bold text-text-primary mt-1">{value}</p>
     <p className="text-xs text-text-muted mt-1">{desc}</p>
   </div>
 );
 
 /* ---------------- Page ---------------- */
 export default function PrincipalDashboard() {
-const {loading} = useRoleGuard("school_admin")
+  const { loading } = useRoleGuard("school_admin")
 
-if(loading) return <p>Loading.......</p>
+  if (loading) return <p>Loading.......</p>
 
   /* KPI Data */
   const stats = [
@@ -50,24 +55,28 @@ if(loading) return <p>Loading.......</p>
       value: '82.4%',
       desc: 'Up 3.1% from last quarter',
       icon: TrendingUp,
+      colorClass: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
     },
     {
       title: 'Teacher Engagement Score',
       value: '91 / 100',
       desc: 'Highest this academic year',
       icon: Users,
+      colorClass: "bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"
     },
     {
       title: 'Average Attendance Rate',
       value: '94.2%',
       desc: 'Stable over 4 weeks',
       icon: CalendarCheck,
+      colorClass: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
     },
     {
       title: 'Revenue vs Target',
       value: '87%',
       desc: '৳2.1L pending collection',
       icon: CreditCard,
+      colorClass: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
     },
   ];
 
@@ -117,13 +126,13 @@ if(loading) return <p>Loading.......</p>
   ];
 
   return (
-    <div className="space-y-8 p-6 bg-bg-page min-h-screen">
+    <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-text-primary">
-          Principal Dashboard
+        <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+          Principal Overview
         </h1>
-        <p className="text-sm text-text-muted">
+        <p className="text-sm text-text-muted mt-1">
           School performance overview & insights
         </p>
       </div>

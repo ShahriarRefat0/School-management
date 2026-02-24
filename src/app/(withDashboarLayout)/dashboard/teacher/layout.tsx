@@ -1,51 +1,28 @@
 "use client"
 
-import React, { useState } from "react"
-import { TeacherSidebar } from "./teacher-sidebar"
-import { TeacherHeader } from "./TeacherHeader"
+import React from "react"
+import DashboardLayout from "@/components/shared/dashboard/DashboardLayout"
+import { teacherMenuItems } from "@/components/shared/dashboard/menu-items"
 
 export default function TeacherDashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
-
   return (
-    <div className="min-h-screen bg-bg-page transition-colors duration-300">
-
-      {/* Desktop Sidebar (Always Visible) */}
-      <div className="hidden md:block fixed inset-y-0 left-0 z-50 w-64 border-r border-sidebar-border">
-        <TeacherSidebar />
-      </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm md:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
-
-      {/* Mobile Sidebar (Slide-in) */}
-      <div className={`
-                fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out md:hidden
-                ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
-            `}>
-        <TeacherSidebar onLinkClick={() => setIsMobileOpen(false)} />
-      </div>
-
-      {/* Main Content Area - pushed by sidebar width on desktop */}
-      <div className="md:pl-64 flex flex-col min-h-screen transition-all duration-300">
-        <TeacherHeader
-          title="Teacher Dashboard"
-          onMenuClick={() => setIsMobileOpen(true)}
-        />
-
-        <main className="p-4 md:p-6 lg:p-8">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardLayout
+      title="Teacher Dashboard"
+      menuItems={teacherMenuItems}
+      activeColor="bg-indigo-600"
+      user={{
+        name: "Sarah Johnson",
+        role: "Senior Teacher",
+        initials: "SJ",
+        subText: "Science Department"
+      }}
+    >
+      {children}
+    </DashboardLayout>
   )
 }
+

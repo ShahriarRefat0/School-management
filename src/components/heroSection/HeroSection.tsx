@@ -63,10 +63,10 @@ const HeroSection = () => {
               </Link>
 
               <Link
-                href="#demo"
+                href="/live-demo"
                 className="px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-wider text-text-primary border border-border-light bg-bg-card hover:bg-bg-page transition-all inline-flex items-center gap-2 shadow-sm"
               >
-                <PlayCircle size={16} /> Watch Demo
+                <PlayCircle size={16} /> Live Demo
               </Link>
             </motion.div>
 

@@ -30,7 +30,7 @@ const AllLogin = () => {
       icon: <Settings />,
       type: 'standard',
       color: 'emerald',
-      link: '/dashboard/admin'
+      link: '/dashboard/principal'
     },
     {
       title: "Super Admin",
@@ -38,7 +38,7 @@ const AllLogin = () => {
       icon: <ShieldCheck />,
       type: 'special',
       color: 'rose',
-      link: '/dashboard/superAdmin'
+      link: '/dashboard/super-admin'
     },
     {
       title: "Parent Portal",
