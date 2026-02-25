@@ -103,8 +103,8 @@ export default function StudentProfile({ student, onBack }: StudentProfileProps)
                                 <div key={idx} className="flex items-center justify-between p-3 bg-bg-page rounded-xl border border-border-light/50">
                                     <span className="text-sm font-bold text-text-secondary">{item.date}</span>
                                     <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${item.status === 'present' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' :
-                                            item.status === 'late' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
-                                                'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                                        item.status === 'late' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
+                                            'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
                                         }`}>
                                         {item.status}
                                     </span>
@@ -178,7 +178,9 @@ export default function StudentProfile({ student, onBack }: StudentProfileProps)
                                 </div>
                             ))}
                         </div>
-                        <button className="w-full mt-8 py-3 bg-primary/5 hover:bg-primary/10 text-primary rounded-xl text-xs font-bold transition-all">Add New Feedback</button>
+                        <div className="mt-8 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                            <p className="text-[10px] font-bold text-primary uppercase tracking-widest text-center italic">Personal information is read-only.</p>
+                        </div>
                     </div>
                 </div>
             </div>
