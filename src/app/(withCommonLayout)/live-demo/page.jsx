@@ -3,8 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { GraduationCap, BookOpen, Settings, ShieldCheck, Users, Wallet, ArrowRight, MousePointerClick } from 'lucide-react';
-import Navbar from "@/components/shared/navbar/Navbar";
-import Footer from "@/components/shared/footer/Footer";
+
+
 
 const AllLogin = () => {
   const loginOptions = [
@@ -60,7 +60,7 @@ const AllLogin = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+     
 
       <main className="flex-grow relative overflow-hidden bg-bg-page pt-32 pb-20 px-6">
         {/* Abstract Background Shapes */}
@@ -146,8 +146,6 @@ const AllLogin = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
