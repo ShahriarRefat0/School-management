@@ -10,7 +10,7 @@ const subscriptions = [
 
 export default function SubscriptionsList() {
   return (
-    <div className="space-y-6 border  animate-fade-in-up">
+    <div className="space-y-6   animate-fade-in-up">
       <h2 className="text-3xl font-black text-[var(--color-text-primary)]">Subscriptions & Deadlines</h2>
 
       <div className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border-light)] overflow-hidden shadow-sm">

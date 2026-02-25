@@ -11,12 +11,12 @@ const tickets = [
 export default function SupportTickets() {
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div className="flex justify-between items-center">
+      <div className="">
         <div>
           <h2 className="text-3xl font-black text-[var(--color-text-primary)]">Support Help-Desk</h2>
-          <p className="text-[var(--color-text-muted)] font-medium">Respond to tenant inquiries and technical issues.</p>
+          <p className="text-[var(--color-text-muted)] mt-4 font-medium">Respond to tenant inquiries and technical issues.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-4">
            <div className="bg-orange-500/10 text-orange-600 px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 tracking-tighter">
              <AlertTriangle size={14} /> 2 Open Tickets
            </div>
