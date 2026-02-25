@@ -29,7 +29,7 @@ export default function SchoolsList() {
   return (
     <div className="space-y-6 animate-fade-in-up pb-20">
       {/* হেডার */}
-      <div className="flex border flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex  flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-3xl font-black text-[var(--color-text-primary)] tracking-tight">School Management</h2>
           <p className="text-[var(--color-text-muted)] font-medium">Manage all tenants and subscriptions.</p>

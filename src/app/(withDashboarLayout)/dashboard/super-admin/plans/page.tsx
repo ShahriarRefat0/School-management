@@ -49,17 +49,19 @@ export default function PlansSetup() {
   return (
     <div className="space-y-8  animate-fade-in-up">
       {/* Header */}
-      <div className="flex border justify-between items-end">
-        <div>
-          <h2 className="text-3xl font-black text-[var(--color-text-primary)] tracking-tight">Subscription Plans</h2>
-          <p className="text-[var(--color-text-muted)] font-medium">Manage your SaaS packages by unique ID.</p>
+      <div className="">
+        <div className=''>
+          <h2 className="text-3xl py-3 font-black text-[var(--color-text-primary)] tracking-tight">Subscription Plans</h2>
+          <p className="text-[var(--color-text-muted)] mt-2 font-medium">Manage your SaaS packages by unique ID.</p>
         </div>
-        <Link href="/dashboard/super-admin/plans/new" className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-blue-600/20 hover:scale-105 transition-all">
+
+
+        <Link href="/dashboard/super-admin/plans/new" className="flex mt-3 items-center gap-2 bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-blue-600/20 hover:scale-105 transition-all">
           <Plus size={18} /> Create New Plan
         </Link>
       </div>
 
-      <div className="grid border grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {plans.map((plan) => (
           <div key={plan.id} className="bg-[var(--color-bg-card)] rounded-3xl border border-[var(--color-border-light)] p-8 relative group hover:border-[var(--color-primary)] transition-all shadow-sm">
             
