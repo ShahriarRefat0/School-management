@@ -130,11 +130,10 @@ export default function ReportsPage() {
                     {r.date}
                   </td>
                   <td
-                    className={`py-4 font-medium ${
-                      r.status === "Approved"
+                    className={`py-4 font-medium ${r.status === "Approved"
                         ? "text-green-600 dark:text-green-400"
                         : "text-yellow-600 dark:text-yellow-400"
-                    }`}
+                      }`}
                   >
                     {r.status}
                   </td>

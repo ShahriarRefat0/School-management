@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import { TeacherHeader } from "../TeacherHeader";
 import {
     MessageSquare,
     Search,
@@ -8,10 +9,12 @@ import {
     Star,
     BookOpen,
     Filter,
-    CheckCircle2
+    CheckCircle2,
+    Users
 } from 'lucide-react';
 
-export default function StudentsFeedbackPage() {
+
+export default function FeedbackPage() {
     const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
 
     const students = [
@@ -23,26 +26,26 @@ export default function StudentsFeedbackPage() {
 
     return (
         <div className="space-y-8 animate-fadeIn">
-            <div>
-                <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
-                    Students <span className="text-primary italic">Feedback</span> 💬
-                </h1>
-                <p className="text-text-muted mt-2 font-medium">
-                    Provide behavioral and academic feedback to your students.
-                </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Student List Sidebar */}
-                <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 space-y-6 lg:h-[70vh] flex flex-col">
+            <TeacherHeader
+                title="Student"
+                highlight="Feedback"
+                emoji="💬"
+                subtitle="Review and respond to parent concerns and student feedback."
+                rightElement={
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
                         <input
                             type="text"
-                            placeholder="Search students..."
-                            className="pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full"
+                            placeholder="Filter by student..."
+                            className="pl-10 pr-4 py-2 bg-bg-card border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full md:w-64"
                         />
                     </div>
+                }
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Student List Sidebar */}
+                <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 space-y-6 lg:h-[70vh] flex flex-col">
 
                     <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
                         {students.map((student) => (
@@ -50,8 +53,8 @@ export default function StudentsFeedbackPage() {
                                 key={student.id}
                                 onClick={() => setSelectedStudent(student.id)}
                                 className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${selectedStudent === student.id
-                                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                        : 'bg-bg-page/50 text-text-secondary hover:bg-bg-page'
+                                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                    : 'bg-bg-page/50 text-text-secondary hover:bg-bg-page'
                                     }`}
                             >
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${selectedStudent === student.id ? 'bg-white/20' : 'bg-primary/10 text-primary'
@@ -91,64 +94,86 @@ export default function StudentsFeedbackPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-bold text-text-secondary mb-3 uppercase tracking-wider flex items-center gap-2">
-                                        <Star size={16} className="text-amber-500" /> Academic Performance
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <Star size={14} className="text-amber-500" /> Academic
                                     </label>
-                                    <div className="flex gap-2">
+                                    <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <button key={s} className="p-2 bg-bg-page hover:bg-amber-50 text-amber-500 rounded-lg transition-colors border border-border-light">
-                                                <Star size={20} fill={s <= 4 ? "currentColor" : "none"} />
+                                            <button key={s} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${s <= 4 ? "text-amber-500 bg-amber-500/5 shadow-inner" : "text-text-muted hover:bg-bg-card"}`}>
+                                                <Star size={18} fill={s <= 4 ? "currentColor" : "none"} />
                                             </button>
                                         ))}
                                     </div>
+                                    <p className="text-[9px] font-bold text-text-muted uppercase text-center tracking-tighter">Excellent Progress</p>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-text-secondary mb-3 uppercase tracking-wider flex items-center gap-2">
-                                        <CheckCircle2 size={16} className="text-emerald-500" /> Behavior Rating
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <CheckCircle2 size={14} className="text-emerald-500" /> Behavior
                                     </label>
-                                    <div className="flex gap-2">
+                                    <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <button key={s} className="p-2 bg-bg-page hover:bg-emerald-50 text-emerald-500 rounded-lg transition-colors border border-border-light">
-                                                <Star size={20} fill={s <= 3 ? "currentColor" : "none"} />
+                                            <button key={s} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${s <= 3 ? "text-emerald-500 bg-emerald-500/5 shadow-inner" : "text-text-muted hover:bg-bg-card"}`}>
+                                                <Star size={18} fill={s <= 3 ? "currentColor" : "none"} />
                                             </button>
                                         ))}
                                     </div>
+                                    <p className="text-[9px] font-bold text-text-muted uppercase text-center tracking-tighter">Needs Attention</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <Users size={14} className="text-indigo-500" /> Participation
+                                    </label>
+                                    <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
+                                        {[1, 2, 3, 4, 5].map((s) => (
+                                            <button key={s} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${s <= 5 ? "text-indigo-500 bg-indigo-500/5 shadow-inner" : "text-text-muted hover:bg-bg-card"}`}>
+                                                <Star size={18} fill={s <= 5 ? "currentColor" : "none"} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-[9px] font-bold text-text-muted uppercase text-center tracking-tighter">Very Engaged</p>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <label className="block text-sm font-bold text-text-secondary uppercase tracking-wider flex items-center gap-2">
-                                    <MessageSquare size={16} className="text-primary" /> Personalized Comments
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 px-1">
+                                    <MessageSquare size={14} className="text-primary" /> Personalized Comments
                                 </label>
                                 <textarea
-                                    className="w-full bg-bg-page border border-border-light rounded-2xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[150px] resize-none"
-                                    placeholder="Write your feedback here... e.g. Great improvement in math, but needs to focus on daily attendance."
+                                    className="w-full bg-bg-page border-2 border-border-light rounded-[2rem] p-6 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary min-h-[180px] resize-none shadow-inner transition-all"
+                                    placeholder="Provide detailed feedback for the student and parents..."
                                 ></textarea>
                             </div>
 
-                            <div className="flex items-center justify-between pt-4">
-                                <div className="flex items-center gap-2 text-text-muted text-xs font-medium">
-                                    <BookOpen size={14} />
-                                    Feedback will be visible to parents and student.
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-border-light/50">
+                                <div className="flex items-center gap-3 text-text-muted text-[10px] font-black uppercase tracking-widest bg-bg-page px-6 py-3 rounded-full border border-border-light/50">
+                                    <BookOpen size={14} className="text-primary/60" />
+                                    Transparency: Visible to Parents
                                 </div>
                                 <button
-                                    className="bg-primary text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95 flex items-center gap-2"
+                                    className="w-full sm:w-auto bg-primary text-white px-10 py-4.5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-primary/30 hover:bg-primary-dark hover:scale-105 transition-all active:scale-95 flex items-center justify-center gap-3"
                                 >
-                                    <Send size={18} /> Send Feedback
+                                    <Send size={18} /> Submit Evaluation
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-bg-page/30 border-2 border-dashed border-border-light rounded-3xl h-[60vh] flex flex-col items-center justify-center text-center p-8">
-                            <div className="w-20 h-20 bg-bg-card rounded-2xl flex items-center justify-center text-text-muted mb-6 shadow-sm">
-                                <User size={40} />
+                        <div className="bg-bg-page/10 border-4 border-dashed border-border-light/40 rounded-[3rem] min-h-[400px] lg:h-full flex flex-col items-center justify-center text-center p-8 md:p-12 group transition-all hover:bg-bg-page/20">
+                            <div className="w-20 h-20 md:w-24 md:h-24 bg-bg-card rounded-[2rem] flex items-center justify-center text-text-muted mb-8 shadow-2xl border border-border-light group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                                <User size={48} className="text-primary/40 group-hover:text-primary transition-colors" />
                             </div>
-                            <h3 className="text-xl font-bold text-text-primary">Select a Student</h3>
-                            <p className="text-text-muted mt-2 max-w-xs mx-auto">
-                                Choose a student from the list to provide academic or behavioral feedback.
+                            <h3 className="text-xl md:text-2xl font-black text-text-primary uppercase tracking-widest">Select Student</h3>
+                            <p className="text-text-muted mt-3 max-w-xs mx-auto text-xs md:text-sm font-medium leading-relaxed">
+                                Pick a student from the directory to start their performance evaluation.
                             </p>
+                            <div className="mt-8 flex gap-2">
+                                <div className="w-2 h-2 rounded-full bg-primary/20 animate-bounce" />
+                                <div className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:0.2s]" />
+                                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce [animation-delay:0.4s]" />
+                            </div>
                         </div>
                     )}
                 </div>

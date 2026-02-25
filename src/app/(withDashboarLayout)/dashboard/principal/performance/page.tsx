@@ -145,96 +145,96 @@ export default function SchoolPerformancePage() {
           </div>
         </div>
       </div>
-{/* Performance Insights (PREMIUM) */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-  {/* Improving */}
-  <div className="relative overflow-hidden bg-bg-card p-6 rounded-2xl border border-border-light shadow-lg">
-    {/* subtle gradient */}
-    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
+      {/* Performance Insights (PREMIUM) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Improving */}
+        <div className="relative overflow-hidden bg-bg-card p-6 rounded-2xl border border-border-light shadow-lg">
+          {/* subtle gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none" />
 
-    <h3 className="flex items-center gap-2 font-semibold text-text-primary mb-6">
-      <span className="text-emerald-400 text-lg">↗</span>
-      Improving
-      <span className="ml-auto text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400">
-        Positive Trend
-      </span>
-    </h3>
+          <h3 className="flex items-center gap-2 font-semibold text-text-primary mb-6">
+            <span className="text-emerald-400 text-lg">↗</span>
+            Improving
+            <span className="ml-auto text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400">
+              Positive Trend
+            </span>
+          </h3>
 
-    <div className="space-y-4">
-      {performanceInsights.improving.map((item, i) => (
-        <div
-          key={i}
-          className="group flex items-center justify-between p-4 rounded-xl 
+          <div className="space-y-4">
+            {performanceInsights.improving.map((item, i) => (
+              <div
+                key={i}
+                className="group flex items-center justify-between p-4 rounded-xl 
                      bg-bg-page border border-border-light
                      hover:border-emerald-500/40 hover:bg-emerald-500/5
                      transition-all duration-200"
-        >
-          <div>
-            <p className="font-semibold text-text-primary">
-              {item.class}
-            </p>
-            <p className="text-sm text-text-muted">
-              {item.subject}
-            </p>
-          </div>
+              >
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    {item.class}
+                  </p>
+                  <p className="text-sm text-text-muted">
+                    {item.subject}
+                  </p>
+                </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400">
-              Growth
-            </span>
-            <p className="font-semibold text-emerald-400 text-lg">
-              {item.change}
-            </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400">
+                    Growth
+                  </span>
+                  <p className="font-semibold text-emerald-400 text-lg">
+                    {item.change}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
-    </div>
-  </div>
 
-  {/* Needs Attention */}
-  <div className="relative overflow-hidden bg-bg-card p-6 rounded-2xl border border-border-light shadow-lg">
-    {/* subtle gradient */}
-    <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent pointer-events-none" />
+        {/* Needs Attention */}
+        <div className="relative overflow-hidden bg-bg-card p-6 rounded-2xl border border-border-light shadow-lg">
+          {/* subtle gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent pointer-events-none" />
 
-    <h3 className="flex items-center gap-2 font-semibold text-text-primary mb-6">
-      <span className="text-yellow-400 text-lg">↘</span>
-      Needs Attention
-      <span className="ml-auto text-xs px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400">
-        Action Required
-      </span>
-    </h3>
+          <h3 className="flex items-center gap-2 font-semibold text-text-primary mb-6">
+            <span className="text-yellow-400 text-lg">↘</span>
+            Needs Attention
+            <span className="ml-auto text-xs px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400">
+              Action Required
+            </span>
+          </h3>
 
-    <div className="space-y-4">
-      {performanceInsights.attention.map((item, i) => (
-        <div
-          key={i}
-          className="group flex items-center justify-between p-4 rounded-xl 
+          <div className="space-y-4">
+            {performanceInsights.attention.map((item, i) => (
+              <div
+                key={i}
+                className="group flex items-center justify-between p-4 rounded-xl 
                      bg-bg-page border border-border-light
                      hover:border-yellow-500/40 hover:bg-yellow-500/5
                      transition-all duration-200"
-        >
-          <div>
-            <p className="font-semibold text-text-primary">
-              {item.class}
-            </p>
-            <p className="text-sm text-text-muted">
-              {item.subject}
-            </p>
-          </div>
+              >
+                <div>
+                  <p className="font-semibold text-text-primary">
+                    {item.class}
+                  </p>
+                  <p className="text-sm text-text-muted">
+                    {item.subject}
+                  </p>
+                </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400">
-              Risk
-            </span>
-            <p className="font-semibold text-yellow-400 text-lg">
-              {item.change}
-            </p>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-400">
+                    Risk
+                  </span>
+                  <p className="font-semibold text-yellow-400 text-lg">
+                    {item.change}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-</div>                              
+      </div>
     </div>
   );
 }

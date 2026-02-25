@@ -15,9 +15,9 @@ export default function TeacherDashboardLayout({
       menuItems={teacherMenuItems}
       activeColor="bg-indigo-600"
       user={{
-        name: "Sarah Johnson",
+        name: "Abu Raihan",
         role: "Senior Teacher",
-        initials: "SJ",
+        initials: "AR",
         subText: "Science Department"
       }}
     >
