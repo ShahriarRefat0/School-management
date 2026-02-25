@@ -116,9 +116,11 @@ const Navbar = () => {
             ))}
 
             <div className="pt-4 flex flex-col gap-3">
-              <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">
-                Login
-              </button>
+              <Link href="/login" className="w-full">
+                <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">
+                  Login
+                </button>
+              </Link>
               <Link href="/live-demo">
                 <button className="w-full bg-primary text-white py-3 rounded-xl font-bold">
                   Live Demo

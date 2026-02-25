@@ -2,67 +2,76 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
-    GraduationCap, BookOpen, Settings, ShieldCheck, Users, Wallet,
-    ArrowRight, Sparkles, Building2, ShieldAlert
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    ArrowRight,
+    Sparkles,
+    ShieldCheck,
+    Building2,
+    LockKeyhole,
+    School
 } from 'lucide-react';
 import Navbar from "@/components/shared/navbar/Navbar";
 import Footer from "@/components/shared/footer/Footer";
 import { motion, AnimatePresence } from "framer-motion";
 
-const roles = [
-    {
-        id: 'student',
-        title: "Student",
-        desc: "LMS & Academics portal",
-        icon: <GraduationCap size={20} />,
-        color: 'blue',
-        path: '/login/student'
-    },
-    {
-        id: 'teacher',
-        title: "Teacher",
-        desc: "Class & Results management",
-        icon: <BookOpen size={20} />,
-        color: 'indigo',
-        path: '/login/teacher'
-    },
-    {
-        id: 'parent',
-        title: "Parent",
-        desc: "Fees & Progress tracking",
-        icon: <Users size={20} />,
-        color: 'amber',
-        path: '/login/parent'
-    },
-    {
-        id: 'accounts',
-        title: "Accounts",
-        desc: "Finance & Salary processing",
-        icon: <Wallet size={20} />,
-        color: 'cyan',
-        path: '/login/accounts'
-    },
-    {
-        id: 'admin',
-        title: "Admin",
-        desc: "School Staff & Admin portal",
-        icon: <Settings size={20} />,
-        color: 'emerald',
-        path: '/login/admin'
-    },
-    {
-        id: 'superAdmin',
-        title: "Owner",
-        desc: "Core System Infrastructure",
-        icon: <ShieldCheck size={20} />,
-        color: 'rose',
-        path: '/login/super-admin'
-    },
-];
+import { useAuth } from "@/hooks/useAuth";
 
-const LoginPage = () => {
-    const [hoveredRole, setHoveredRole] = useState(null);
+const UnifiedLoginPage = () => {
+    const router = useRouter();
+    const { signIn } = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
+    const [identifier, setIdentifier] = useState('');
+    const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError('');
+
+        const { error: authError } = await signIn(identifier, password);
+
+        if (authError) {
+            setError(authError.message || 'Authentication failed. Please check your credentials.');
+            setIsLoading(false);
+            return;
+        }
+
+        // Fetch user to get metadata role for robust redirection
+        const { supabase } = await import("@/lib/supabase/client");
+        const { data: { user } } = await supabase.auth.getUser();
+        const userRole = user?.user_metadata?.role;
+
+        switch (userRole) {
+            case 'school_admin':
+            case 'principal':
+                router.push('/dashboard/principal');
+                break;
+            case 'teacher':
+                router.push('/dashboard/teacher');
+                break;
+            case 'super_admin':
+                router.push('/dashboard/super-admin');
+                break;
+            case 'parent':
+                router.push('/dashboard/parents');
+                break;
+            case 'accountant':
+                router.push('/dashboard/accountant');
+                break;
+            default:
+                if (identifier.includes('admin')) router.push('/dashboard/principal');
+                else if (identifier.includes('teacher')) router.push('/dashboard/teacher');
+                else router.push('/dashboard/student');
+        }
+        setIsLoading(false);
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-bg-page relative overflow-hidden text-text-primary">
@@ -70,115 +79,178 @@ const LoginPage = () => {
 
             {/* Subtle Dynamic Background */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-                <AnimatePresence>
-                    {hoveredRole && (
-                        <motion.div
-                            key={hoveredRole.id}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className={`absolute top-0 left-0 w-full h-full opacity-[0.02] transition-colors duration-1000
-                                ${hoveredRole.color === 'blue' ? 'bg-blue-600' :
-                                    hoveredRole.color === 'indigo' ? 'bg-indigo-600' :
-                                        hoveredRole.color === 'emerald' ? 'bg-emerald-600' :
-                                            hoveredRole.color === 'rose' ? 'bg-rose-600' :
-                                                hoveredRole.color === 'amber' ? 'bg-amber-600' : 'bg-cyan-600'}`}
-                        />
-                    )}
-                </AnimatePresence>
                 <div className="absolute top-[20%] left-[15%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[20%] right-[15%] w-[20%] h-[20%] bg-indigo-500/5 rounded-full blur-[80px]" />
             </div>
 
             <main className="flex-grow flex items-center justify-center pt-24 pb-16 px-6">
-                <div className="w-full max-w-4xl mx-auto">
-                    {/* Compact Header */}
-                    <div className="text-center mb-12">
+                <div className="w-full max-w-5xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+
+                    {/* Left Side: Branding/Mission */}
+                    <div className="lg:w-1/2 text-center lg:text-left">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-black text-[9px] uppercase tracking-[0.25em] mb-4"
+                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-black text-[9px] uppercase tracking-[0.25em] mb-6"
                         >
                             <Sparkles size={12} />
-                            Universal Access Hub
+                            Universal Educational Infrastructure
                         </motion.div>
                         <motion.h1
-                            initial={{ opacity: 0, y: 15 }}
+                            initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-3xl md:text-4xl font-black tracking-tighter"
+                            className="text-4xl md:text-6xl font-black tracking-tight leading-[0.9] mb-6"
                         >
-                            Portal <span className="text-primary font-medium">Selector</span>
+                            Connect to your <br />
+                            <span className="text-primary font-medium">Digital Campus</span>
                         </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-text-muted font-bold text-lg max-w-lg mx-auto lg:mx-0 opacity-70 leading-relaxed"
+                        >
+                            One unified gateway for students, teachers, and admins to manage academics,
+                            finance, and institutional growth.
+                        </motion.p>
+
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="mt-10 flex flex-wrap justify-center lg:justify-start gap-4"
+                        >
+                            <div className="px-6 py-3 rounded-2xl bg-bg-card/50 backdrop-blur-sm border border-border-light flex items-center gap-3">
+                                <ShieldCheck size={20} className="text-emerald-500" />
+                                <span className="text-xs font-black uppercase tracking-widest">Secure Access</span>
+                            </div>
+                            <div className="px-6 py-3 rounded-2xl bg-bg-card/50 backdrop-blur-sm border border-border-light flex items-center gap-3">
+                                <Building2 size={20} className="text-blue-500" />
+                                <span className="text-xs font-black uppercase tracking-widest">Multi-Tenant</span>
+                            </div>
+                        </motion.div>
                     </div>
 
-                    {/* Compact Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {roles.map((role, index) => (
-                            <motion.div
-                                key={role.id}
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.03 }}
-                                onMouseEnter={() => setHoveredRole(role)}
-                                onMouseLeave={() => setHoveredRole(null)}
-                            >
+                    {/* Right Side: Unified Login Form */}
+                    <div className="lg:w-[450px] w-full">
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="bg-bg-card/80 backdrop-blur-3xl rounded-[2.5rem] border border-border-light shadow-2xl overflow-hidden relative"
+                        >
+                            {/* Super Admin SaaS Login subtle link */}
+                            <div className="absolute top-6 right-8">
                                 <Link
-                                    href={role.path}
-                                    className="group relative block p-6 rounded-[2rem] bg-bg-card/80 backdrop-blur-xl border border-border-light hover:border-primary/20 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1"
+                                    href="/login/super-admin"
+                                    className="text-[9px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-rose-500 transition-colors flex items-center gap-2"
                                 >
-                                    {/* Role Hover Accent */}
-                                    <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300 -z-10
-                                        ${role.color === 'blue' ? 'bg-blue-600' :
-                                            role.color === 'indigo' ? 'bg-indigo-600' :
-                                                role.color === 'emerald' ? 'bg-emerald-600' :
-                                                    role.color === 'rose' ? 'bg-rose-600' :
-                                                        role.color === 'amber' ? 'bg-amber-600' : 'bg-cyan-600'}`}
-                                    />
+                                    SaaS Login <LockKeyhole size={10} />
+                                </Link>
+                            </div>
 
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-lg shadow-black/5
-                                            ${role.color === 'blue' ? 'bg-blue-600/10 text-blue-600' :
-                                                role.color === 'indigo' ? 'bg-indigo-600/10 text-indigo-600' :
-                                                    role.color === 'emerald' ? 'bg-emerald-600/10 text-emerald-600' :
-                                                        role.color === 'rose' ? 'bg-rose-600/10 text-rose-600' :
-                                                            role.color === 'amber' ? 'bg-amber-600/10 text-amber-600' : 'bg-cyan-600/10 text-cyan-600'}`}
+                            <div className="p-10">
+                                <div className="mb-10">
+                                    <h2 className="text-3xl font-black tracking-tight">Login</h2>
+                                    <p className="text-text-muted font-bold text-sm mt-2 opacity-70">
+                                        Enter your credentials to access your portal.
+                                    </p>
+                                </div>
+
+                                <AnimatePresence>
+                                    {error && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold"
                                         >
-                                            {role.icon}
-                                        </div>
-                                        <div className="p-2 rounded-full bg-bg-page opacity-0 group-hover:opacity-100 transition-all">
-                                            <ArrowRight size={14} className="text-primary" />
+                                            {error}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <form onSubmit={handleLogin} className="space-y-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-text-primary ml-1">Identity (Email/ID)</label>
+                                        <div className="relative group">
+                                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">
+                                                <Mail size={16} />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={identifier}
+                                                onChange={(e) => setIdentifier(e.target.value)}
+                                                placeholder="yourname@school.com"
+                                                className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-sm"
+                                                required
+                                            />
                                         </div>
                                     </div>
 
-                                    <h3 className="text-lg font-black mb-1 group-hover:text-primary transition-colors">{role.title}</h3>
-                                    <p className="text-[10px] font-bold text-text-muted leading-relaxed opacity-70 uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis">
-                                        {role.desc}
-                                    </p>
-
-                                    {/* Security Indicator for Admin/Super */}
-                                    {(role.id === 'admin' || role.id === 'superAdmin') && (
-                                        <div className="absolute top-6 right-6 opacity-20">
-                                            <ShieldAlert size={12} />
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center ml-1">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-text-primary">Password</label>
+                                            <Link href="#" className="text-[10px] font-black text-primary hover:underline">Forgot?</Link>
                                         </div>
-                                    )}
-                                </Link>
-                            </motion.div>
-                        ))}
-                    </div>
+                                        <div className="relative group">
+                                            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">
+                                                <Lock size={16} />
+                                            </div>
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="••••••••"
+                                                className="w-full h-12 pl-12 pr-12 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-sm"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                                            >
+                                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
+                                    </div>
 
-                    {/* Minimalist Support Footer */}
-                    <div className="mt-12 pt-8 border-t border-border-light flex flex-col md:flex-row items-center justify-between gap-6 opacity-60">
-                        <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em]">
-                            <div className="flex items-center gap-2">
-                                <Building2 size={14} /> DIS INFRASTRUCTURE
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="w-full h-14 rounded-2xl bg-primary hover:bg-primary-dark text-white font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2 group mt-4 relative overflow-hidden"
+                                    >
+                                        {isLoading ? (
+                                            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            <>
+                                                <span>Enter Dashboard</span>
+                                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                            </>
+                                        )}
+                                    </button>
+                                </form>
+
+                                <div className="mt-8 pt-6 border-t border-border-light text-center">
+                                    <p className="text-text-muted text-[11px] font-bold uppercase tracking-widest mb-4">Want to Use our system for your school?</p>
+                                    <Link
+                                        href="/login/apply"
+                                        className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl border-2 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all font-black uppercase text-[10px] tracking-widest group"
+                                    >
+                                        <School size={16} />
+                                        Apply for Institution Admin
+                                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                </div>
                             </div>
-                            <div className="w-1 h-1 rounded-full bg-current" />
-                            <div className="text-emerald-500">Live Support</div>
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <Link href="#" className="text-[9px] font-black uppercase tracking-widest hover:text-primary transition-colors">Credential Help</Link>
-                            <Link href="#" className="text-[9px] font-black uppercase tracking-widest hover:text-primary transition-colors">Privacy Policy</Link>
-                        </div>
+                        </motion.div>
+                    </div>
+                </div>
+
+                {/* Bottom Credits */}
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+                    <div className="flex items-center gap-2">
+                        <Building2 size={16} />
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em]">SaaS Infrastructure v2.0</span>
                     </div>
                 </div>
             </main>
@@ -188,4 +260,5 @@ const LoginPage = () => {
     );
 };
 
-export default LoginPage;
+export default UnifiedLoginPage;
+

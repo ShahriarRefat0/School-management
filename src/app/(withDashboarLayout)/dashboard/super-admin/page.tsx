@@ -57,7 +57,7 @@ export default function SuperAdminOverview() {
     <div className="space-y-8 animate-fade-in-up">
       
       {/* ১. হেডার সেকশন */}
-      <div className="flex border flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex  flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-3xl font-black text-[var(--color-text-primary)] tracking-tight">Project Overview</h2>
           <p className="text-[var(--color-text-muted)] font-medium mt-4">Business performance and tenant insights.</p>
@@ -72,7 +72,7 @@ export default function SuperAdminOverview() {
 
 
       {/* ২. কি-ম্যাট্রিক্স (Stats Grid) */}
-      <div className="grid border grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-[var(--color-border-light)] shadow-sm hover:shadow-md transition-all">
             <div className="flex justify-between items-start mb-4">
@@ -92,7 +92,7 @@ export default function SuperAdminOverview() {
       </div>
 
       {/* ৩. গ্রাফ সেকশন */}
-      <div className="grid border grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid  grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* রেভিনিউ চার্ট */}
         <div className="lg:col-span-2 bg-[var(--color-bg-card)] p-6 rounded-2xl border border-[var(--color-border-light)] shadow-sm">
@@ -128,7 +128,7 @@ export default function SuperAdminOverview() {
         </div>
 
         {/* সাবস্ক্রিপশন ডিস্ট্রিবিউশন */}
-        <div className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-[var(--color-border-light)] shadow-sm">
+        <div className="bg-[var(--color-bg-card)] p-6 rounded-2xl  border-[var(--color-border-light)] shadow-sm">
           <h3 className="font-black text-[var(--color-text-primary)] mb-6">Plan Distribution</h3>
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -160,7 +160,7 @@ export default function SuperAdminOverview() {
       </div>
 
       {/* ৪. নিচের সেকশন - রিসেন্ট অ্যাকশন ও মেয়াদ শেষ হওয়া স্কুল */}
-      <div className="grid border grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid  grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border-light)] overflow-hidden">
           <div className="p-6 border-b border-[var(--color-border-light)]">
             <h3 className="font-black text-[var(--color-text-primary)]">Expiring Subscriptions</h3>
