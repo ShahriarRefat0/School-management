@@ -56,10 +56,10 @@ const HeroSection = () => {
               className="flex flex-wrap gap-4"
             >
               <Link
-                href="/register"
+                href="/login/apply"
                 className="px-8 py-4 bg-primary text-white rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/10 inline-flex items-center gap-2"
               >
-                Get Started <ChevronRight size={16} />
+                Apply as Admin <ChevronRight size={16} />
               </Link>
 
               <Link

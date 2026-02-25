@@ -14,15 +14,30 @@ import Navbar from "@/components/shared/navbar/Navbar";
 import Footer from "@/components/shared/footer/Footer";
 import { motion } from "framer-motion";
 
+import { useAuth } from "@/hooks/useAuth";
+
 const SuperAdminLoginPage = () => {
     const router = useRouter();
+    const { signIn } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        router.push('/dashboard/superAdmin');
+        setIsLoading(true);
+        setError('');
+
+        const { error: authError } = await signIn(email, password);
+
+        if (authError) {
+            setError(authError.message || 'Authentication failed.');
+            setIsLoading(false);
+        } else {
+            router.push('/dashboard/super-admin');
+        }
     };
 
     return (
@@ -61,6 +76,16 @@ const SuperAdminLoginPage = () => {
                                 <p className="text-text-muted font-bold mt-2 leading-relaxed">Exclusive entry for the website owner to manage the entire ecosystem.</p>
                             </div>
 
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="mb-8 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[11px] font-black uppercase tracking-wider text-center"
+                                >
+                                    {error}
+                                </motion.div>
+                            )}
+
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-black text-text-primary uppercase tracking-[0.2em] ml-1">Master Email Address</label>
@@ -74,6 +99,7 @@ const SuperAdminLoginPage = () => {
                                             onChange={(e) => setEmail(e.target.value)}
                                             placeholder="superadmin@system.com"
                                             className="w-full h-14 pl-14 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-rose-600 focus:ring-4 focus:ring-rose-600/5 outline-none transition-all font-bold text-text-primary"
+                                            disabled={isLoading}
                                             required
                                         />
                                     </div>
@@ -96,6 +122,7 @@ const SuperAdminLoginPage = () => {
                                             onChange={(e) => setPassword(e.target.value)}
                                             placeholder="••••••••"
                                             className="w-full h-14 pl-14 pr-14 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-rose-600 focus:ring-4 focus:ring-rose-600/5 outline-none transition-all font-bold text-text-primary"
+                                            disabled={isLoading}
                                             required
                                         />
                                         <button
@@ -110,10 +137,17 @@ const SuperAdminLoginPage = () => {
 
                                 <button
                                     type="submit"
-                                    className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.25em] text-white shadow-2xl transition-all flex items-center justify-center gap-3 group active:scale-[0.98] mt-8 bg-rose-600 shadow-rose-600/30 hover:shadow-rose-600/40"
+                                    disabled={isLoading}
+                                    className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.25em] text-white shadow-2xl transition-all flex items-center justify-center gap-3 group active:scale-[0.98] mt-8 bg-rose-600 shadow-rose-600/30 hover:shadow-rose-600/40 relative overflow-hidden"
                                 >
-                                    <span>Authenticate Core</span>
-                                    <Cpu size={20} className="group-hover:rotate-12 transition-transform" />
+                                    {isLoading ? (
+                                        <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            <span>Authenticate Core</span>
+                                            <Cpu size={20} className="group-hover:rotate-12 transition-transform" />
+                                        </>
+                                    )}
                                 </button>
                             </form>
 
@@ -124,8 +158,8 @@ const SuperAdminLoginPage = () => {
                                 </p>
                             </div>
 
-                            <p className="text-center mt-8 text-text-muted font-bold text-sm border-t border-border-light/50 pt-8">
-                                Configuration needed? <Link href="/register/super-admin" className="text-rose-600 hover:underline">Provision Master Account</Link>
+                            <p className="text-center mt-8 text-text-muted font-bold text-sm border-t border-border-light/50 pt-8 opacity-50">
+                                SaaS Account Provisioning Managed by Infrastructure Level
                             </p>
                         </div>
                     </motion.div>
