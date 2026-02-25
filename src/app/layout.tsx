@@ -50,7 +50,7 @@ export default function RootLayout({
         className={`${inter.className} antialiased flex flex-col min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]`}
       >
         <ThemeProvider>
-          <Herobackground />
+          
           <SmoothScroll>
             <AuthProvider>
             {/* ৪. bg-[var(--color-bg-page)] ব্যবহার করো যাতে ডার্ক মোডে সাদা না দেখায় */}

@@ -16,7 +16,7 @@ export default function PrincipalLayout({
       activeColor="bg-blue-600"
       user={{
         name: "Dr. Robert Wilson",
-        role: "Principal",
+        role: "admin",
         initials: "RW",
         subText: "Head Management"
       }}

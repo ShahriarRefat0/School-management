@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ChevronRight, PlayCircle, Users, ShieldCheck } from 'lucide-react';
+import Herobackground from './Herobackground';
 
 const HeroSection = () => {
   return (
@@ -12,6 +13,7 @@ const HeroSection = () => {
       id="home"
       className="pt-28 pb-20 bg-bg-page border-border-light transition-colors duration-300 overflow-hidden"
     >
+      <Herobackground></Herobackground>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* LEFT CONTENT: Text and Buttons */}

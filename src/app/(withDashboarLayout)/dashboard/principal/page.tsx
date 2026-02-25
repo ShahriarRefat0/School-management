@@ -44,7 +44,7 @@ const StatCard = ({ title, value, desc, icon: Icon, colorClass = "bg-blue-50 tex
 
 /* ---------------- Page ---------------- */
 export default function PrincipalDashboard() {
-  const { loading } = useRoleGuard("school_admin")
+  const { loading } = useRoleGuard("admin")
 
   if (loading) return <p>Loading.......</p>
 

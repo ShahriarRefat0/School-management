@@ -1,10 +1,10 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useAuth } from "./useAuth";
 import { useEffect } from "react";
 
 
 
-type UserRole = | "super_admin" | "school_admin" | "teacher" | "student" | "parent" | "accountant";
+type UserRole = | "super_admin" | "admin" | "teacher" | "student" | "parent" | "accountant";
 
 export const useRoleGuard = (allowedRole: UserRole) =>{
 const {user, role, loading} = useAuth();
