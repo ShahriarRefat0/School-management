@@ -88,11 +88,10 @@ export default function AnnouncementsPage() {
             {/* Right */}
             <div className="flex items-center gap-4">
               <span
-                className={`text-sm font-medium ${
-                  item.status === "Published"
+                className={`text-sm font-medium ${item.status === "Published"
                     ? "text-green-600 dark:text-green-400"
                     : "text-yellow-600 dark:text-yellow-400"
-                }`}
+                  }`}
               >
                 {item.status}
               </span>

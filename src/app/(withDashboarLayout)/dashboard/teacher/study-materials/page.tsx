@@ -1,45 +1,80 @@
 "use client";
 import React, { useState } from 'react';
+import { TeacherHeader } from "../TeacherHeader";
 import {
-    Upload,
+    Plus,
     FileText,
     Link as LinkIcon,
-    Plus,
-    MoreVertical,
     Search,
     BookOpen,
     Eye,
-    Trash2
+    Trash2,
+    MoreVertical,
+    Upload
 } from 'lucide-react';
 
 export default function StudyMaterialsPage() {
     const [showUploadModal, setShowUploadModal] = useState(false);
 
     const materials = [
-        { id: 1, title: "Coordinate Geometry Notes", subject: "Higher Math", type: "PDF", date: "Feb 15, 2026", size: "2.4 MB" },
-        { id: 2, title: "Trigonometry Formulas Sheet", subject: "Higher Math", type: "PDF", date: "Feb 18, 2026", size: "1.1 MB" },
-        { id: 3, title: "Physics Lab Simulation", subject: "General Science", type: "Link", date: "Feb 20, 2026", size: "-" },
-        { id: 4, title: "Unit 4 Assignment Guide", subject: "General Science", type: "PDF", date: "Feb 21, 2026", size: "850 KB" },
+        {
+            id: 1,
+            title: "Trigonometry Basics & Formulas",
+            type: "PDF",
+            subject: "Higher Mathematics",
+            date: "Feb 10, 2026",
+            size: "2.4 MB"
+        },
+        {
+            id: 2,
+            title: "Introduction to Organic Chemistry",
+            type: "PDF",
+            subject: "Chemistry",
+            date: "Feb 08, 2026",
+            size: "4.1 MB"
+        },
+        {
+            id: 3,
+            title: "Renaissance Art History Slides",
+            type: "PPT",
+            subject: "Arts & Crafts",
+            date: "Feb 05, 2026",
+            size: "12.8 MB"
+        },
+        {
+            id: 4,
+            title: "Advanced Bengali Grammar Guide",
+            type: "PDF",
+            subject: "Bangla",
+            date: "Feb 01, 2026",
+            size: "1.8 MB"
+        },
+        {
+            id: 5,
+            title: "Java Programming Lecture 5",
+            type: "Video",
+            subject: "ICT",
+            date: "Jan 28, 2026",
+            size: "45 MB"
+        }
     ];
 
     return (
         <div className="space-y-8 animate-fadeIn">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
-                        Study <span className="text-primary italic">Materials</span> 📂
-                    </h1>
-                    <p className="text-text-muted mt-2 font-medium">
-                        Share and manage resources for your students.
-                    </p>
-                </div>
-                <button
-                    onClick={() => setShowUploadModal(true)}
-                    className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95"
-                >
-                    <Plus size={18} /> Upload New Material
-                </button>
-            </div>
+            <TeacherHeader
+                title="Study"
+                highlight="Materials"
+                emoji="📚"
+                subtitle="Upload and share resources with your students."
+                rightElement={
+                    <button
+                        onClick={() => setShowUploadModal(true)}
+                        className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95"
+                    >
+                        <Plus size={18} /> Upload New Material
+                    </button>
+                }
+            />
 
             <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 overflow-hidden">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -107,17 +142,32 @@ export default function StudyMaterialsPage() {
                                 <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">Title</label>
                                 <input type="text" className="w-full px-4 py-3 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="e.g. Algebra Slides" />
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">Select Class</label>
-                                <select className="w-full px-4 py-3 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                                    <option>Class X - Section A</option>
-                                    <option>Class IX - Section B</option>
-                                </select>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">Class</label>
+                                    <select className="w-full px-4 py-3 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                        <option>Class X - A</option>
+                                        <option>Class IX - B</option>
+                                        <option>Class X - C</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">Subject</label>
+                                    <select className="w-full px-4 py-3 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                        <option>Mathematics</option>
+                                        <option>Chemistry</option>
+                                        <option>Physics</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div className="border-2 border-dashed border-border-light rounded-2xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer group">
+                            <div>
+                                <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">Description</label>
+                                <textarea className="w-full px-4 py-3 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[100px] resize-none" placeholder="Provide a brief overview of the material..."></textarea>
+                            </div>
+                            <div className="border-2 border-dashed border-border-light rounded-2xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer group bg-bg-page/30">
                                 <Upload size={32} className="mx-auto text-text-muted group-hover:text-primary transition-colors mb-2" />
                                 <p className="text-sm font-bold text-text-secondary">Click or drag file here</p>
-                                <p className="text-xs text-text-muted mt-1">PDF, DOC, PPT (Max 10MB)</p>
+                                <p className="text-xs text-text-muted mt-1 uppercase font-black tracking-widest text-[8px]">PDF, DOC, PPT, MP4 (MAX 50MB)</p>
                             </div>
                             <div className="flex gap-3 pt-4">
                                 <button

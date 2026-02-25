@@ -130,11 +130,10 @@ export default function TeachersPage() {
                     {t.subject}
                   </td>
                   <td
-                    className={`py-4 font-medium ${
-                      t.engagement === "High"
+                    className={`py-4 font-medium ${t.engagement === "High"
                         ? "text-green-600 dark:text-green-400"
                         : "text-yellow-600 dark:text-yellow-400"
-                    }`}
+                      }`}
                   >
                     {t.engagement}
                   </td>

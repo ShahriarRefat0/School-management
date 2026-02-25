@@ -11,6 +11,8 @@ import {
     Calendar
 } from 'lucide-react';
 
+import { TeacherHeader } from "../TeacherHeader";
+
 export default function AttendancePage() {
     const [selectedClass, setSelectedClass] = useState<string | null>(null);
     const [attendance, setAttendance] = useState<Record<string, 'present' | 'absent' | 'late'>>({});
@@ -19,6 +21,8 @@ export default function AttendancePage() {
         { id: "C1", name: "Class X - Section A", subject: "Higher Mathematics", time: "09:00 AM", studentsCount: 45 },
         { id: "C2", name: "Class IX - Section B", subject: "General Science", time: "10:30 AM", studentsCount: 38 },
     ];
+
+    const currentClassDetails = classes.find(c => c.id === selectedClass);
 
     const students = [
         { id: "S101", name: "Rahim Ahmed", roll: "101" },
@@ -39,14 +43,22 @@ export default function AttendancePage() {
 
     return (
         <div className="space-y-8 animate-fadeIn">
-            <div>
-                <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
-                    Take <span className="text-primary italic">Attendance</span> ✔️
-                </h1>
-                <p className="text-text-muted mt-2 font-medium">
-                    Mark daily attendance for your students.
-                </p>
-            </div>
+            <TeacherHeader
+                title={selectedClass ? "Marking" : "Take"}
+                highlight={selectedClass ? "Attendance" : "Attendance"}
+                emoji="✔️"
+                subtitle={selectedClass ? `${currentClassDetails?.name} - ${currentClassDetails?.subject}` : "Select a class to record student attendance."}
+                rightElement={
+                    selectedClass && (
+                        <button
+                            onClick={() => setSelectedClass(null)}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-bg-card border border-border-light rounded-2xl text-sm font-bold text-text-secondary hover:bg-bg-page transition-all active:scale-95 shadow-sm"
+                        >
+                            <ChevronRight className="rotate-180" size={18} /> Exit Sheet
+                        </button>
+                    )
+                }
+            />
 
             {!selectedClass ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
@@ -120,17 +132,34 @@ export default function AttendancePage() {
                                     <h2 className="font-bold text-text-primary">
                                         Attendance for {classes.find(c => c.id === selectedClass)?.name}
                                     </h2>
-                                    <p className="text-xs text-text-muted font-medium italic">Today: {new Date().toLocaleDateString()}</p>
+                                    <p className="text-xs text-text-muted font-medium italic">Record daily attendance below.</p>
                                 </div>
                             </div>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Search student..."
-                                    className="pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full md:w-64"
-                                />
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" size={16} />
+                                    <input
+                                        type="date"
+                                        defaultValue={new Date().toISOString().split('T')[0]}
+                                        className="pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-secondary"
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search student..."
+                                        className="pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full md:w-64"
+                                    />
+                                </div>
                             </div>
+                        </div>
+
+                        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/40 p-4 rounded-2xl mb-6 flex items-start gap-3">
+                            <Clock className="text-amber-600 shrink-0" size={18} />
+                            <p className="text-xs font-bold text-amber-700 dark:text-amber-400 leading-snug">
+                                Security Rule: Attendance records can only be edited on the same day they are created. Records from previous dates are read-only for teachers.
+                            </p>
                         </div>
 
                         <div className="grid gap-4">
@@ -151,8 +180,8 @@ export default function AttendancePage() {
                                         <button
                                             onClick={() => handleStatusChange(student.id, 'present')}
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'present'
-                                                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                                                    : 'bg-bg-card text-emerald-600 border border-emerald-100 hover:bg-emerald-50'
+                                                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                                                : 'bg-bg-card text-emerald-600 border border-emerald-100 hover:bg-emerald-50'
                                                 }`}
                                         >
                                             <CheckCircle2 size={16} />
@@ -161,8 +190,8 @@ export default function AttendancePage() {
                                         <button
                                             onClick={() => handleStatusChange(student.id, 'late')}
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'late'
-                                                    ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
-                                                    : 'bg-bg-card text-amber-600 border border-amber-100 hover:bg-amber-50'
+                                                ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
+                                                : 'bg-bg-card text-amber-600 border border-amber-100 hover:bg-amber-50'
                                                 }`}
                                         >
                                             <Clock size={16} />
@@ -171,8 +200,8 @@ export default function AttendancePage() {
                                         <button
                                             onClick={() => handleStatusChange(student.id, 'absent')}
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'absent'
-                                                    ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
-                                                    : 'bg-bg-card text-red-600 border border-red-100 hover:bg-red-50'
+                                                ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
+                                                : 'bg-bg-card text-red-600 border border-red-100 hover:bg-red-50'
                                                 }`}
                                         >
                                             <XCircle size={16} />

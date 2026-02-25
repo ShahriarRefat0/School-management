@@ -4,6 +4,7 @@ import {
   BookOpen,
   UserCheck,
   GraduationCap,
+  FileText,
   Bell,
   Calendar,
   Clock,
@@ -12,44 +13,63 @@ import {
   TrendingUp,
   Users
 } from 'lucide-react';
+import { TeacherHeader } from "./TeacherHeader";
 
 export default function TeacherOverview() {
   const stats = [
     {
-      title: "Total Classes",
-      value: "12",
-      subValue: "+2 from last week",
-      icon: BookOpen,
+      title: "Today’s Classes",
+      value: "4",
+      subValue: "2 Completed, 2 Left",
+      icon: Calendar,
       color: "from-blue-600 to-indigo-600",
       lightColor: "bg-blue-50 dark:bg-blue-900/20",
       textColor: "text-blue-600 dark:text-blue-400"
     },
     {
-      title: "Total Students",
-      value: "450",
-      subValue: "Across 4 sections",
-      icon: Users,
-      color: "from-emerald-600 to-teal-600",
-      lightColor: "bg-emerald-50 dark:bg-emerald-900/20",
-      textColor: "text-emerald-600 dark:text-emerald-400"
-    },
-    {
-      title: "Attendance Rate",
-      value: "94%",
-      subValue: "Average this month",
+      title: "Pending Attendance",
+      value: "2",
+      subValue: "Requires attention",
       icon: UserCheck,
       color: "from-orange-600 to-amber-600",
       lightColor: "bg-orange-50 dark:bg-orange-900/20",
       textColor: "text-orange-600 dark:text-orange-400"
     },
     {
-      title: "Results Published",
-      value: "8/10",
-      subValue: "Term exam results",
+      title: "Upcoming Exams",
+      value: "3",
+      subValue: "Scheduled this week",
       icon: GraduationCap,
       color: "from-purple-600 to-violet-600",
       lightColor: "bg-purple-50 dark:bg-purple-900/20",
       textColor: "text-purple-600 dark:text-purple-400"
+    },
+    {
+      title: "Assigned Subjects",
+      value: "6",
+      subValue: "Across 4 classes",
+      icon: BookOpen,
+      color: "from-cyan-600 to-blue-600",
+      lightColor: "bg-cyan-50 dark:bg-cyan-900/20",
+      textColor: "text-cyan-600 dark:text-cyan-400"
+    },
+    {
+      title: "Total Students",
+      value: "165",
+      subValue: "Under assigned classes",
+      icon: Users,
+      color: "from-emerald-600 to-teal-600",
+      lightColor: "bg-emerald-50 dark:bg-emerald-900/20",
+      textColor: "text-emerald-600 dark:text-emerald-400"
+    },
+    {
+      title: "Recent Notices",
+      value: "12",
+      subValue: "3 new since yesterday",
+      icon: Bell,
+      color: "from-rose-600 to-pink-600",
+      lightColor: "bg-rose-50 dark:bg-rose-900/20",
+      textColor: "text-rose-600 dark:text-rose-400"
     }
   ];
 
@@ -111,26 +131,14 @@ export default function TeacherOverview() {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight">
-            Welcome, <span className="text-slate-900 dark:text-blue-400">Abu Raihan</span>! 👋
-          </h1>
-          <p className="text-text-muted mt-2 font-medium">
-            Check your class schedule and updates for today.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 bg-bg-card p-2 rounded-2xl border border-border-light shadow-sm">
-          <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-xl border border-primary/10">
-            <Calendar className="text-primary" size={18} />
-            <span className="text-sm font-bold text-text-secondary">17 February, 2026</span>
-          </div>
-        </div>
-      </div>
-
+      <TeacherHeader
+        title="Welcome,"
+        highlight="Abu Raihan"
+        emoji="👋"
+        subtitle={`It's ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Here's what's happening today.`}
+      />
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-6">
         {stats.map((stat, idx) => (
           <div
             key={idx}
@@ -142,16 +150,50 @@ export default function TeacherOverview() {
               </div>
               <div>
                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{stat.title}</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <h3 className="text-2xl font-bold text-text-primary">{stat.value}</h3>
-                  <span className={cn("text-[10px] font-bold flex items-center gap-0.5", stat.textColor)}>
-                    <TrendingUp size={10} /> {stat.subValue}
-                  </span>
+                <div className="flex flex-col mt-1">
+                  <h3 className="text-2xl font-bold text-text-primary leading-tight">{stat.value}</h3>
+                  <p className={cn("text-[9px] font-bold uppercase tracking-tighter mt-0.5", stat.textColor)}>
+                    {stat.subValue}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6">
+        <h2 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+          <div className="w-1.5 h-6 bg-primary rounded-full"></div>
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link href="/dashboard/teacher/attendance" className="flex flex-col items-center justify-center p-4 bg-bg-page border border-border-light rounded-2xl hover:border-primary/40 hover:bg-primary/[0.02] transition-all group">
+            <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 mb-3 group-hover:scale-110 transition-transform">
+              <UserCheck size={24} />
+            </div>
+            <span className="text-xs font-bold text-text-secondary group-hover:text-primary">Mark Attendance</span>
+          </Link>
+          <Link href="/dashboard/teacher/results" className="flex flex-col items-center justify-center p-4 bg-bg-page border border-border-light rounded-2xl hover:border-primary/40 hover:bg-primary/[0.02] transition-all group">
+            <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center text-purple-600 dark:text-purple-400 mb-3 group-hover:scale-110 transition-transform">
+              <GraduationCap size={24} />
+            </div>
+            <span className="text-xs font-bold text-text-secondary group-hover:text-primary">Enter Result</span>
+          </Link>
+          <Link href="/dashboard/teacher/study-materials" className="flex flex-col items-center justify-center p-4 bg-bg-page border border-border-light rounded-2xl hover:border-primary/40 hover:bg-primary/[0.02] transition-all group">
+            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3 group-hover:scale-110 transition-transform">
+              <BookOpen size={24} />
+            </div>
+            <span className="text-xs font-bold text-text-secondary group-hover:text-primary">Upload Material</span>
+          </Link>
+          <Link href="/dashboard/teacher/assignments" className="flex flex-col items-center justify-center p-4 bg-bg-page border border-border-light rounded-2xl hover:border-primary/40 hover:bg-primary/[0.02] transition-all group">
+            <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-3 group-hover:scale-110 transition-transform">
+              <FileText size={24} />
+            </div>
+            <span className="text-xs font-bold text-text-secondary group-hover:text-primary">Post Assignment</span>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -160,9 +202,9 @@ export default function TeacherOverview() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
-                <Clock size={20} />
+                <Calendar size={20} />
               </div>
-              <h2 className="text-xl font-bold text-text-primary">Today s Classes</h2>
+              <h2 className="text-xl font-bold text-text-primary">Daily Schedule</h2>
             </div>
             <button className="text-sm font-bold text-primary hover:underline flex items-center gap-1 group">
               View Full Routine <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
