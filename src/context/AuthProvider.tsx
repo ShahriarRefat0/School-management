@@ -136,6 +136,7 @@ const signUp = async (
     setUser(null);
     setRole(null);
   };
+  
 
   // ========================
   // FORGOT PASSWORD
