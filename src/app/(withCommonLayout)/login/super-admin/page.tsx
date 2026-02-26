@@ -29,6 +29,7 @@ const SuperAdminLoginPage = () => {
         e.preventDefault();
         setIsLoading(true);
         setError('');
+        console.log(email, password)
 
         const { error: authError } = await signIn(email, password);
 
