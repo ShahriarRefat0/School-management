@@ -24,7 +24,8 @@ import {
     LineChart,
     ClipboardList,
     MessageCircle,
-    LayoutDashboard as LayoutDashboardIcon
+    LayoutDashboard as LayoutDashboardIcon,
+    Users2
 } from "lucide-react"
 import { DashboardMenuItem } from "./types"
 
@@ -81,6 +82,7 @@ export const parentMenuItems: DashboardMenuItem[] = [
 export const principalMenuItems: DashboardMenuItem[] = [
     { title: "Dashboard", url: "/dashboard/principal", icon: LayoutDashboard },
     { title: "Announcements", url: "/dashboard/principal/announcements", icon: Megaphone },
+    { title: "Students", url: "/dashboard/principal/students", icon: Users2 },
     { title: "Teachers", url: "/dashboard/principal/teachers", icon: Users },
     { title: "Attendance", url: "/dashboard/principal/attendance", icon: UserCheckIcon },
     { title: "Performance", url: "/dashboard/principal/performance", icon: LineChart },
