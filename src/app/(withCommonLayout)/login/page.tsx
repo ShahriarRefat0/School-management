@@ -10,7 +10,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Sparkles,
   ShieldCheck,
   Building2,
   LockKeyhole,
@@ -130,7 +129,7 @@ const UnifiedLoginPage = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-black text-[9px] uppercase tracking-[0.25em] mb-6"
             >
-              <Sparkles size={12} />
+             
               Universal Educational Infrastructure
             </motion.div>
             <motion.h1

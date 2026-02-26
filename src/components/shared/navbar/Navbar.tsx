@@ -120,9 +120,9 @@ const Navbar = () => {
                         className="absolute right-0 mt-2 w-52 rounded-2xl border border-border-light bg-bg-card p-2 shadow-2xl z-[70]"
                       >
                         <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-border-light mb-1">Account</div>
-                        <button className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-text-primary hover:bg-secondary/30 rounded-xl transition-all">
+                        <Link href="/dashboard/principal" className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-text-primary hover:bg-secondary/30 rounded-xl transition-all">
                           <LucideLayoutDashboard size={18} className="text-primary" /> Dashboard
-                        </button>
+                        </Link>
                         <button
                           onClick={() => { setShowLogoutModal(true); setIsProfileOpen(false); }}
                           className="flex items-center gap-3 w-full px-3 py-3 text-sm font-black text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"

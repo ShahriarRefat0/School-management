@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { GraduationCap, BookOpen, Settings, ShieldCheck, Users, Wallet, ArrowRight, MousePointerClick } from 'lucide-react';
+import { GraduationCap, BookOpen, Settings, ShieldCheck, Users, Wallet, ArrowRight } from 'lucide-react';
 
 
 
@@ -75,7 +75,7 @@ const AllLogin = () => {
           {/* Header Section */}
           <header className="text-center mb-20 animate-fade-in-down">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm">
-              <MousePointerClick className="w-4 h-4 text-primary animate-bounce shadow-blue-500" />
+             
               <span className="text-primary font-bold tracking-wider text-xs uppercase">Choose Your Access</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-black text-text-primary mb-6 tracking-tight leading-tight">
