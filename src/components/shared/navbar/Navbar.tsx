@@ -1,139 +1,227 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Logo from "@/components/shared/logo/logo";
+import { LogIn, LucideLayoutDashboard, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import ThemeToggle from "@/components/theme/ThemeToggle";
+import { supabase } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
+import { Bell, ChevronDown, LogOut, AlertCircle, User } from "lucide-react"
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [mounted, setMounted] = useState(false); // Hydration fix
+  const [mounted, setMounted] = useState(false);
+  const { user, signOut } = useAuth()
+  const router = useRouter();
 
-  // ১. পেজ লোড হওয়ার সময় থিম চেক করা
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = async () => {
+    await signOut();
+    setShowLogoutModal(false)
+    router.replace("/")
+  }
+
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      setIsDarkMode(true);
-    } else {
-      document.documentElement.classList.remove('dark');
-      setIsDarkMode(false);
-    }
   }, []);
 
-  // ২. থিম টগল ফাংশন
-  const toggleTheme = () => {
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDarkMode(false);
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDarkMode(true);
+  const handleClickLogo = (e: React.MouseEvent) => {
+    if (window.location.pathname === "/") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  // মাউন্ট হওয়ার আগে নেভবার রেন্ডার হবে না (সাদা স্ক্রিন বা টেক্সট মিসিং এড়াতে)
-  if (!mounted) return <div className="h-20 bg-bg-card border-b border-border-light"></div>;
-
   return (
- <nav className="sticky top-0 z-50 bg-bg-card/80 backdrop-blur-md border-b border-border-light transition-all duration-300">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-card/70 backdrop-blur-xl border-b border-border-light transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          
-          {/* ১. লোগো সেকশন - এখানে text-text-dark নিশ্চিত করা হয়েছে */}
-          <div className="flex items-center gap-2 cursor-pointer group">
-            <div className="bg-primary p-2 rounded-lg shadow-sm group-hover:rotate-3 transition-transform">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM3.85 9.58l8.15 4.44 8.15-4.44L12 5.14 3.85 9.58z" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-text-primary tracking-tight">
-              Schoology <span className="text-primary">BD</span>
-            </span>
-          </div>
+        <div className="flex justify-between items-center h-22">
 
-          {/* ২. ডেস্কটপ মেনু - text-text-secondary ব্যবহার করা হয়েছে */}
-          <div className="hidden md:flex items-center gap-10">
-            {['Features', 'Pricing', 'Support', 'Privacy'].map((item) => (
-              <a 
-                key={item} 
-                href={`#${item.toLowerCase()}`} 
-                className="text-text-secondary font-semibold hover:text-primary transition-colors relative group"
-              >
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-              </a>
-            ))}
-          </div>
-
-          {/* ৩. রাইট সাইড বাটন */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            
-            {/* Dark/Light Toggle */}
-            <button 
-              onClick={toggleTheme}
-              className="p-2.5 rounded-full bg-secondary text-primary hover:bg-primary hover:text-white transition-all duration-300"
-              aria-label="Toggle Theme"
-            >
-              {isDarkMode ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l.707.707M6.343 6.343l.707-.707" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 118.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-              )}
-            </button>
-
-            <a 
-              href="/login" 
-              className="hidden sm:block text-primary font-bold hover:text-primary-hover px-4 py-2 transition-colors"
-            >
-              Login
-            </a>
-            
-            <button className="hidden md:block bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-full font-bold shadow-md active:scale-95 transition-all">
-              Get Started
-            </button>
-
-            {/* মোবাইল মেনু বাটন */}
-            <button 
+          {/* LEFT: Hamburger (mobile) + Logo */}
+          <div className="flex items-center gap-3">
+            {/* Mobile hamburger - LEFT side */}
+            <button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 rounded-lg bg-secondary text-primary transition-all"
             >
               {isOpen ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
               )}
             </button>
+
+            <Link href="/" onClick={handleClickLogo} className="hover:opacity-90 transition-opacity">
+              <Logo variant="dark" />
+            </Link>
+          </div>
+
+          {/* CENTER: Desktop nav links */}
+          <div className="hidden md:flex items-center gap-10">
+            {["Features", "Pricing", "Support", "Privacy"].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="text-text-secondary text-sm font-bold hover:text-primary transition-all relative group"
+              >
+                {item}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              </a>
+            ))}
+          </div>
+
+          {/* RIGHT: Theme + Profile/Login — always on right */}
+          <div className="flex items-center gap-3 sm:gap-5">
+            <ThemeToggle />
+
+            {!user ? (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden sm:block text-primary font-bold hover:text-primary-hover px-4 py-2 transition-colors"
+                >
+                  Login
+                </Link>
+                <Link href="/live-demo">
+                  <button className="hidden md:block bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-full font-bold shadow-md active:scale-95 transition-all">
+                    Live Demo
+                  </button>
+                </Link>
+              </>
+            ) : (
+              /* Profile button - always visible on RIGHT side on all screen sizes */
+              <div className="relative">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-2 p-1 pr-2 rounded-xl border-2 border-primary/20 bg-bg-page shadow-sm min-w-[75px] justify-center hover:border-primary/40 transition-all"
+                >
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
+                    SR
+                  </div>
+                  {/* <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180 text-primary' : ''}`} /> */}
+                </button>
+
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <>
+                      <div className="fixed inset-0 z-[60]" onClick={() => setIsProfileOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 mt-2 w-52 rounded-2xl border border-border-light bg-bg-card p-2 shadow-2xl z-[70]"
+                      >
+                        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-border-light mb-1">Account</div>
+                        <Link href="/dashboard/principal" className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-text-primary hover:bg-secondary/30 rounded-xl transition-all">
+                          <LucideLayoutDashboard size={18} className="text-primary" /> Dashboard
+                        </Link>
+                        <button
+                          onClick={() => { setShowLogoutModal(true); setIsProfileOpen(false); }}
+                          className="flex items-center gap-3 w-full px-3 py-3 text-sm font-black text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"
+                        >
+                          <LogOut size={18} /> Log out
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* মোবাইল মেনু ড্রপডাউন - এখানেও ডার্ক টেক্সট নিশ্চিত করা হয়েছে */}
+      {/* Mobile dropdown menu - only nav links */}
       {isOpen && (
         <div className="md:hidden bg-bg-card border-b border-border-light shadow-xl animate-in slide-in-from-top duration-300">
           <div className="px-4 pt-2 pb-6 space-y-2">
-            {['Features', 'Pricing', 'Support', 'Privacy'].map((item) => (
-              <a 
-                key={item} 
-                href={`#${item.toLowerCase()}`}
-                className="block px-4 py-3 rounded-lg text-text-primary font-semibold hover:bg-secondary hover:text-primary transition-all"
-                onClick={() => setIsOpen(false)}
+            {["Features", "Pricing", "Support", "Privacy"].map((item) => (
+              <Link
+                key={item}
+                href={`/${item.toLowerCase()}`}
+                className="block text-text-secondary font-semibold hover:text-primary transition-colors py-2"
               >
                 {item}
-              </a>
+              </Link>
             ))}
-            <div className="pt-4 flex flex-col gap-3">
-              <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">Login</button>
-              <button className="w-full bg-primary text-white py-3 rounded-xl font-bold">Get Started Free</button>
-            </div>
+
+            {/* Show Login/Demo buttons in mobile menu only when not logged in */}
+            {!user && (
+              <div className="pt-4 flex flex-col gap-3">
+                <Link href="/login" className="w-full">
+                  <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">
+                    Login
+                  </button>
+                </Link>
+                <Link href="/live-demo">
+                  <button className="w-full bg-primary text-white py-3 rounded-xl font-bold">
+                    Live Demo
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
+
+      {/* Logout Modal */}
+      <AnimatePresence>
+        {showLogoutModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowLogoutModal(false)}
+              className="absolute inset-0 bg-slate-900/70 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-[92%] max-w-[400px] bg-bg-card rounded-[32px] p-8 shadow-2xl border border-border-light overflow-hidden"
+            >
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="absolute top-5 right-5 p-2 text-text-muted hover:bg-secondary rounded-full"
+              >
+                <X size={24} />
+              </button>
+              <div className="flex flex-col items-center text-center">
+                <div className="h-20 w-20 bg-red-100 dark:bg-red-950/30 rounded-full flex items-center justify-center mb-6 text-red-500">
+                  <AlertCircle size={40} strokeWidth={2.5} />
+                </div>
+                <h3 className="text-2xl font-black text-text-primary tracking-tight">Confirm Logout</h3>
+                <p className="text-text-muted mt-3 font-medium text-base px-2">
+                  Are you sure you want to sign out from <span className="text-primary font-bold">Schoology BD</span>?
+                </p>
+                <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 w-full mt-10">
+                  <button
+                    onClick={() => setShowLogoutModal(false)}
+                    className="order-2 sm:order-1 py-4 rounded-2xl border-2 border-border-light font-bold text-text-secondary hover:bg-secondary transition-all active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="order-1 sm:order-2 py-4 rounded-2xl bg-red-500 text-white font-black shadow-xl shadow-red-500/30 hover:bg-red-600 transition-all active:scale-95"
+                  >
+                    Yes, Log Out
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </nav>
-   );
-}
+  );
+};
+
 export default Navbar;

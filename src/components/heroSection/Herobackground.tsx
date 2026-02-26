@@ -19,11 +19,11 @@ const Herobackground = () => {
     const temp: Particle[] = Array.from({ length: 30 }).map((_, i) => ({
       id: i,
       left: Math.random() * 100,
-      width: Math.random() * 4 + 1,
+      width: Math.random() * 9 + 5,
       height: Math.random() * 4 + 1,
       animationDelay: Math.random() * 20,
       animationDuration: Math.random() * 20 + 10,
-      opacity: Math.random() * 0.5 + 0.1,
+      opacity: Math.random() * 1 + 1,
     }));
     setParticles(temp);
   }, []);
