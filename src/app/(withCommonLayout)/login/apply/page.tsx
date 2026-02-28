@@ -12,27 +12,63 @@ import {
     ArrowLeft,
     FileText,
     Sparkles,
-    ShieldCheck
+    ShieldCheck,
+    EyeOff,
+    Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/shared/navbar/Navbar";
 import Footer from "@/components/shared/footer/Footer";
+import { useAuth } from '@/hooks/useAuth';
+import { TbLockPassword } from "react-icons/tb";
+import PageLoader from '@/components/shared/PageLoader';
 
 const AdminApplyPage = () => {
+const [loading, setLoading] = useState(false)
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         schoolName: '',
         adminName: '',
         email: '',
         phone: '',
+        instituteCode: '',
+        password: '',
         message: ''
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setStep(3); // Success state
-    };
+    const {signUp} = useAuth()
+    const [showPassword, setShowPassword] = useState(false);
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+    
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault();
+  console.log(formData.email, formData.password)
+
+  try {
+    setLoading(true);
+
+    const { data, error } = await signUp(
+      formData.email,
+      formData.password,
+      "admin" // role
+    );
+
+    if (error) throw error;
+
+    setStep(3);
+
+  } catch (err: any) {
+    alert(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+if (loading) return <PageLoader></PageLoader>
     return (
         <div className="flex flex-col min-h-screen bg-bg-page relative overflow-hidden text-text-primary">
             <Navbar />
@@ -73,7 +109,7 @@ const AdminApplyPage = () => {
                                         </div>
                                     </div>
 
-                                    <form onSubmit={handleSubmit} className="space-y-6">
+                                    <form onSubmit={handleRegister} className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-1.5">
                                                 <label className="text-[10px] font-black uppercase tracking-widest text-text-primary ml-1">Institution Name</label>
@@ -83,6 +119,9 @@ const AdminApplyPage = () => {
                                                     </div>
                                                     <input
                                                         type="text"
+                                                        name="schoolName"
+                                                        value={formData.schoolName}
+                                                        onChange={handleChange}
                                                         required
                                                         placeholder="e.g. Skyline Academy"
                                                         className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
@@ -97,6 +136,9 @@ const AdminApplyPage = () => {
                                                     </div>
                                                     <input
                                                         type="text"
+                                                        name="adminName"
+                                                        value={formData.adminName}
+                                                        onChange={handleChange}
                                                         required
                                                         placeholder="John Doe"
                                                         className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
@@ -114,6 +156,9 @@ const AdminApplyPage = () => {
                                                     </div>
                                                     <input
                                                         type="email"
+                                                        name="email"
+                                                        value={formData.email}
+                                                        onChange={handleChange}
                                                         required
                                                         placeholder="admin@school.com"
                                                         className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
@@ -128,6 +173,9 @@ const AdminApplyPage = () => {
                                                     </div>
                                                     <input
                                                         type="tel"
+                                                        name="phone"
+                                                        value={formData.phone}
+                                                        onChange={handleChange}
                                                         required
                                                         placeholder="+1 (555) 000-0000"
                                                         className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
@@ -137,17 +185,27 @@ const AdminApplyPage = () => {
                                         </div>
 
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-text-primary ml-1">Preferred Institute Code</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-text-primary ml-1">Password</label>
                                             <div className="relative group">
                                                 <div className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-emerald-500 transition-colors">
-                                                    <Building size={16} />
+                                                    <TbLockPassword size={16} />
                                                 </div>
                                                 <input
-                                                    type="text"
+                                                    type={showPassword ? "text" : "password"}
+                                                    name="password"
+                                                    value={formData.password}
+                                                    onChange={handleChange}
+                                                    placeholder="••••••••"
+                                                    className="w-full h-12 pl-12 pr-12 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
                                                     required
-                                                    placeholder="e.g. SKYLINE-01"
-                                                    className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
                                                 />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                                                >
+                                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                </button>
                                             </div>
                                         </div>
 

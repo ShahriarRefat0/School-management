@@ -6,10 +6,23 @@ import { Bell, ChevronDown, Menu, LogOut, X, AlertCircle, User } from "lucide-re
 import Logo from "@/components/shared/logo/logo"
 import ThemeToggle from "@/components/theme/ThemeToggle"
 import { motion, AnimatePresence } from "framer-motion"
+import { supabase } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
-export function DashboardHeader({ onMenuClick, user }: any) {
+export function DashboardHeader({ onMenuClick }: any) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+const router  = useRouter()
+const {user, signOut } = useAuth()
+
+    const handleLogout = async ()=>{
+ await signOut();
+  
+    setShowLogoutModal(false)
+        router.replace("/")
+    }
+
 
     return (
         <>
@@ -29,7 +42,7 @@ export function DashboardHeader({ onMenuClick, user }: any) {
                         <ThemeToggle />
                         <button className="relative p-2 text-slate-500 rounded-xl hover:bg-secondary/30">
                             <Bell className="h-5 w-5 md:h-6 md:w-6" />
-                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-bg-card"></span>
+                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-bg-card"></span>
                         </button>
 
                         <div className="relative">
@@ -114,6 +127,7 @@ export function DashboardHeader({ onMenuClick, user }: any) {
                                         Cancel
                                     </button>
                                     <button 
+                                    onClick={handleLogout}
                                         className="order-1 sm:order-2 py-4 rounded-2xl bg-red-500 text-white font-black shadow-xl shadow-red-500/30 hover:bg-red-600 transition-all active:scale-95"
                                     >
                                         Yes, Log Out
