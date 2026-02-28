@@ -1,17 +1,10 @@
-
 generator client {
-  // provider = "prisma-client"
-  // output   = "../src/generated/prisma"
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
-
 }
-
-
 model School {
   id               String   @id @default(cuid())
   schoolName       String
@@ -39,3 +32,20 @@ model School {
   updatedAt        DateTime @updatedAt
 }
 
+
+
+model Plan {
+  id        String   @id @default(cuid())
+  name      String
+  price     String
+  duration  String
+  icon      String?
+  color     String?
+  students  String
+  teachers  String
+  storage   String
+  modules   String[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
