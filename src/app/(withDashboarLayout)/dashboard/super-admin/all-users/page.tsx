@@ -1,8 +1,8 @@
 "use client"
 import React, { useState } from 'react'
-import { 
-  Search, Edit, School, Mail, CheckCircle, Ban, 
-  Users, ArrowUpRight, ShieldCheck 
+import {
+  Search, Edit, School, Mail, CheckCircle, Ban,
+  Users, ArrowUpRight, ShieldCheck
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -27,8 +27,8 @@ export default function ClientManagement() {
     return matchesEmail && matchesSchool && matchesStatus;
   });
 
-  const toggleStatus = (id) => {
-    setAdmins(admins.map(a => 
+  const toggleStatus = (id: string) => {
+    setAdmins(admins.map(a =>
       a.id === id ? { ...a, status: a.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE" } : a
     ));
   };
@@ -45,9 +45,9 @@ export default function ClientManagement() {
           <p className="text-[var(--color-text-muted)] font-medium">Manage institutional owners and their platform access.</p>
         </div>
         <div className="flex gap-2">
-           <div className="bg-blue-500/10 text-blue-600 px-4 py-2 rounded-2xl border border-blue-500/20 text-sm font-black uppercase tracking-tighter">
-             Total Clients: {admins.length}
-           </div>
+          <div className="bg-blue-500/10 text-blue-600 px-4 py-2 rounded-2xl border border-blue-500/20 text-sm font-black uppercase tracking-tighter">
+            Total Clients: {admins.length}
+          </div>
         </div>
       </div>
 
@@ -56,7 +56,7 @@ export default function ClientManagement() {
         {/* Email Search */}
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
-          <input 
+          <input
             type="text" placeholder="Search by email..." value={searchEmail}
             onChange={(e) => setSearchEmail(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold focus:ring-2 focus:ring-[var(--color-primary)]/20"
@@ -66,8 +66,8 @@ export default function ClientManagement() {
         {/* School Search */}
         <div className="relative">
           <School className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
-          <input 
-            type="text" placeholder="Search school name..." 
+          <input
+            type="text" placeholder="Search school name..."
             onChange={(e) => setSchoolFilter(e.target.value === "" ? "ALL" : e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold appearance-none"
           />
@@ -75,7 +75,7 @@ export default function ClientManagement() {
 
         {/* Status Filter */}
         <div className="relative">
-          <select 
+          <select
             onChange={(e) => setStatusFilter(e.target.value)}
             className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold appearance-none cursor-pointer"
           >
@@ -117,9 +117,8 @@ export default function ClientManagement() {
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                      admin.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
-                    }`}>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${admin.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
+                      }`}>
                       <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${admin.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                       {admin.status}
                     </span>
@@ -129,19 +128,18 @@ export default function ClientManagement() {
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                      <Link 
+                      <Link
                         href={`/dashboard/super-admin/schools/edit/${admin.schoolId}`}
                         className="p-2.5 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-2xl hover:bg-[var(--color-primary)] hover:text-white transition-all shadow-sm"
                       >
                         <Edit size={18} />
                       </Link>
-                      <button 
+                      <button
                         onClick={() => toggleStatus(admin.id)}
-                        className={`p-2.5 rounded-2xl transition-all shadow-sm ${
-                          admin.status === 'ACTIVE' 
-                          ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' 
-                          : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
-                        }`}
+                        className={`p-2.5 rounded-2xl transition-all shadow-sm ${admin.status === 'ACTIVE'
+                            ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white'
+                            : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
+                          }`}
                       >
                         {admin.status === 'ACTIVE' ? <Ban size={18} /> : <CheckCircle size={18} />}
                       </button>
