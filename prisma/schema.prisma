@@ -33,6 +33,7 @@ model School {
 }
 
 
+// Subscription Plans schema
 
 model Plan {
   id        String   @id @default(cuid())
