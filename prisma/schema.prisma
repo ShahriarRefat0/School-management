@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 model School {
   id               String   @id @default(cuid())
@@ -49,4 +49,18 @@ model Plan {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+// prisma/schema.prisma
+
+model SupportTicket {
+  id            String   @id @default(cuid())
+  subject       String
+  description   String
+  priority      String   @default("low") // low, medium, high
+  status        String   @default("open") // open, closed, pending
+  schoolId      String?  // কোন স্কুল থেকে টিকিট আসছে
+  userEmail     String   // কে টিকিট ক্রিয়েট করেছে
+  attachmentUrl String?  // ইমেজ বা স্ক্রিনশট স্টোর করার জন্য এই ফিল্ডটি যোগ করা হলো
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
