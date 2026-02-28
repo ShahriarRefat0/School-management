@@ -18,7 +18,6 @@ import {
 import Navbar from "@/components/shared/navbar/Navbar";
 import Footer from "@/components/shared/footer/Footer";
 import { motion, AnimatePresence } from "framer-motion";
-
 import { useAuth } from "@/hooks/useAuth";
 
 const UnifiedLoginPage = () => {
@@ -49,7 +48,7 @@ const UnifiedLoginPage = () => {
         const userRole = user?.user_metadata?.role;
 
         switch (userRole) {
-            case 'school_admin':
+            case 'admin':
             case 'principal':
                 router.push('/dashboard/principal');
                 break;
