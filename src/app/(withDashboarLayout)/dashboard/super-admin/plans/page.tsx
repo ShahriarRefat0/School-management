@@ -56,7 +56,7 @@ export default function PlansSetup() {
         </div>
 
 
-        <Link href="/dashboard/super-admin/plans/new" className="flex mt-3 items-center gap-2 bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-blue-600/20 hover:scale-105 transition-all">
+        <Link href="/dashboard/super-admin/plans/new" className="flex mt-3 items-center gap-2 bg-[var(--color-primary)] text-white px-5 py-2.5 rounded-xl font-bold text-sm w-47 shadow-lg shadow-blue-600/20 hover:scale-105 transition-all">
           <Plus size={18} /> Create New Plan
         </Link>
       </div>

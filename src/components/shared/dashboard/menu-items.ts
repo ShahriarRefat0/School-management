@@ -52,9 +52,8 @@ export const superAdminMenuItems: DashboardMenuItem[] = [
     { title: "Overview", url: "/dashboard/super-admin", icon: LayoutDashboard },
     { title: "Schools Management", url: "/dashboard/super-admin/schools", icon: Building2 },
     { title: "Subscription Plans", url: "/dashboard/super-admin/plans", icon: ListOrdered },
-    { title: "All Subscriptions", url: "/dashboard/super-admin/subscriptions", icon: CreditCard },
+    { title: "All Users", url: "/dashboard/super-admin/all-users", icon: CreditCard },
     { title: "Transactions", url: "/dashboard/super-admin/transactions", icon: Receipt },
-    { title: "Broadcast", url: "/dashboard/super-admin/announcements", icon: Megaphone },
     { title: "Support Tickets", url: "/dashboard/super-admin/support", icon: LifeBuoy },
     { title: "Global Settings", url: "/dashboard/super-admin/settings", icon: Settings2 },
 ]
