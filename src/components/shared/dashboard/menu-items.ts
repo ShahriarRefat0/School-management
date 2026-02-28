@@ -93,19 +93,14 @@ export const superAdminMenuItems: DashboardMenuItem[] = [
     icon: ListOrdered,
   },
   {
-    title: 'All Subscriptions',
-    url: '/dashboard/super-admin/subscriptions',
+    title: 'All Users',
+    url: '/dashboard/super-admin/all-users',
     icon: CreditCard,
   },
   {
     title: 'Transactions',
     url: '/dashboard/super-admin/transactions',
     icon: Receipt,
-  },
-  {
-    title: 'Broadcast',
-    url: '/dashboard/super-admin/announcements',
-    icon: Megaphone,
   },
   {
     title: 'Support Tickets',
@@ -219,7 +214,7 @@ export const principalMenuItems: DashboardMenuItem[] = [
   {
     title: 'Attendance',
     url: '/dashboard/principal/attendance',
-    icon: UserCheckIcon,
+    icon: UserCheck,
   },
   {
     title: 'Performance',
@@ -228,5 +223,14 @@ export const principalMenuItems: DashboardMenuItem[] = [
   },
   { title: 'Finance', url: '/dashboard/principal/finance', icon: Wallet },
   { title: 'Reports', url: '/dashboard/principal/reports', icon: FileText },
-  { title: 'Settings', url: '/dashboard/principal/settings', icon: Settings },
+  {
+    title: 'Support Tickets',
+    url: '/dashboard/principal/addsupport',
+    icon: LifeBuoy,
+  },
+  {
+    title: 'Settings',
+    url: '/dashboard/principal/settings',
+    icon: Settings,
+  },
 ];
