@@ -20,7 +20,7 @@ model School {
   
   // New Fields
   schoolCategory   String
-  expectedStudents Int?     // Number হিসেবে সেভ করা ভালো
+  expectedStudents Int?    
   registrationId   String   @unique
   facebookUrl      String?
   websiteUrl       String?
@@ -29,7 +29,7 @@ model School {
   // Admin Info
   adminName        String
   adminEmail       String   @unique
-  adminPassword    String   // এটি অবশ্যই হ্যাস (hash) করে সেভ করবেন
+  adminPassword    String  
   
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -41,7 +41,7 @@ model SupportTicket {
   id            String   @id @default(cuid())
   subject       String
   description   String
-  priority      String   @default("low") // low, medium, high
+  priority      String   @default("low") 
   status        String   @default("open") // open, closed, pending
   schoolId      String?  // কোন স্কুল থেকে টিকিট আসছে
   userEmail     String   // কে টিকিট ক্রিয়েট করেছে
