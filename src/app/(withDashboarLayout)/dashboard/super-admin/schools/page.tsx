@@ -1,25 +1,35 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
-  Search, Plus, ShieldCheck, ShieldAlert, Filter, ArrowRight, User, Calendar, 
-  Hash, Users, MoreVertical, Edit, CreditCard, CalendarPlus, Image, Power, Trash2 
+  Search, Plus, ShieldCheck, ShieldAlert, Filter, ArrowRight, MoreVertical, 
+  Edit, CreditCard, CalendarPlus, Image as ImageIcon, Power, Trash2, Hash 
 } from 'lucide-react'
-
-const schoolsData = [
-  { id: "1", name: "Ideal International School", code: "SCH-101", adminName: "Md. Rafiqul Islam", email: "admin@ideal.com", status: "Active", plan: "Pro", students: 1200, expiry: "2024-12-25" },
-  { id: "2", name: "Bright Future Academy", code: "SCH-102", adminName: "Mrs. Nasrin Akter", email: "info@bright.com", status: "Suspended", plan: "Basic", students: 450, expiry: "2024-10-10" },
-  { id: "3", name: "Modern Scholars College", code: "SCH-103", adminName: "Dr. Abul Kashem", email: "principal@msc.edu", status: "Expired", plan: "Enterprise", students: 2500, expiry: "2023-09-15" },
-]
+import { getAllSchools } from '@/app/actions/school'
 
 export default function SchoolsList() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null); // ড্রপডাউন কন্ট্রোল করার জন্য
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [schools, setSchools] = useState<any[]>([]) 
+  const [loading, setLoading] = useState(true)
 
-  const filteredSchools = schoolsData.filter((school) =>
-    school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    school.code.toLowerCase().includes(searchTerm.toLowerCase())
+  const loadData = async () => {
+    setLoading(true)
+    const result = await getAllSchools()
+    if (result.success) {
+      setSchools(result.data || [])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const filteredSchools = schools.filter((school) =>
+    school.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    school.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const toggleMenu = (id: string) => {
@@ -29,7 +39,7 @@ export default function SchoolsList() {
   return (
     <div className="space-y-6 animate-fade-in-up pb-20">
       {/* হেডার */}
-      <div className="flex  flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-3xl font-black text-[var(--color-text-primary)] tracking-tight">School Management</h2>
           <p className="text-[var(--color-text-muted)] font-medium">Manage all tenants and subscriptions.</p>
@@ -59,50 +69,62 @@ export default function SchoolsList() {
       {/* স্কুল টেবিল */}
       <div className="bg-[var(--color-bg-card)] rounded-2xl border border-[var(--color-border-light)] overflow-visible shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-separate border-spacing-0">
             <thead className="bg-[var(--color-bg-page)] border-b border-[var(--color-border-light)]">
               <tr className="text-[var(--color-text-muted)] text-[10px] uppercase font-black tracking-widest">
-                <th className="px-6 py-4">School & Code</th>
-                <th className="px-6 py-4">Admin Name</th>
-                <th className="px-6 py-4">Plan</th>
-                <th className="px-6 py-4">Expiry Date</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-5 border-b border-[var(--color-border-light)]">School Name</th>
+                <th className="px-6 py-5 border-b border-[var(--color-border-light)]">Domain / Code</th>
+                <th className="px-6 py-5 border-b border-[var(--color-border-light)]">Plan</th>
+                <th className="px-6 py-5 border-b border-[var(--color-border-light)]">Expiry Date</th>
+                <th className="px-6 py-5 border-b border-[var(--color-border-light)]">Status</th>
+                <th className="px-6 py-5 border-b border-[var(--color-border-light)] text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border-light)]">
-              {filteredSchools.length > 0 ? (
+              {loading ? (
+                 <tr><td colSpan={6} className="px-6 py-10 text-center font-bold text-[var(--color-text-muted)] animate-pulse">Loading Data...</td></tr>
+              ) : filteredSchools.length > 0 ? (
                 filteredSchools.map((school) => (
                   <tr key={school.id} className="hover:bg-[var(--color-bg-page)]/50 transition-colors group">
+                    {/* School Name */}
                     <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-[var(--color-text-primary)] text-sm">{school.name}</span>
-                        <div className="flex items-center gap-1 text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider">
-                          <Hash size={10} /> {school.code}
+                        <span className="font-bold text-[var(--color-text-primary)] text-sm">{school.schoolName}</span>
+                    </td>
+
+                    {/* Domain / Slug - অ্যালাইনমেন্ট ঠিক করা হয়েছে */}
+                    <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5 text-[var(--color-primary)] font-bold text-[10px] uppercase tracking-wider bg-[var(--color-primary)]/5 px-2.5 py-1.5 rounded-lg w-fit">
+                            <Hash size={12} className="opacity-70" />
+                            {school.slug}
                         </div>
-                      </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
-                       {school.adminName}
+
+                    {/* Plan */}
+                    <td className="px-6 py-4">
+                       <span className="text-xs font-black uppercase text-[var(--color-text-secondary)] bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                          {school.plan || "BASIC"}
+                       </span>
                     </td>
-                    <td className="px-6 py-4 text-xs font-black uppercase text-[var(--color-primary)]">
-                       {school.plan}
-                    </td>
+
+                    {/* Expiry Date */}
                     <td className="px-6 py-4 text-xs font-bold text-[var(--color-text-secondary)]">
-                       {school.expiry}
+                       {school.expiryDate || "2025-01-01"}
                     </td>
+
+                    {/* Status */}
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase flex items-center gap-1 w-fit ${
-                        school.status === 'Active' ? 'bg-green-500/10 text-green-500' : 
                         school.status === 'Suspended' ? 'bg-orange-500/10 text-orange-600' : 
-                        'bg-red-500/10 text-red-500'
+                        school.status === 'Expired' ? 'bg-red-500/10 text-red-500' : 
+                        'bg-green-500/10 text-green-500' 
                       }`}>
-                        {school.status === 'Active' ? <ShieldCheck size={12}/> : <ShieldAlert size={12}/>}
-                        {school.status}
+                        {school.status === 'Suspended' ? <ShieldAlert size={12}/> : <ShieldCheck size={12}/>}
+                        {school.status || "Active"}
                       </span>
                     </td>
+
+                    {/* Actions */}
                     <td className="px-6 py-4 text-right relative">
-                      {/* ড্রপডাউন অ্যাকশন বাটন */}
                       <div className="flex justify-end items-center gap-2">
                          <Link href={`/dashboard/super-admin/schools/${school.id}`} className="p-2 hover:bg-[var(--color-bg-page)] rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-all">
                             <ArrowRight size={18} />
@@ -115,35 +137,13 @@ export default function SchoolsList() {
                          </button>
                       </div>
 
-                      {/* অ্যাকশন ড্রপডাউন মেনু */}
                       {openMenuId === school.id && (
                         <div className="absolute right-6 mt-2 w-56 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-2xl shadow-2xl z-50 overflow-hidden animate-fade-in-up">
                           <div className="p-2 space-y-1">
-                            {/* ১. Update School Info */}
-                            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] hover:text-[var(--color-primary)] rounded-xl transition-all">
+                            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] hover:text-[var(--color-primary)] rounded-xl transition-all text-left">
                               <Edit size={14} /> Update School Info
                             </button>
-                            {/* ২. Change Plan */}
-                            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] hover:text-[var(--color-primary)] rounded-xl transition-all">
-                              <CreditCard size={14} /> Change Plan
-                            </button>
-                            {/* ৩. Extend Subscription */}
-                            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] hover:text-[var(--color-primary)] rounded-xl transition-all">
-                              <CalendarPlus size={14} /> Extend Subscription
-                            </button>
-                            {/* ৪. Update Logo */}
-                            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] hover:text-[var(--color-primary)] rounded-xl transition-all">
-                              <Image size={14} /> Update Logo
-                            </button>
-                            {/* ৫. Change Status / Suspend */}
-                            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-[var(--color-text-secondary)]  hover:bg-[var(--color-bg-page)] rounded-xl transition-all border-t border-[var(--color-border-light)] mt-1 pt-2">
-                              <Power size={14} /> Change Status
-                            </button>
-                            {/* ৬. Delete School */}
-                            <button 
-                              className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-500/10 rounded-xl transition-all"
-                              onClick={() => alert("Are you sure you want to delete this school? This action is permanent.")}
-                            >
+                            <button className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-500/10 rounded-xl transition-all text-left">
                               <Trash2 size={14} /> Delete School
                             </button>
                           </div>

@@ -1,33 +1,43 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   Search, Edit, School, Mail, CheckCircle, Ban, 
   Users, ArrowUpRight, ShieldCheck 
 } from 'lucide-react'
 import Link from 'next/link'
-
-// Mock Data: Only Primary Admins/School Owners
-const initialAdmins = [
-  { id: "u1", schoolId: "s1", email: "principal@ideal.edu", name: "Rashed Khan", school: "Ideal High School", status: "ACTIVE", joinedDate: "2024-01-10" },
-  { id: "u2", schoolId: "s2", email: "owner@sunfield.com", name: "Anisur Rahman", school: "Sunfields School", status: "ACTIVE", joinedDate: "2024-02-15" },
-  { id: "u3", schoolId: "s3", email: "admin@global.net", name: "Morshed Alam", school: "Global Academy", status: "SUSPENDED", joinedDate: "2024-03-20" },
-]
+import { getAllUsers } from '@/app/actions/school' // একশন ইম্পোর্ট
 
 export default function ClientManagement() {
-  const [admins, setAdmins] = useState(initialAdmins);
+  const [admins, setAdmins] = useState<any[]>([]); // রিয়েল ডাটা স্টেট
+  const [loading, setLoading] = useState(true);
   const [searchEmail, setSearchEmail] = useState("");
-  const [schoolFilter, setSchoolFilter] = useState("ALL");
+  const [schoolFilter, setSchoolFilter] = useState(""); // সার্চ বাই স্কুল নেম
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // Refined Filter Logic
+  // ডাটা লোড করা
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      const res = await getAllUsers();
+      if (res.success) {
+        // ডাটাবেসে status নেই, তাই ফ্রন্টএন্ডে ডিফল্ট ACTIVE যোগ করে দিচ্ছি
+        const dataWithStatus = res.data?.map(u => ({ ...u, status: "ACTIVE" })) || [];
+        setAdmins(dataWithStatus);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  // ফিল্টার লজিক (রিয়েল ডাটা অনুযায়ী আপডেট করা হয়েছে)
   const filteredAdmins = admins.filter(admin => {
-    const matchesEmail = admin.email.toLowerCase().includes(searchEmail.toLowerCase());
-    const matchesSchool = schoolFilter === "ALL" || admin.school === schoolFilter;
+    const matchesEmail = admin.adminEmail.toLowerCase().includes(searchEmail.toLowerCase());
+    const matchesSchool = admin.schoolName.toLowerCase().includes(schoolFilter.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || admin.status === statusFilter;
     return matchesEmail && matchesSchool && matchesStatus;
   });
 
-  const toggleStatus = (id) => {
+  const toggleStatus = (id: string) => {
     setAdmins(admins.map(a => 
       a.id === id ? { ...a, status: a.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE" } : a
     ));
@@ -38,7 +48,7 @@ export default function ClientManagement() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-[var(--color-text-primary)] flex items-center gap-3">
+          <h2 className="text-3xl font-black text-[var(--color-text-primary)] flex items-center gap-3 tracking-tighter uppercase">
             <ShieldCheck className="text-[var(--color-primary)]" size={32} />
             Client Directory
           </h2>
@@ -52,7 +62,7 @@ export default function ClientManagement() {
       </div>
 
       {/* Modern Filter Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--color-bg-card)] p-4 rounded-3xl border border-[var(--color-border-light)]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--color-bg-card)] p-4 rounded-3xl border border-[var(--color-border-light)] shadow-sm">
         {/* Email Search */}
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
@@ -68,8 +78,8 @@ export default function ClientManagement() {
           <School className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
           <input 
             type="text" placeholder="Search school name..." 
-            onChange={(e) => setSchoolFilter(e.target.value === "" ? "ALL" : e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold appearance-none"
+            onChange={(e) => setSchoolFilter(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold"
           />
         </div>
 
@@ -77,7 +87,7 @@ export default function ClientManagement() {
         <div className="relative">
           <select 
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold appearance-none cursor-pointer"
+            className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold cursor-pointer appearance-none"
           >
             <option value="ALL">All Status</option>
             <option value="ACTIVE">Active Only</option>
@@ -100,55 +110,61 @@ export default function ClientManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border-light)]">
-              {filteredAdmins.map((admin) => (
-                <tr key={admin.id} className="hover:bg-[var(--color-bg-page)]/40 transition-all group">
-                  <td className="px-8 py-6">
-                    <div className="flex flex-col">
-                      <span className="font-black text-[15px] text-[var(--color-text-primary)]">{admin.name}</span>
-                      <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
-                        <Mail size={12} /> {admin.email}
+              {loading ? (
+                <tr><td colSpan={5} className="text-center py-20 font-black text-gray-500 animate-pulse uppercase tracking-widest">Loading Database...</td></tr>
+              ) : filteredAdmins.length > 0 ? (
+                filteredAdmins.map((admin) => (
+                  <tr key={admin.id} className="hover:bg-[var(--color-bg-page)]/40 transition-all group">
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col">
+                        <span className="font-black text-[15px] text-[var(--color-text-primary)]">{admin.adminName}</span>
+                        <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 font-medium">
+                          <Mail size={12} className="opacity-60" /> {admin.adminEmail}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <School size={14} className="text-[var(--color-primary)]" />
+                        <span className="text-xs font-black text-[var(--color-text-secondary)] uppercase tracking-tighter">{admin.schoolName}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${
+                        admin.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
+                      }`}>
+                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${admin.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        {admin.status}
                       </span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
-                      <School size={14} className="text-[var(--color-primary)]" />
-                      <span className="text-xs font-black text-[var(--color-text-secondary)]">{admin.school}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                      admin.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
-                    }`}>
-                      <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${admin.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                      {admin.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 text-xs font-bold text-[var(--color-text-muted)]">
-                    {admin.joinedDate}
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                      <Link 
-                        href={`/dashboard/super-admin/schools/edit/${admin.schoolId}`}
-                        className="p-2.5 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-2xl hover:bg-[var(--color-primary)] hover:text-white transition-all shadow-sm"
-                      >
-                        <Edit size={18} />
-                      </Link>
-                      <button 
-                        onClick={() => toggleStatus(admin.id)}
-                        className={`p-2.5 rounded-2xl transition-all shadow-sm ${
-                          admin.status === 'ACTIVE' 
-                          ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' 
-                          : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
-                        }`}
-                      >
-                        {admin.status === 'ACTIVE' ? <Ban size={18} /> : <CheckCircle size={18} />}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-8 py-6 text-xs font-bold text-[var(--color-text-muted)] font-mono">
+                      {new Date(admin.createdAt).toISOString().split('T')[0]}
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                        <Link 
+                          href={`/dashboard/super-admin/schools/edit/${admin.id}`}
+                          className="p-2.5 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-2xl hover:bg-[var(--color-primary)] hover:text-white transition-all shadow-sm"
+                        >
+                          <Edit size={18} />
+                        </Link>
+                        <button 
+                          onClick={() => toggleStatus(admin.id)}
+                          className={`p-2.5 rounded-2xl transition-all shadow-sm ${
+                            admin.status === 'ACTIVE' 
+                            ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' 
+                            : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
+                          }`}
+                        >
+                          {admin.status === 'ACTIVE' ? <Ban size={18} /> : <CheckCircle size={18} />}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan={5} className="text-center py-20 font-black text-gray-500 uppercase tracking-widest">No Clients Found</td></tr>
+              )}
             </tbody>
           </table>
         </div>
