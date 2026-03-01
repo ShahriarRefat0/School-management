@@ -28,3 +28,7 @@ export default defineConfig({
 // If you get drift/conflict error, run:
 
 // npx prisma migrate reset
+
+
+// if add new schema or change in /prisma/schema.prisma then run this:
+// npx prisma migrate dev --name add-student
