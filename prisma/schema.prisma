@@ -35,6 +35,7 @@ model School {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   announcements    Announcement[] 
+  teacherNotices   TeacherNotice[]
 }
 
 //-------------------------------------admin----------------------------//
@@ -72,11 +73,17 @@ model Announcement {
   schoolId        String
   school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
-  createdAt       DateTime  @default(now())
+  // Author information
+  authorId        String?
+  authorName      String?
+
+  createdAt       DateTime  @default(now())  
   updatedAt       DateTime  @updatedAt
 
   @@index([schoolId])
 }
+
+
 
 
 // Subscription Plans schema
@@ -109,4 +116,38 @@ model SupportTicket {
   attachmentUrl String?  // ইমেজ বা স্ক্রিনশট স্টোর করার জন্য এই ফিল্ডটি যোগ করা হলো
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+
+
+
+//-------------------------------------teacher----------------------------//
+
+model TeacherNotice {
+  id              String    @id @default(cuid())
+  title           String
+  content         String    @db.Text
+  
+  audience        String    @default("all") 
+  targetClass     String?   
+  category        String    @default("academic")
+  priority        String    @default("normal")
+  attachmentUrl   String?   
+  
+  publishDate     DateTime  @default(now())
+  expiryDate      DateTime? 
+  
+  status          String    @default("published") 
+  
+  schoolId        String
+  school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Author information
+  authorId        String?
+  authorName      String?
+
+  createdAt       DateTime  @default(now())  
+  updatedAt       DateTime  @updatedAt
+
+  @@index([schoolId])
 }
