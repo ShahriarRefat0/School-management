@@ -4,9 +4,11 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  // url       = env("DATABASE_URL")
+ 
 
 }
+
+//-----------------------------super_amin-------------------------//
 model School {
   id               String   @id @default(cuid())
   schoolName       String
@@ -32,6 +34,48 @@ model School {
   
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  announcements    Announcement[] 
+}
+
+//-------------------------------------admin----------------------------//
+
+// ১. আপনার School মডেলের নিচে এই রিলেশনটি যোগ করুন:
+// announcements Announcement[]
+
+model Announcement {
+  id              String    @id @default(cuid())
+  title           String
+  content         String    @db.Text
+  
+  // কাদের জন্য: "all", "teachers", "students", "staff"
+  audience        String    @default("all") 
+  
+  // যদি Students সিলেক্ট করা হয়, তবে এখানে ক্লাসের নাম থাকবে (যেমন: "Class 10")
+  // সবার জন্য হলে এটি null থাকবে
+  targetClass     String?   
+  
+  // নোটিশের ধরণ: "academic", "holiday", "exam", "event", "emergency"
+  category        String    @default("academic")
+  
+  // গুরুত্ব: "normal", "high", "urgent"
+  priority        String    @default("normal")
+  
+  // ফাইল বা ইমেজ লিঙ্ক (ঐচ্ছিক)
+  attachmentUrl   String?   
+  
+  publishDate     DateTime  @default(now())
+  expiryDate      DateTime? // নোটিশটি কতদিন দেখাবে
+  
+  status          String    @default("published") // "published", "draft"
+  
+  // কোন স্কুল এই নোটিশ দিচ্ছে
+  schoolId        String
+  school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([schoolId])
 }
 
 

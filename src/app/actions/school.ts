@@ -40,3 +40,93 @@ export async function createSchool(formData: any) {
     return { success: false, error: "Database error occurred. Please try again." };
   }
 }
+
+
+
+
+//it will show all data 
+
+// ১. সব স্কুল ডাটা আনার জন্য (শুধু স্কুলের তথ্য)
+export async function getAllSchools() {
+  try {
+    const schools = await prisma.school.findMany({
+      select: {
+        id: true,
+        schoolName: true,
+        schoolEmail: true,
+        schoolCategory: true,
+        slug: true,
+        registrationId: true,
+        // admin info গুলো বাদ দেওয়া হয়েছে আপনার চাহিদা মতো
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    return { success: true, data: schools };
+  } catch (error) {
+    return { success: false, error: "Failed to fetch schools" };
+  }
+}
+
+// ১. আইডি দিয়ে স্কুল খুঁজে বের করা
+export async function getSchoolById(id: string) {
+  try {
+    const school = await prisma.school.findUnique({
+      where: { id }
+    });
+    return { success: true, data: school };
+  } catch (error) {
+    return { success: false, error: "School not found" };
+  }
+}
+
+// ২. স্কুল আপডেট করা
+export async function updateSchool(id: string, formData: any) {
+  try {
+    const updated = await prisma.school.update({
+      where: { id },
+      data: {
+        ...formData,
+        expectedStudents: formData.expectedStudents ? Number(formData.expectedStudents) : null,
+      }
+    });
+    return { success: true, data: updated };
+  } catch (error) {
+    return { success: false, error: "Update failed" };
+  }
+}
+
+
+
+
+//------------------------eta hocce je all users-----------------------------//
+
+
+// action/school.ts ফাইলে এটি যোগ করুন
+
+export async function getAllUsers() {
+  try {
+    const users = await prisma.school.findMany({
+      select: {
+        id: true,
+        adminName: true,      // Owner Identity (Name)
+        adminEmail: true,     // Owner Identity (Email)
+        schoolName: true,     // Institution
+        createdAt: true,      // Joined Date
+        // যদি আপনার স্কিমাতে 'status' না থাকে, তবে আমরা ডিফল্ট 'Active' ধরে নেব
+        // আপনি স্কিমাতে status String @default("active") যোগ করে নিতে পারেন
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return { success: true, data: users };
+  } catch (error: any) {
+    console.error("❌ Prisma User Fetch Error:", error.message);
+    return { success: false, error: "ইউজার ডাটা আনতে সমস্যা হয়েছে।" };
+  }
+}
+
+
+
+
