@@ -1,7 +1,4 @@
-
 generator client {
-  // provider = "prisma-client"
-  // output   = "../src/generated/prisma"
   provider = "prisma-client-js"
 }
 
@@ -82,3 +79,34 @@ model Announcement {
 }
 
 
+// Subscription Plans schema
+
+model Plan {
+  id        String   @id @default(cuid())
+  name      String
+  price     String
+  duration  String
+  icon      String?
+  color     String?
+  students  String
+  teachers  String
+  storage   String
+  modules   String[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+// prisma/schema.prisma
+
+model SupportTicket {
+  id            String   @id @default(cuid())
+  subject       String
+  description   String
+  priority      String   @default("low") // low, medium, high
+  status        String   @default("open") // open, closed, pending
+  schoolId      String?  // কোন স্কুল থেকে টিকিট আসছে
+  userEmail     String   // কে টিকিট ক্রিয়েট করেছে
+  attachmentUrl String?  // ইমেজ বা স্ক্রিনশট স্টোর করার জন্য এই ফিল্ডটি যোগ করা হলো
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

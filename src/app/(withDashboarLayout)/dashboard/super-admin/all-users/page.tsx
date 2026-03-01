@@ -55,9 +55,9 @@ export default function ClientManagement() {
           <p className="text-[var(--color-text-muted)] font-medium">Manage institutional owners and their platform access.</p>
         </div>
         <div className="flex gap-2">
-           <div className="bg-blue-500/10 text-blue-600 px-4 py-2 rounded-2xl border border-blue-500/20 text-sm font-black uppercase tracking-tighter">
-             Total Clients: {admins.length}
-           </div>
+          <div className="bg-blue-500/10 text-blue-600 px-4 py-2 rounded-2xl border border-blue-500/20 text-sm font-black uppercase tracking-tighter">
+            Total Clients: {admins.length}
+          </div>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ export default function ClientManagement() {
         {/* Email Search */}
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
-          <input 
+          <input
             type="text" placeholder="Search by email..." value={searchEmail}
             onChange={(e) => setSearchEmail(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold focus:ring-2 focus:ring-[var(--color-primary)]/20"
@@ -85,7 +85,7 @@ export default function ClientManagement() {
 
         {/* Status Filter */}
         <div className="relative">
-          <select 
+          <select
             onChange={(e) => setStatusFilter(e.target.value)}
             className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold cursor-pointer appearance-none"
           >
