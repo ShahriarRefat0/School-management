@@ -22,7 +22,6 @@ export async function createSchool(formData: any) {
         language: formData.language,
         adminName: formData.adminName,
         adminEmail: formData.adminEmail,
-        adminPassword: formData.adminPassword,
       },
     });
 

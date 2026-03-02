@@ -39,9 +39,7 @@ model School {
   facebookUrl      String?
   websiteUrl       String?
   language         String   @default("english")
-  adminName        String
-  adminEmail       String   @unique
-  // adminPassword    String                          //pass data table a rakha jaby na
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -189,8 +187,11 @@ model User {
   id String @id @default(uuid())
 
   authUserId String @unique //supabase auth id
-  schoolId   String
 
+  name  String
+  email String @unique
+
+  schoolId   String
   role   Role
   status UserStatus @default(active)
 
