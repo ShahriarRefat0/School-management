@@ -22,29 +22,52 @@ model School {
   websiteUrl       String?
   language         String         @default("english")
   adminName        String
-  adminEmail       String         @unique
-  adminPassword    String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  announcements    Announcement[]
+  adminEmail       String   @unique
+  adminPassword    String   // এটি অবশ্যই হ্যাস (hash) করে সেভ করবেন
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  announcements    Announcement[] 
+  teacherNotices   TeacherNotice[]
+  studyMaterials   StudyMaterial[]
 }
 
 model Announcement {
-  id            String    @id @default(cuid())
-  title         String
-  content       String
-  audience      String    @default("all")
-  targetClass   String?
-  category      String    @default("academic")
-  priority      String    @default("normal")
-  attachmentUrl String?
-  publishDate   DateTime  @default(now())
-  expiryDate    DateTime?
-  status        String    @default("published")
-  schoolId      String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  id              String    @id @default(cuid())
+  title           String
+  content         String    @db.Text
+  
+  // কাদের জন্য: "all", "teachers", "students", "staff"
+  audience        String    @default("all") 
+  
+  // যদি Students সিলেক্ট করা হয়, তবে এখানে ক্লাসের নাম থাকবে (যেমন: "Class 10")
+  // সবার জন্য হলে এটি null থাকবে
+  targetClass     String?   
+  
+  // নোটিশের ধরণ: "academic", "holiday", "exam", "event", "emergency"
+  category        String    @default("academic")
+  
+  // গুরুত্ব: "normal", "high", "urgent"
+  priority        String    @default("normal")
+  
+  // ফাইল বা ইমেজ লিঙ্ক (ঐচ্ছিক)
+  attachmentUrl   String?   
+  
+  publishDate     DateTime  @default(now())
+  expiryDate      DateTime? // নোটিশটি কতদিন দেখাবে
+  
+  status          String    @default("published") // "published", "draft"
+  
+  // কোন স্কুল এই নোটিশ দিচ্ছে
+  schoolId        String
+  school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Author information
+  authorId        String?
+  authorName      String?
+
+  createdAt       DateTime  @default(now())  
+  updatedAt       DateTime  @updatedAt
 
   @@index([schoolId])
 }
@@ -105,6 +128,39 @@ model SupportTicket {
   updatedAt     DateTime @updatedAt
 }
 
+
+
+
+//-------------------------------------teacher----------------------------//
+
+model TeacherNotice {
+  id              String    @id @default(cuid())
+  title           String
+  content         String    @db.Text
+  
+  audience        String    @default("all") 
+  targetClass     String?   
+  category        String    @default("academic")
+  priority        String    @default("normal")
+  attachmentUrl   String?   
+  
+  publishDate     DateTime  @default(now())
+  expiryDate      DateTime? 
+  
+  status          String    @default("published") 
+  
+  schoolId        String
+  school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Author information
+  authorId        String?
+  authorName      String?
+
+  createdAt       DateTime  @default(now())  
+  updatedAt       DateTime  @updatedAt
+
+  @@index([schoolId])
+}
 model TeacherAdd {
   id               String   @id @default(uuid())
   teacherId        String   @unique
@@ -124,8 +180,33 @@ model TeacherAdd {
   presentAddress   String
   permanentAddress String?
   isActive         Boolean  @default(true)
+  studyMaterials   StudyMaterial[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   @@map("teachers")
+}
+
+model StudyMaterial {
+  id            String   @id @default(cuid())
+  title         String
+  type          String   // e.g., "PDF", "PPT", "Video", "DOC"
+  subject       String
+  class         String
+  description   String?  @db.Text
+  attachmentUrl String
+  size          String?  // e.g., "2.4 MB"
+  
+  // Relations
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  teacherId     String
+  teacher       TeacherAdd @relation(fields: [teacherId], references: [teacherId], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([schoolId])
+  @@index([teacherId])
 }
