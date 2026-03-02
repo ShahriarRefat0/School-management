@@ -6,28 +6,50 @@ datasource db {
   provider = "postgresql"
 }
 
+//ROLE ENUM
+enum Role {
+  super_admin
+  admin
+  teacher
+  student
+  parent
+  accountant
+}
+
+//user status ENUM
+enum UserStatus {
+  active
+  blocked
+}
+
+//school data table
+
 model School {
-  id               String         @id @default(cuid())
+  id               String   @id @default(cuid())
   schoolName       String
-  slug             String         @unique
-  schoolEmail      String         @unique
+  slug             String   @unique
+  schoolEmail      String   @unique
   phone            String?
   address          String?
-  plan             String         @default("basic")
-  duration         String         @default("12")
+  plan             String   @default("basic")
+  duration         String   @default("12")
   schoolCategory   String
   expectedStudents Int?
-  registrationId   String         @unique
+  registrationId   String   @unique
   facebookUrl      String?
   websiteUrl       String?
-  language         String         @default("english")
+  language         String   @default("english")
   adminName        String
-  adminEmail       String         @unique
-  adminPassword    String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  announcements    Announcement[]
+  adminEmail       String   @unique
+  // adminPassword    String                          //pass data table a rakha jaby na
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  users         User[]         @relation("SchoolUsers")
+  announcements Announcement[]
 }
+
+//announcement form principal data table
 
 model Announcement {
   id            String    @id @default(cuid())
@@ -49,7 +71,8 @@ model Announcement {
   @@index([schoolId])
 }
 
-model StudentAdd {
+//students info data table
+model Student {
   id               String   @id @default(uuid())
   registrationNo   String   @unique
   firstName        String
@@ -70,13 +93,18 @@ model StudentAdd {
   email            String?  @unique
   presentAddress   String
   permanentAddress String?
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation("UserStudent", fields: [userId], references: [id])
 
   @@map("students")
 }
 
+//sub-plan data table
 model Plan {
   id        String   @id @default(cuid())
   name      String
@@ -92,6 +120,7 @@ model Plan {
   updatedAt DateTime @updatedAt
 }
 
+//support ticket data table
 model SupportTicket {
   id            String   @id @default(cuid())
   subject       String
@@ -105,7 +134,8 @@ model SupportTicket {
   updatedAt     DateTime @updatedAt
 }
 
-model TeacherAdd {
+//teacher data table
+model Teacher {
   id               String   @id @default(uuid())
   teacherId        String   @unique
   firstName        String
@@ -127,5 +157,31 @@ model TeacherAdd {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  userId String @unique
+  user   User   @relation("UserTeacher", fields: [userId], references: [id])
+
   @@map("teachers")
+}
+
+//all users here
+
+model User {
+  id String @id @default(uuid())
+
+  authUserId String @unique //supabase auth id
+  schoolId   String
+
+  role   Role
+  status UserStatus @default(active)
+
+  //relations 
+  school School @relation("SchoolUsers", fields: [schoolId], references: [id])
+
+  student Student? @relation("UserStudent")
+  teacher Teacher? @relation("UserTeacher")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("User")
 }

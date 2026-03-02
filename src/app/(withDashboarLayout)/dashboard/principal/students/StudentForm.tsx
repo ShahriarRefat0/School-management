@@ -58,7 +58,7 @@ export default function StudentForm() {
         let active = true;
 
         if (isEdit && studentId) {
-            console.log("�️ StudentForm: Starting fetch for ID:", studentId);
+        //    console.log("�️ StudentForm: Starting fetch for ID:", studentId);
             const loadData = async () => {
                 setLoading(true);
                 setError("");
@@ -66,7 +66,7 @@ export default function StudentForm() {
                     const result = await getStudent(studentId);
                     if (!active) return;
 
-                    console.log("�️ StudentForm: Fetch Result:", result);
+                   // console.log("�️ StudentForm: Fetch Result:", result);
 
                     if (result.success && result.data) {
                         const d = result.data;
