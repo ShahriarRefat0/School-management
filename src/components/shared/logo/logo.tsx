@@ -9,6 +9,7 @@ interface LogoProps {
     size?: "sm" | "md" | "lg" // নতুন সাইজ প্রপ যোগ করা হয়েছে
     title?: string
     subtitle?: string
+    
 }
 
 export default function Logo({ 

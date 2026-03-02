@@ -27,7 +27,7 @@ const {user, signOut } = useAuth()
     return (
         <>
             {/* ১. হেডার সেকশন */}
-            <header className="sticky top-0 z-50 flex h-16 items-center border-b border-border-light bg-bg-card/80 px-2 md:px-6 backdrop-blur-md">
+            <header className="sticky top-0 z-50  flex h-16 items-center border-b border-border-light bg-bg-card/80 px-2 md:px-6 backdrop-blur-md">
                 <div className="flex w-full items-center justify-between">
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                         <button onClick={onMenuClick} className="md:hidden p-1.5 text-slate-500 rounded-lg hover:bg-secondary/30">

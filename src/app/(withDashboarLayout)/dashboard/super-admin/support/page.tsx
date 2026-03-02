@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
 import {
   MessageSquare,
@@ -26,7 +27,6 @@ export default function ActivityHelpDesk() {
   const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
   const [updating, setUpdating] = useState(false);
 
-  // টিকেট লোড করার ফাংশন
   const loadTickets = async () => {
     setLoading(true);
     const result = await getAllSupportTickets();
@@ -38,7 +38,6 @@ export default function ActivityHelpDesk() {
     loadTickets();
   }, []);
 
-  // স্ট্যাটাস আপডেট হ্যান্ডলার
   const handleStatusUpdate = async (id: string, currentStatus: string) => {
     setUpdating(true);
     let nextStatus = currentStatus === 'open' ? 'reviewing' : 'completed';
@@ -54,7 +53,6 @@ export default function ActivityHelpDesk() {
     setUpdating(false);
   };
 
-  // ডিলিট হ্যান্ডলার
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this ticket?')) return;
     const result = await deleteTicket(id);
@@ -73,7 +71,7 @@ export default function ActivityHelpDesk() {
     );
 
   return (
-    <div className="space-y-8 animate-fade-in-up p-2 md:p-0">
+    <div className="relative space-y-8 animate-fade-in-up p-2 md:p-0">
       {/* --- Header --- */}
       <div className="bg-[var(--color-bg-card)] p-8 rounded-[32px] border border-[var(--color-border-light)] shadow-sm">
         <h2 className="text-3xl font-black text-[var(--color-text-primary)] tracking-tight uppercase">
@@ -85,8 +83,8 @@ export default function ActivityHelpDesk() {
         </p>
       </div>
 
-      {/* --- Desktop/Tablet Table --- */}
-      <div className="bg-[var(--color-bg-card)] rounded-[32px] border border-[var(--color-border-light)] overflow-hidden">
+      {/* --- Table --- */}
+      <div className="bg-[var(--color-bg-card)] rounded-[32px] border border-[var(--color-border-light)] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -121,7 +119,7 @@ export default function ActivityHelpDesk() {
                   </td>
                   <td className="p-6">
                     <span
-                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${item.priority === 'high' ? 'bg-rose-500/10 text-rose-500' : 'bg-slate-100 text-slate-500'}`}
+                      className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${item.priority === 'high' ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'}`}
                     >
                       {item.priority}
                     </span>
@@ -140,13 +138,13 @@ export default function ActivityHelpDesk() {
                     <div className="flex justify-end items-center gap-2">
                       <button
                         onClick={() => setSelectedTicket(item)}
-                        className="p-2 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all"
+                        className="p-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
                       >
                         <Eye size={18} />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="p-2 bg-rose-500/10 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all"
+                        className="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm active:scale-95"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -159,113 +157,150 @@ export default function ActivityHelpDesk() {
         </div>
       </div>
 
-      {/* --- Detail Modal --- */}
+      {/* --- Detail Modal (X Button Fix) --- */}
       {selectedTicket && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[var(--color-bg-card)] w-full max-w-4xl rounded-[40px] border border-[var(--color-border-light)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-fade-in-up">
+        <div className="fixed inset-0 mb-6 flex flex-col -translate-y-10 items-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+            onClick={() => setSelectedTicket(null)}
+          ></div>
+
+          {/* Modal Container */}
+          <div className="relative bg-[var(--color-bg-card)] w-full max-w-4xl max-h-[90vh] rounded-[40px] border border-[var(--color-border-light)] shadow-2xl flex flex-col overflow-visible animate-fade-in-up">
+            {/* --- FIXED CROSS BUTTON (Always on top of Header) --- */}
+            <button
+              onClick={() => setSelectedTicket(null)}
+              className="absolute -top-4 -right-4 z-[10000] p-4 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all shadow-xl border-4 border-[var(--color-bg-card)] active:scale-90 group"
+              style={{ pointerEvents: 'auto' }}
+            >
+              <X
+                size={24}
+                strokeWidth={3}
+                className="group-hover:rotate-90 transition-transform duration-300"
+              />
+            </button>
+
             {/* Modal Header */}
-            <div className="p-6 border-b border-[var(--color-border-light)] flex justify-between items-center bg-primary/5">
-              <h3 className="font-black text-xl uppercase tracking-tight flex items-center gap-3">
-                <Eye className="text-primary" /> Ticket Details
-              </h3>
-              <button
-                onClick={() => setSelectedTicket(null)}
-                className="p-2 hover:bg-rose-500/10 text-rose-500 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
+            <div className="p-6 md:p-8 border-b border-[var(--color-border-light)] flex items-center gap-4 bg-primary/5 shrink-0 rounded-t-[40px]">
+              <div className="p-3 bg-primary rounded-2xl text-white shadow-lg shadow-primary/20">
+                <Eye size={24} />
+              </div>
+              <div>
+                <h3 className="font-black text-xl md:text-2xl uppercase tracking-tight text-[var(--color-text-primary)] leading-none">
+                  Ticket Overview
+                </h3>
+                <p className="text-[10px] font-bold text-primary uppercase mt-1.5 tracking-[2px]">
+                  Admin Management Console
+                </p>
+              </div>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar">
+            <div className="p-6 md:p-10 overflow-y-auto custom-scrollbar flex-grow space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                {/* Info Side */}
+                {/* Info Column */}
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-black text-primary leading-tight mb-4 uppercase">
+                    <h2 className="text-2xl font-black text-primary uppercase mb-4 leading-tight">
                       {selectedTicket.subject}
                     </h2>
-                    <div className="bg-[var(--color-bg-page)] p-6 rounded-2xl border border-[var(--color-border-light)] italic font-medium">
-                      "{selectedTicket.description}"
+                    <div className="bg-[var(--color-bg-page)] p-6 rounded-[32px] border border-[var(--color-border-light)] shadow-inner">
+                      <p className="text-[var(--color-text-secondary)] font-medium italic">
+                        "{selectedTicket.description}"
+                      </p>
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm font-bold bg-[var(--color-bg-page)] p-4 rounded-xl border border-[var(--color-border-light)]">
-                      <School className="text-primary" size={18} />
-                      <span className="text-[var(--color-text-muted)] uppercase text-[10px]">
-                        School ID:
-                      </span>
-                      <span className="text-primary uppercase tracking-widest">
-                        {selectedTicket.schoolId || 'NOT_SPECIFIED'}
-                      </span>
+                  <div className="grid gap-3">
+                    <div className="flex items-center gap-4 p-4 bg-[var(--color-bg-page)] rounded-2xl border border-[var(--color-border-light)]">
+                      <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                        <School size={18} />
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-[var(--color-text-muted)] uppercase italic">
+                          Institution ID
+                        </p>
+                        <p className="text-sm font-black uppercase">
+                          {selectedTicket.schoolId || 'N/A'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-sm font-bold bg-[var(--color-bg-page)] p-4 rounded-xl border border-[var(--color-border-light)]">
-                      <User className="text-primary" size={18} />
-                      <span className="text-[var(--color-text-muted)] uppercase text-[10px]">
-                        From:
-                      </span>
-                      <span>{selectedTicket.userEmail}</span>
+                    <div className="flex items-center gap-4 p-4 bg-[var(--color-bg-page)] rounded-2xl border border-[var(--color-border-light)]">
+                      <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                        <User size={18} />
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-[var(--color-text-muted)] uppercase italic">
+                          Submitted By
+                        </p>
+                        <p className="text-sm font-black">
+                          {selectedTicket.userEmail}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Attachment Side */}
+                {/* Media Column */}
                 <div className="space-y-4">
-                  <p className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">
-                    Screenshot Attachment
-                  </p>
-                  {selectedTicket.attachmentUrl ? (
-                    <div className="relative group rounded-3xl overflow-hidden border-2 border-[var(--color-border-light)] bg-black h-[280px]">
-                      <img
-                        src={selectedTicket.attachmentUrl}
-                        alt="Screenshot"
-                        className="w-full h-full object-contain"
-                      />
-                      <a
-                        href={selectedTicket.attachmentUrl}
-                        target="_blank"
-                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-2"
-                      >
-                        <ExternalLink size={18} /> VIEW FULL SIZE
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="h-[280px] border-2 border-dashed border-[var(--color-border-light)] rounded-3xl flex flex-col items-center justify-center bg-[var(--color-bg-page)]">
-                      <ImageIcon size={40} className="opacity-10 mb-2" />
-                      <p className="text-[10px] font-black uppercase opacity-30 tracking-widest">
-                        No Image
-                      </p>
-                    </div>
-                  )}
+                  <h3 className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest flex items-center gap-2">
+                    <ImageIcon size={14} /> Attachment Preview
+                  </h3>
+                  <div className="relative rounded-[32px] overflow-hidden border-2 border-[var(--color-border-light)] bg-slate-900 shadow-xl h-[320px] group">
+                    {selectedTicket.attachmentUrl ? (
+                      <>
+                        <img
+                          src={selectedTicket.attachmentUrl}
+                          alt="Screenshot"
+                          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <a
+                          href={selectedTicket.attachmentUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs gap-2"
+                        >
+                          <ExternalLink size={20} /> OPEN ORIGINAL
+                        </a>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full opacity-10 text-white">
+                        <ImageIcon size={64} className="mb-2" />
+                        <p className="font-black text-[10px] uppercase tracking-widest">
+                          No Media Attached
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="p-8 border-t border-[var(--color-border-light)]">
+            {/* Modal Footer */}
+            <div className="p-8 border-t border-[var(--color-border-light)] bg-[var(--color-bg-page)]/50 shrink-0 rounded-b-[40px]">
               {selectedTicket.status !== 'completed' ? (
                 <button
                   disabled={updating}
                   onClick={() =>
                     handleStatusUpdate(selectedTicket.id, selectedTicket.status)
                   }
-                  className="w-full bg-primary text-white py-5 rounded-[24px] font-black uppercase tracking-[2px] text-xs hover:bg-black transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full bg-primary text-white py-5 rounded-[28px] font-black uppercase tracking-[3px] text-xs hover:bg-black transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
                 >
                   {updating ? (
-                    <Loader2 className="animate-spin" />
+                    <Loader2 className="animate-spin" size={20} />
                   ) : (
                     <>
-                      <CheckCircle2 size={18} />{' '}
+                      <CheckCircle2 size={20} />
                       {selectedTicket.status === 'open'
-                        ? 'Start Reviewing'
-                        : 'Mark Completed'}
+                        ? 'Initialize Reviewing'
+                        : 'Mark as Resolved'}
                     </>
                   )}
                 </button>
               ) : (
-                <div className="w-full bg-emerald-500/10 text-emerald-600 py-5 rounded-[24px] font-black uppercase text-xs text-center border border-emerald-500/20">
-                  Resolved Ticket
+                <div className="w-full bg-emerald-500/10 text-emerald-600 py-6 rounded-[28px] font-black uppercase text-xs text-center border-2 border-emerald-500/20 flex items-center justify-center gap-2 shadow-inner">
+                  <CheckCircle2 size={20} /> Problem Resolved Successfully
                 </div>
               )}
             </div>
