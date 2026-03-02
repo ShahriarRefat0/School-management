@@ -6,31 +6,50 @@ datasource db {
   provider = "postgresql"
 }
 
+//ROLE ENUM
+enum Role {
+  super_admin
+  admin
+  teacher
+  student
+  parent
+  accountant
+}
+
+//user status ENUM
+enum UserStatus {
+  active
+  blocked
+}
+
+//school data table
+
 model School {
-  id               String         @id @default(cuid())
+  id               String   @id @default(cuid())
   schoolName       String
-  slug             String         @unique
-  schoolEmail      String         @unique
+  slug             String   @unique
+  schoolEmail      String   @unique
   phone            String?
   address          String?
-  plan             String         @default("basic")
-  duration         String         @default("12")
+  plan             String   @default("basic")
+  duration         String   @default("12")
   schoolCategory   String
   expectedStudents Int?
-  registrationId   String         @unique
+  registrationId   String   @unique
   facebookUrl      String?
   websiteUrl       String?
-  language         String         @default("english")
+  language         String   @default("english")
   adminName        String
   adminEmail       String   @unique
-  adminPassword    String   // এটি অবশ্যই হ্যাস (hash) করে সেভ করবেন
-  
+  // adminPassword    String                          //pass data table a rakha jaby na
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  announcements    Announcement[] 
-  teacherNotices   TeacherNotice[]
-  studyMaterials   StudyMaterial[]
+
+  users         User[]         @relation("SchoolUsers")
+  announcements Announcement[]
 }
+
+//announcement form principal data table
 
 model Announcement {
   id              String    @id @default(cuid())
@@ -72,7 +91,8 @@ model Announcement {
   @@index([schoolId])
 }
 
-model StudentAdd {
+//students info data table
+model Student {
   id               String   @id @default(uuid())
   registrationNo   String   @unique
   firstName        String
@@ -93,13 +113,18 @@ model StudentAdd {
   email            String?  @unique
   presentAddress   String
   permanentAddress String?
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation("UserStudent", fields: [userId], references: [id])
 
   @@map("students")
 }
 
+//sub-plan data table
 model Plan {
   id        String   @id @default(cuid())
   name      String
@@ -115,6 +140,7 @@ model Plan {
   updatedAt DateTime @updatedAt
 }
 
+//support ticket data table
 model SupportTicket {
   id            String   @id @default(cuid())
   subject       String
@@ -128,40 +154,8 @@ model SupportTicket {
   updatedAt     DateTime @updatedAt
 }
 
-
-
-
-//-------------------------------------teacher----------------------------//
-
-model TeacherNotice {
-  id              String    @id @default(cuid())
-  title           String
-  content         String    @db.Text
-  
-  audience        String    @default("all") 
-  targetClass     String?   
-  category        String    @default("academic")
-  priority        String    @default("normal")
-  attachmentUrl   String?   
-  
-  publishDate     DateTime  @default(now())
-  expiryDate      DateTime? 
-  
-  status          String    @default("published") 
-  
-  schoolId        String
-  school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  // Author information
-  authorId        String?
-  authorName      String?
-
-  createdAt       DateTime  @default(now())  
-  updatedAt       DateTime  @updatedAt
-
-  @@index([schoolId])
-}
-model TeacherAdd {
+//teacher data table
+model Teacher {
   id               String   @id @default(uuid())
   teacherId        String   @unique
   firstName        String
@@ -184,29 +178,31 @@ model TeacherAdd {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  userId String @unique
+  user   User   @relation("UserTeacher", fields: [userId], references: [id])
+
   @@map("teachers")
 }
 
-model StudyMaterial {
-  id            String   @id @default(cuid())
-  title         String
-  type          String   // e.g., "PDF", "PPT", "Video", "DOC"
-  subject       String
-  class         String
-  description   String?  @db.Text
-  attachmentUrl String
-  size          String?  // e.g., "2.4 MB"
-  
-  // Relations
-  schoolId      String
-  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  
-  teacherId     String
-  teacher       TeacherAdd @relation(fields: [teacherId], references: [teacherId], onDelete: Cascade)
+//all users here
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model User {
+  id String @id @default(uuid())
 
-  @@index([schoolId])
-  @@index([teacherId])
+  authUserId String @unique //supabase auth id
+  schoolId   String
+
+  role   Role
+  status UserStatus @default(active)
+
+  //relations 
+  school School @relation("SchoolUsers", fields: [schoolId], references: [id])
+
+  student Student? @relation("UserStudent")
+  teacher Teacher? @relation("UserTeacher")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("User")
 }

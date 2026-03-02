@@ -27,6 +27,7 @@ import {
   Bar,
   Cell
 } from 'recharts'
+import { useRoleGuard } from '@/hooks/useRoleGurad'
 
 // Mock Data for Graph
 const revenueData = [
@@ -45,7 +46,8 @@ const planDistribution = [
 ]
 
 export default function SuperAdminOverview() {
-  
+  const {loading} = useRoleGuard('super_admin')
+  if (loading) return <p>Super Admin Dashboard id Loading...</p>
   const stats = [
     { title: "Total Schools", value: "128", icon: Building2, trend: "+12%", up: true, subtitle: "Registered Schools" },
     { title: "Active Subscriptions", value: "115", icon: ShieldCheck, trend: "+5%", up: true, subtitle: "Current Paying Tenants" },
