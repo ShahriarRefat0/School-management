@@ -52,21 +52,41 @@ model School {
 //announcement form principal data table
 
 model Announcement {
-  id            String    @id @default(cuid())
-  title         String
-  content       String
-  audience      String    @default("all")
-  targetClass   String?
-  category      String    @default("academic")
-  priority      String    @default("normal")
-  attachmentUrl String?
-  publishDate   DateTime  @default(now())
-  expiryDate    DateTime?
-  status        String    @default("published")
-  schoolId      String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  id              String    @id @default(cuid())
+  title           String
+  content         String    @db.Text
+  
+  // কাদের জন্য: "all", "teachers", "students", "staff"
+  audience        String    @default("all") 
+  
+  // যদি Students সিলেক্ট করা হয়, তবে এখানে ক্লাসের নাম থাকবে (যেমন: "Class 10")
+  // সবার জন্য হলে এটি null থাকবে
+  targetClass     String?   
+  
+  // নোটিশের ধরণ: "academic", "holiday", "exam", "event", "emergency"
+  category        String    @default("academic")
+  
+  // গুরুত্ব: "normal", "high", "urgent"
+  priority        String    @default("normal")
+  
+  // ফাইল বা ইমেজ লিঙ্ক (ঐচ্ছিক)
+  attachmentUrl   String?   
+  
+  publishDate     DateTime  @default(now())
+  expiryDate      DateTime? // নোটিশটি কতদিন দেখাবে
+  
+  status          String    @default("published") // "published", "draft"
+  
+  // কোন স্কুল এই নোটিশ দিচ্ছে
+  schoolId        String
+  school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Author information
+  authorId        String?
+  authorName      String?
+
+  createdAt       DateTime  @default(now())  
+  updatedAt       DateTime  @updatedAt
 
   @@index([schoolId])
 }
@@ -154,6 +174,7 @@ model Teacher {
   presentAddress   String
   permanentAddress String?
   isActive         Boolean  @default(true)
+  studyMaterials   StudyMaterial[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

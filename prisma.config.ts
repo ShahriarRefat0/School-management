@@ -21,7 +21,8 @@ export default defineConfig({
 // 2️⃣ npx prisma generate
 // 3️⃣ npx prisma migrate dev
 
-
+// if add new schema or change in /prisma/schema.prisma then run this:
+// npx prisma migrate dev --name add-student
 
 // If you get drift/conflict error, run:
 
