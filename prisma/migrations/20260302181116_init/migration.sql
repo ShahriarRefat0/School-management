@@ -1,17 +1,54 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `adminPassword` on the `School` table. All the data in the column will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('super_admin', 'admin', 'teacher', 'student', 'parent', 'accountant');
 
 -- CreateEnum
 CREATE TYPE "UserStatus" AS ENUM ('active', 'blocked');
 
--- AlterTable
-ALTER TABLE "School" DROP COLUMN "adminPassword";
+-- CreateTable
+CREATE TABLE "School" (
+    "id" TEXT NOT NULL,
+    "schoolName" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "schoolEmail" TEXT NOT NULL,
+    "phone" TEXT,
+    "address" TEXT,
+    "plan" TEXT NOT NULL DEFAULT 'basic',
+    "duration" TEXT NOT NULL DEFAULT '12',
+    "schoolCategory" TEXT NOT NULL,
+    "expectedStudents" INTEGER,
+    "registrationId" TEXT NOT NULL,
+    "facebookUrl" TEXT,
+    "websiteUrl" TEXT,
+    "language" TEXT NOT NULL DEFAULT 'english',
+    "adminName" TEXT NOT NULL,
+    "adminEmail" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "School_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Announcement" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "audience" TEXT NOT NULL DEFAULT 'all',
+    "targetClass" TEXT,
+    "category" TEXT NOT NULL DEFAULT 'academic',
+    "priority" TEXT NOT NULL DEFAULT 'normal',
+    "attachmentUrl" TEXT,
+    "publishDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expiryDate" TIMESTAMP(3),
+    "status" TEXT NOT NULL DEFAULT 'published',
+    "schoolId" TEXT NOT NULL,
+    "authorId" TEXT,
+    "authorName" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Announcement_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "students" (
@@ -41,6 +78,40 @@ CREATE TABLE "students" (
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "students_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Plan" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "price" TEXT NOT NULL,
+    "duration" TEXT NOT NULL,
+    "icon" TEXT,
+    "color" TEXT,
+    "students" TEXT NOT NULL,
+    "teachers" TEXT NOT NULL,
+    "storage" TEXT NOT NULL,
+    "modules" TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Plan_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SupportTicket" (
+    "id" TEXT NOT NULL,
+    "subject" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "priority" TEXT NOT NULL DEFAULT 'low',
+    "status" TEXT NOT NULL DEFAULT 'open',
+    "schoolId" TEXT,
+    "userEmail" TEXT NOT NULL,
+    "attachmentUrl" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SupportTicket_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -84,6 +155,21 @@ CREATE TABLE "User" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "School_slug_key" ON "School"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "School_schoolEmail_key" ON "School"("schoolEmail");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "School_registrationId_key" ON "School"("registrationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "School_adminEmail_key" ON "School"("adminEmail");
+
+-- CreateIndex
+CREATE INDEX "Announcement_schoolId_idx" ON "Announcement"("schoolId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "students_registrationNo_key" ON "students"("registrationNo");
 
 -- CreateIndex
@@ -103,6 +189,9 @@ CREATE UNIQUE INDEX "teachers_userId_key" ON "teachers"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_authUserId_key" ON "User"("authUserId");
+
+-- AddForeignKey
+ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "students" ADD CONSTRAINT "students_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
