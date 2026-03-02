@@ -3,12 +3,27 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
- 
-
+  provider = "postgresql"
 }
 
-//-----------------------------super_amin-------------------------//
+//ROLE ENUM
+enum Role {
+  super_admin
+  admin
+  teacher
+  student
+  parent
+  accountant
+}
+
+//user status ENUM
+enum UserStatus {
+  active
+  blocked
+}
+
+//school data table
+
 model School {
   id               String   @id @default(cuid())
   schoolName       String
@@ -18,29 +33,24 @@ model School {
   address          String?
   plan             String   @default("basic")
   duration         String   @default("12")
-  
-  // New Fields
   schoolCategory   String
   expectedStudents Int?    
+  expectedStudents Int?
   registrationId   String   @unique
   facebookUrl      String?
   websiteUrl       String?
   language         String   @default("english")
-  
-  // Admin Info
   adminName        String
   adminEmail       String   @unique
-  adminPassword    String  
-  
+  // adminPassword    String                          //pass data table a rakha jaby na
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  announcements    Announcement[] 
+
+  users         User[]         @relation("SchoolUsers")
+  announcements Announcement[]
 }
 
-//-------------------------------------admin----------------------------//
-
-// ১. আপনার School মডেলের নিচে এই রিলেশনটি যোগ করুন:
-// announcements Announcement[]
+//announcement form principal data table
 
 model Announcement {
   id              String    @id @default(cuid())
@@ -72,15 +82,50 @@ model Announcement {
   schoolId        String
   school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
-  createdAt       DateTime  @default(now())
+  // Author information
+  authorId        String?
+  authorName      String?
+
+  createdAt       DateTime  @default(now())  
   updatedAt       DateTime  @updatedAt
 
   @@index([schoolId])
 }
 
+//students info data table
+model Student {
+  id               String   @id @default(uuid())
+  registrationNo   String   @unique
+  firstName        String
+  lastName         String
+  dateOfBirth      DateTime
+  gender           String
+  bloodGroup       String?
+  religion         String?
+  currentClass     String
+  section          String
+  rollNo           Int
+  session          String
+  admissionDate    DateTime @default(now())
+  fatherName       String
+  motherName       String
+  guardianPhone    String
+  emergencyContact String?
+  email            String?  @unique
+  presentAddress   String
+  permanentAddress String?
 
-// Subscription Plans schema
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  userId String @unique
+  user   User   @relation("UserStudent", fields: [userId], references: [id])
+
+  @@map("students")
+}
+
+//sub-plan data table
 model Plan {
   id        String   @id @default(cuid())
   name      String
@@ -92,12 +137,11 @@ model Plan {
   teachers  String
   storage   String
   modules   String[]
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-// prisma/schema.prisma
 
+//support ticket data table
 model SupportTicket {
   id            String   @id @default(cuid())
   subject       String
@@ -109,4 +153,57 @@ model SupportTicket {
   attachmentUrl String?  // ইমেজ বা স্ক্রিনশট স্টোর করার জন্য এই ফিল্ডটি যোগ করা হলো
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+//teacher data table
+model Teacher {
+  id               String   @id @default(uuid())
+  teacherId        String   @unique
+  firstName        String
+  lastName         String
+  email            String   @unique
+  phone            String
+  dateOfBirth      DateTime
+  gender           String
+  bloodGroup       String?
+  religion         String?
+  designation      String
+  department       String
+  qualification    String
+  joiningDate      DateTime @default(now())
+  salary           Float?
+  presentAddress   String
+  permanentAddress String?
+  isActive         Boolean  @default(true)
+  studyMaterials   StudyMaterial[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation("UserTeacher", fields: [userId], references: [id])
+
+  @@map("teachers")
+}
+
+//all users here
+
+model User {
+  id String @id @default(uuid())
+
+  authUserId String @unique //supabase auth id
+  schoolId   String
+
+  role   Role
+  status UserStatus @default(active)
+
+  //relations 
+  school School @relation("SchoolUsers", fields: [schoolId], references: [id])
+
+  student Student? @relation("UserStudent")
+  teacher Teacher? @relation("UserTeacher")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("User")
 }

@@ -16,7 +16,7 @@ type AuthContextType = {
   signIn: (
     email: string,
     password: string
-  ) => Promise<{ error: any }>;
+  ) => Promise<{ error: any; role:UserRole | null }>;
 
   signOut: () => Promise<void>;
 
@@ -120,12 +120,14 @@ const signUp = async (
   // SIGN IN
   // ========================
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    const  role = (data?.user?.user_metadata?.role as UserRole) ?? null;
 
-    return { error };
+    return { error , role};
   };
 
   // ========================
