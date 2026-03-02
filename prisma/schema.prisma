@@ -35,7 +35,6 @@ model School {
   duration         String   @default("12")
   schoolCategory   String
   expectedStudents Int?    
-  expectedStudents Int?
   registrationId   String   @unique
   facebookUrl      String?
   websiteUrl       String?
@@ -175,7 +174,6 @@ model Teacher {
   presentAddress   String
   permanentAddress String?
   isActive         Boolean  @default(true)
-  studyMaterials   StudyMaterial[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -207,3 +205,5 @@ model User {
 
   @@map("User")
 }
+
+
