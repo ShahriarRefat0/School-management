@@ -29,6 +29,7 @@ model School {
   updatedAt        DateTime @updatedAt
   announcements    Announcement[] 
   teacherNotices   TeacherNotice[]
+  studyMaterials   StudyMaterial[]
 }
 
 model Announcement {
@@ -179,8 +180,33 @@ model TeacherAdd {
   presentAddress   String
   permanentAddress String?
   isActive         Boolean  @default(true)
+  studyMaterials   StudyMaterial[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   @@map("teachers")
+}
+
+model StudyMaterial {
+  id            String   @id @default(cuid())
+  title         String
+  type          String   // e.g., "PDF", "PPT", "Video", "DOC"
+  subject       String
+  class         String
+  description   String?  @db.Text
+  attachmentUrl String
+  size          String?  // e.g., "2.4 MB"
+  
+  // Relations
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  
+  teacherId     String
+  teacher       TeacherAdd @relation(fields: [teacherId], references: [teacherId], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([schoolId])
+  @@index([teacherId])
 }
