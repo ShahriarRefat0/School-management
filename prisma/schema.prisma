@@ -205,5 +205,22 @@ model User {
 
   @@map("User")
 }
+model testUser {
+  id String @id @default(uuid())
+
+  authUserId String @unique //supabase auth id
+  schoolId   String
+
+  role   Role
+  status UserStatus @default(active)
+
+  //relations 
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+}
 
 
