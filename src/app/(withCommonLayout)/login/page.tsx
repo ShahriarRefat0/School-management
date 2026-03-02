@@ -40,7 +40,7 @@ const UnifiedLoginPage = () => {
     setIsLoading(true);
     setError("");
 
-    const { error: authError } = await signIn(identifier, password);
+    const { error: authError, role } = await signIn(identifier, password);
 
     if (authError) {
       setError(authError.message || "Authentication failed. Please check your credentials.");
@@ -49,25 +49,25 @@ const UnifiedLoginPage = () => {
     }
 
     setTimeout(() => {
-      switch (role) {
-        case "admin":
-          router.replace("/dashboard/principal");
-          break;
-        case "teacher":
-          router.replace("/dashboard/teacher");
-          break;
-        case "super_admin":
-          router.replace("/dashboard/super-admin");
-          break;
-        case "parent":
-          router.replace("/dashboard/parents");
-          break;
-        case "accountant":
-          router.replace("/dashboard/accountant");
-          break;
-        default:
-          router.replace("/dashboard/student");
-      }
+     switch (role) {
+  case "admin":
+    router.replace("/dashboard/principal");
+    break;
+  case "teacher":
+    router.replace("/dashboard/teacher");
+    break;
+  case "super_admin":
+    router.replace("/dashboard/super-admin");
+    break;
+  case "parent":
+    router.replace("/dashboard/parents");
+    break;
+  case "accountant":
+    router.replace("/dashboard/accountant");
+    break;
+  default:
+    router.replace("/dashboard/student");
+}
     }, 200);
 
     setIsLoading(false);
