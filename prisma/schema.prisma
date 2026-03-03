@@ -187,3 +187,17 @@ model TeacherNotice {
 
   @@index([schoolId])
 }
+enum Role {
+  super_admin
+  admin
+  teacher
+  student
+  parent
+  accountant
+}
+
+enum UserStatus {
+  active
+  blocked
+}
+
