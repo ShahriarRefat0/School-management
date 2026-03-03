@@ -6,92 +6,49 @@ datasource db {
   provider = "postgresql"
 }
 
-//ROLE ENUM
-enum Role {
-  super_admin
-  admin
-  teacher
-  student
-  parent
-  accountant
-}
-
-//user status ENUM
-enum UserStatus {
-  active
-  blocked
-}
-
-//school data table
-
 model School {
-  id               String   @id @default(cuid())
+  id               String         @id @default(cuid())
   schoolName       String
-  slug             String   @unique
-  schoolEmail      String   @unique
+  slug             String         @unique
+  schoolEmail      String         @unique
   phone            String?
   address          String?
-  plan             String   @default("basic")
-  duration         String   @default("12")
+  plan             String         @default("basic")
+  duration         String         @default("12")
   schoolCategory   String
-  expectedStudents Int?    
-  registrationId   String   @unique
+  expectedStudents Int?
+  registrationId   String         @unique
   facebookUrl      String?
   websiteUrl       String?
-  language         String   @default("english")
-  adminName        String
-  adminEmail       String   @unique
-  // adminPassword    String                          //pass data table a rakha jaby na
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  users         User[]         @relation("SchoolUsers")
-  announcements Announcement[]
+  language         String         @default("english")
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  announcements    Announcement[]
+  users            User[]         @relation("SchoolUsers")
 }
 
-//announcement form principal data table
-
 model Announcement {
-  id              String    @id @default(cuid())
-  title           String
-  content         String    @db.Text
-  
-  // কাদের জন্য: "all", "teachers", "students", "staff"
-  audience        String    @default("all") 
-  
-  // যদি Students সিলেক্ট করা হয়, তবে এখানে ক্লাসের নাম থাকবে (যেমন: "Class 10")
-  // সবার জন্য হলে এটি null থাকবে
-  targetClass     String?   
-  
-  // নোটিশের ধরণ: "academic", "holiday", "exam", "event", "emergency"
-  category        String    @default("academic")
-  
-  // গুরুত্ব: "normal", "high", "urgent"
-  priority        String    @default("normal")
-  
-  // ফাইল বা ইমেজ লিঙ্ক (ঐচ্ছিক)
-  attachmentUrl   String?   
-  
-  publishDate     DateTime  @default(now())
-  expiryDate      DateTime? // নোটিশটি কতদিন দেখাবে
-  
-  status          String    @default("published") // "published", "draft"
-  
-  // কোন স্কুল এই নোটিশ দিচ্ছে
-  schoolId        String
-  school          School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  // Author information
-  authorId        String?
-  authorName      String?
-
-  createdAt       DateTime  @default(now())  
-  updatedAt       DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  title         String
+  content       String
+  audience      String    @default("all")
+  targetClass   String?
+  category      String    @default("academic")
+  priority      String    @default("normal")
+  attachmentUrl String?
+  publishDate   DateTime  @default(now())
+  expiryDate    DateTime?
+  status        String    @default("published")
+  schoolId      String
+  authorId      String?
+  authorName    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
 
   @@index([schoolId])
 }
 
-//students info data table
 model Student {
   id               String   @id @default(uuid())
   registrationNo   String   @unique
@@ -113,18 +70,15 @@ model Student {
   email            String?  @unique
   presentAddress   String
   permanentAddress String?
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId String @unique
-  user   User   @relation("UserStudent", fields: [userId], references: [id])
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  userId           String   @unique
+  user             User     @relation("UserStudent", fields: [userId], references: [id])
 
   @@map("students")
 }
 
-//sub-plan data table
 model Plan {
   id        String   @id @default(cuid())
   name      String
@@ -140,21 +94,19 @@ model Plan {
   updatedAt DateTime @updatedAt
 }
 
-//support ticket data table
 model SupportTicket {
   id            String   @id @default(cuid())
   subject       String
   description   String
-  priority      String   @default("low") 
-  status        String   @default("open") // open, closed, pending
-  schoolId      String?  // কোন স্কুল থেকে টিকিট আসছে
-  userEmail     String   // কে টিকিট ক্রিয়েট করেছে
-  attachmentUrl String?  // ইমেজ বা স্ক্রিনশট স্টোর করার জন্য এই ফিল্ডটি যোগ করা হলো
+  priority      String   @default("low")
+  status        String   @default("open")
+  schoolId      String?
+  userEmail     String
+  attachmentUrl String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
-//teacher data table
 model Teacher {
   id               String   @id @default(uuid())
   teacherId        String   @unique
@@ -176,37 +128,72 @@ model Teacher {
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-
-  userId String @unique
-  user   User   @relation("UserTeacher", fields: [userId], references: [id])
+  userId           String   @unique
+  user             User     @relation("UserTeacher", fields: [userId], references: [id])
 
   @@map("teachers")
 }
 
-//all users here
-
 model User {
-  id String @id @default(uuid())
-
-  authUserId String @unique //supabase auth id
+  id         String     @id @default(uuid())
+  authUserId String     @unique
   schoolId   String
-
-  role   Role
-  status UserStatus @default(active)
-
-  //relations 
-  school School @relation("SchoolUsers", fields: [schoolId], references: [id])
-
-  student Student? @relation("UserStudent")
-  teacher Teacher? @relation("UserTeacher")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role       Role
+  status     UserStatus @default(active)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  school     School     @relation("SchoolUsers", fields: [schoolId], references: [id])
+  student    Student?   @relation("UserStudent")
+  teacher    Teacher?   @relation("UserTeacher")
 
   @@map("User")
 }
 
+model StudyMaterial {
+  id            String   @id
+  title         String
+  type          String
+  subject       String
+  class         String
+  description   String?
+  attachmentUrl String
+  size          String?
+  schoolId      String
+  teacherId     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
 
+  @@index([schoolId])
+}
 
+model TeacherNotice {
+  id          String   @id
+  title       String
+  content     String
+  audience    String   @default("students")
+  targetClass String?
+  category    String   @default("academic")
+  priority    String   @default("normal")
+  status      String   @default("published")
+  schoolId    String
+  authorId    String?
+  authorName  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
 
+  @@index([schoolId])
+}
 
+enum Role {
+  super_admin
+  admin
+  teacher
+  student
+  parent
+  accountant
+}
+
+enum UserStatus {
+  active
+  blocked
+}

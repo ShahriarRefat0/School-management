@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { z } from 'zod'
 import { createSchool } from '@/app/actions/school' // অ্যাকশনটি ইমপোর্ট করুন
+import { useAuth } from '@/hooks/useAuth'
 
 // Zod Schema
 const schoolSchema = z.object({
@@ -29,6 +30,8 @@ const schoolSchema = z.object({
 
 export default function NewSchool() {
   const [loading, setLoading] = useState(false)
+  const {signUp} = useAuth()
+
   const [formData, setFormData] = useState({
     schoolName: '',
     slug: '',
@@ -64,25 +67,48 @@ export default function NewSchool() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+const validation = schoolSchema.safeParse(formData)
 
-    const validation = schoolSchema.safeParse(formData)
-
-    if (validation.success) {
-      const result = await createSchool(formData)
-      
-      if (result.success) {
-        alert("🎉 Institution Deployed Successfully!")
-        console.log("DB Response:", result.data)
-        // সফল হলে ফর্ম খালি করে দিতে পারেন
-      } else {
-        alert("❌ Error: " + result.error)
-      }
-    } else {
-      console.error("❌ Validation Failed:", validation.error.format())
-      alert("Please fill all required fields correctly.")
-    }
+  if (!validation.success) {
+    alert("Please fill all required fields correctly.")
     setLoading(false)
+    return
   }
+
+  // 1️⃣ Create Admin Auth Account First
+  const { data, error } = await signUp(
+    formData.adminEmail,
+    formData.adminPassword,
+    "admin",
+    
+  )
+
+  if (error || !data?.user) {
+    alert("Admin account creation failed")
+    setLoading(false)
+    return
+  }
+
+  // 2️⃣ Then Create School
+  const result = await createSchool({
+    ...formData,
+    adminId: data.user.id
+  })
+
+  //user table name and email
+
+
+  if (result.success) {
+    alert("🎉 Institution Deployed Successfully!")
+  } else {
+    alert("❌ Error: " + result.error)
+  }
+
+  setLoading(false)
+  }
+
+
+  
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up pb-12">

@@ -45,7 +45,7 @@ const [loading, setLoading] = useState(false)
     
 const handleRegister = async (e: React.FormEvent) => {
   e.preventDefault();
-  console.log(formData.email, formData.password)
+//   console.log(formData.email, formData.password)
 
   try {
     setLoading(true);
