@@ -20,8 +20,6 @@ CREATE TABLE "School" (
     "facebookUrl" TEXT,
     "websiteUrl" TEXT,
     "language" TEXT NOT NULL DEFAULT 'english',
-    "adminName" TEXT NOT NULL,
-    "adminEmail" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -154,6 +152,43 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "StudyMaterial" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "subject" TEXT NOT NULL,
+    "class" TEXT NOT NULL,
+    "description" TEXT,
+    "attachmentUrl" TEXT NOT NULL,
+    "size" TEXT,
+    "schoolId" TEXT NOT NULL,
+    "teacherId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "StudyMaterial_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TeacherNotice" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "audience" TEXT NOT NULL DEFAULT 'students',
+    "targetClass" TEXT,
+    "category" TEXT NOT NULL DEFAULT 'academic',
+    "priority" TEXT NOT NULL DEFAULT 'normal',
+    "status" TEXT NOT NULL DEFAULT 'published',
+    "schoolId" TEXT NOT NULL,
+    "authorId" TEXT,
+    "authorName" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TeacherNotice_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "School_slug_key" ON "School"("slug");
 
@@ -162,9 +197,6 @@ CREATE UNIQUE INDEX "School_schoolEmail_key" ON "School"("schoolEmail");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "School_registrationId_key" ON "School"("registrationId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "School_adminEmail_key" ON "School"("adminEmail");
 
 -- CreateIndex
 CREATE INDEX "Announcement_schoolId_idx" ON "Announcement"("schoolId");
@@ -189,6 +221,12 @@ CREATE UNIQUE INDEX "teachers_userId_key" ON "teachers"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_authUserId_key" ON "User"("authUserId");
+
+-- CreateIndex
+CREATE INDEX "StudyMaterial_schoolId_idx" ON "StudyMaterial"("schoolId");
+
+-- CreateIndex
+CREATE INDEX "TeacherNotice_schoolId_idx" ON "TeacherNotice"("schoolId");
 
 -- AddForeignKey
 ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
