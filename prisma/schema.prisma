@@ -154,50 +154,36 @@ model User {
 }
 
 model StudyMaterial {
-  id            String   @id
+  id            String   @id @default(cuid())
   title         String
   type          String
   subject       String
   class         String
-  description   String?
+  description   String?  @db.Text
   attachmentUrl String
   size          String?
   schoolId      String
   teacherId     String
   createdAt     DateTime @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime @updatedAt
 
   @@index([schoolId])
 }
 
 model TeacherNotice {
-  id          String   @id
+  id          String    @id @default(cuid())
   title       String
-  content     String
-  audience    String   @default("students")
+  content     String    @db.Text
+  audience    String    @default("students")
   targetClass String?
-  category    String   @default("academic")
-  priority    String   @default("normal")
-  status      String   @default("published")
+  category    String    @default("academic")
+  priority    String    @default("normal")
+  status      String    @default("published")
   schoolId    String
   authorId    String?
   authorName  String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([schoolId])
-}
-
-enum Role {
-  super_admin
-  admin
-  teacher
-  student
-  parent
-  accountant
-}
-
-enum UserStatus {
-  active
-  blocked
 }

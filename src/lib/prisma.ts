@@ -1,4 +1,4 @@
-// Prisma client singleton for Next.js - Refreshed with AddTeacher/StudentAdd models
+// Prisma client singleton for Next.js - Refreshed with TeacherNotice/StudyMaterial models v3
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
