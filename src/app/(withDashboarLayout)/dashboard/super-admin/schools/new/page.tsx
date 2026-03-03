@@ -95,6 +95,9 @@ const validation = schoolSchema.safeParse(formData)
     adminId: data.user.id
   })
 
+  //user table name and email
+
+
   if (result.success) {
     alert("🎉 Institution Deployed Successfully!")
   } else {
@@ -103,6 +106,9 @@ const validation = schoolSchema.safeParse(formData)
 
   setLoading(false)
   }
+
+
+  
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up pb-12">
