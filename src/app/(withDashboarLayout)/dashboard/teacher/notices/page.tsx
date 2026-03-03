@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 
 export default function NoticesPage() {
     const [showPostModal, setShowPostModal] = React.useState(false);
+    const [selectedNotice, setSelectedNotice] = React.useState<any | null>(null);
     const [activeFilter, setActiveFilter] = React.useState("all");
 
     // Form states
@@ -40,13 +41,9 @@ export default function NoticesPage() {
     const [isLoadingNotices, setIsLoadingNotices] = React.useState(true);
 
     const fetchNotices = async () => {
-        if (!schoolId) {
-            setIsLoadingNotices(false);
-            return;
-        }
-
+        setIsLoadingNotices(true);
         try {
-            const result = await getTeacherNotices(schoolId);
+            const result = await getTeacherNotices(schoolId || undefined);
             if (result.success) {
                 setNotices(result.data || []);
             }
@@ -220,12 +217,17 @@ export default function NoticesPage() {
                                     </h3>
 
                                     <p className="text-text-secondary text-sm leading-relaxed max-w-3xl whitespace-pre-wrap">
-                                        {notice.content}
+                                        {notice.content.length > 200
+                                            ? `${notice.content.substring(0, 200)}...`
+                                            : notice.content}
                                     </p>
                                 </div>
 
                                 <div className="flex items-center justify-end">
-                                    <button className="flex items-center gap-2 text-sm font-bold text-primary group/btn">
+                                    <button
+                                        onClick={() => setSelectedNotice(notice)}
+                                        className="flex items-center gap-2 text-sm font-bold text-primary group/btn"
+                                    >
                                         Read More
                                         <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                                     </button>
@@ -342,6 +344,83 @@ export default function NoticesPage() {
                                     {isSubmitting ? "Publishing..." : "Publish Announcement"}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* View Notice Modal */}
+            {selectedNotice && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-6 overflow-hidden">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-fadeIn" onClick={() => setSelectedNotice(null)}></div>
+                    <div className="bg-bg-card w-full max-w-3xl max-h-[90vh] rounded-[3rem] overflow-hidden relative z-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-slideInBottom border border-white/5 flex flex-col">
+                        <div className="px-8 md:px-12 py-10 bg-gradient-to-r from-bg-card to-bg-card border-b border-border-light/50 flex items-center justify-between shrink-0">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getTagColor(selectedNotice.category)}`}>
+                                        {selectedNotice.category}
+                                    </span>
+                                    <span className="text-[11px] font-bold text-text-muted flex items-center gap-1.5 bg-bg-page px-3 py-1 rounded-full border border-border-light/40">
+                                        <Clock size={12} className="text-primary/70" />
+                                        {formatDate(selectedNotice.createdAt)}
+                                    </span>
+                                </div>
+                                <h3 className="text-3xl md:text-4xl font-black text-text-primary leading-tight tracking-tight">{selectedNotice.title}</h3>
+                            </div>
+                            <button onClick={() => setSelectedNotice(null)} className="p-3.5 bg-bg-page hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all self-start border border-border-light/50 group">
+                                <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+                            </button>
+                        </div>
+
+                        <div className="p-8 md:p-12 overflow-y-auto flex-1 space-y-10 custom-scrollbar">
+                            <div className="prose prose-slate dark:prose-invert max-w-none">
+                                <p className="text-text-secondary text-base md:text-xl leading-relaxed whitespace-pre-wrap font-medium border-l-4 border-primary/20 pl-6 italic">
+                                    {selectedNotice.content}
+                                </p>
+                            </div>
+
+                            <div className="pt-10 border-t border-border-light/50 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
+                                    <div className="flex items-center gap-2 text-primary/60">
+                                        <Users size={14} />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Audience</p>
+                                    </div>
+                                    <p className="text-sm font-black text-text-primary truncate">{selectedNotice.audience}</p>
+                                </div>
+                                <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
+                                    <div className="flex items-center gap-2 text-primary/60">
+                                        <Bell size={14} />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Class</p>
+                                    </div>
+                                    <p className="text-sm font-black text-text-primary truncate">{selectedNotice.targetClass || "Full School"}</p>
+                                </div>
+                                <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
+                                    <div className="flex items-center gap-2 text-primary/60">
+                                        <Megaphone size={14} />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Posted By</p>
+                                    </div>
+                                    <p className="text-sm font-black text-text-primary truncate break-all" title={selectedNotice.authorName || "Teacher"}>
+                                        {selectedNotice.authorName || "Teacher"}
+                                    </p>
+                                </div>
+                                <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
+                                    <div className="flex items-center gap-2 text-primary/60">
+                                        <Clock size={14} />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Exact Time</p>
+                                    </div>
+                                    <p className="text-sm font-black text-text-primary">
+                                        {selectedNotice.createdAt ? new Date(selectedNotice.createdAt).toLocaleTimeString() : "N/A"}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="px-12 py-8 bg-bg-page/50 border-t border-border-light/50 flex justify-end shrink-0 backdrop-blur-md">
+                            <button
+                                onClick={() => setSelectedNotice(null)}
+                                className="px-10 py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)] hover:bg-primary-dark transition-all active:scale-95 shadow-primary/20"
+                            >
+                                Close Announcement
+                            </button>
                         </div>
                     </div>
                 </div>

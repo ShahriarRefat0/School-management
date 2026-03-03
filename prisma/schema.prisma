@@ -205,3 +205,38 @@ model User {
 
   @@map("User")
 }
+
+model StudyMaterial {
+  id            String   @id @default(cuid())
+  title         String
+  type          String
+  subject       String
+  class         String
+  description   String?  @db.Text
+  attachmentUrl String
+  size          String?
+  schoolId      String
+  teacherId     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([schoolId])
+}
+
+model TeacherNotice {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  audience    String    @default("students")
+  targetClass String?
+  category    String    @default("academic")
+  priority    String    @default("normal")
+  status      String    @default("published")
+  schoolId    String
+  authorId    String?
+  authorName  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([schoolId])
+}

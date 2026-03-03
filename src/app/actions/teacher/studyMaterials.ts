@@ -3,10 +3,11 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function getStudyMaterials(schoolId: string) {
+export async function getStudyMaterials(schoolId?: string) {
     try {
+        const whereClause = schoolId ? { schoolId } : {};
         const materials = await prisma.studyMaterial.findMany({
-            where: { schoolId },
+            where: whereClause,
             orderBy: { createdAt: 'desc' }
         });
         return { success: true, data: materials };
@@ -28,8 +29,12 @@ export async function createStudyMaterial(formData: {
     teacherId: string;
 }) {
     try {
+        const targetSchoolId = formData.schoolId || "default-school-id";
         const material = await prisma.studyMaterial.create({
-            data: formData
+            data: {
+                ...formData,
+                schoolId: targetSchoolId
+            }
         });
         revalidatePath("/dashboard/teacher/study-materials");
         return { success: true, data: material };
