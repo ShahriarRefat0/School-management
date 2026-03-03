@@ -64,10 +64,11 @@ export default function NewSchool() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-const validation = schoolSchema.safeParse(formData)
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setLoading(true)
+
+  const validation = schoolSchema.safeParse(formData)
 
   if (!validation.success) {
     alert("Please fill all required fields correctly.")
@@ -75,40 +76,39 @@ const validation = schoolSchema.safeParse(formData)
     return
   }
 
-  // 1️⃣ Create Admin Auth Account First
+  // 1️⃣ Create Supabase Auth User
   const { data, error } = await signUp(
     formData.adminEmail,
     formData.adminPassword,
-    "admin",
-    
+    "admin"
   )
 
   if (error || !data?.user) {
-    alert("Admin account creation failed")
+    alert(error?.message || "Admin account creation failed")
     setLoading(false)
     return
   }
 
-  // 2️⃣ Then Create School
+  // 2️⃣ Create School + Prisma User
   const result = await createSchool({
     ...formData,
     adminId: data.user.id
   })
 
-  //user table name and email
+  if (!result.success) {
 
+    // ❗ Rollback Supabase user (optional improvement)
+    // এখানে future এ deleteUser logic দিতে পারো
 
-  if (result.success) {
-    alert("🎉 Institution Deployed Successfully!")
-  } else {
     alert("❌ Error: " + result.error)
+    setLoading(false)
+    return
   }
+
+  alert("🎉 Institution Deployed Successfully!")
 
   setLoading(false)
-  }
-
-
-  
+}
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up pb-12">
