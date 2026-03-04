@@ -154,7 +154,7 @@ export default function UsersList() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase inline-block ${
-                        user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        user.status === 'active'  ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                       }`}>
                         {user.status}
                       </span>
