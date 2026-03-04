@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,7 +59,7 @@ export default function StudentForm() {
         let active = true;
 
         if (isEdit && studentId) {
-        //    console.log("�️ StudentForm: Starting fetch for ID:", studentId);
+            //    console.log("�️ StudentForm: Starting fetch for ID:", studentId);
             const loadData = async () => {
                 setLoading(true);
                 setError("");
@@ -66,7 +67,7 @@ export default function StudentForm() {
                     const result = await getStudent(studentId);
                     if (!active) return;
 
-                   // console.log("�️ StudentForm: Fetch Result:", result);
+                    // console.log("�️ StudentForm: Fetch Result:", result);
 
                     if (result.success && result.data) {
                         const d = result.data;
@@ -210,10 +211,12 @@ export default function StudentForm() {
                             Delete Record
                         </Button>
                     ) : (
-                        <Button variant="outline" className="h-14 px-8 rounded-2xl border-dashed border-2 border-primary/20 text-text-muted hover:border-primary/50 hover:bg-primary/5 font-black uppercase text-[10px] tracking-widest flex items-center gap-2">
-                            <FileUp size={18} />
-                            Bulk Import (CSV)
-                        </Button>
+                        <Link href="/dashboard/principal/students/bulk-add" passHref>
+                            <Button variant="outline" className="h-14 px-8 rounded-2xl border-dashed border-2 border-primary/20 text-text-muted hover:border-primary/50 hover:bg-primary/5 font-black uppercase text-[10px] tracking-widest flex items-center gap-2">
+                                <FileUp size={18} />
+                                Bulk Import (CSV)
+                            </Button>
+                        </Link>
                     )}
                 </div>
             </div>
