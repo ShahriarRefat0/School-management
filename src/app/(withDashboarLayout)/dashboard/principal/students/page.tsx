@@ -81,7 +81,8 @@ export default function StudentsPage() {
       const result = await getStudents();
       if (result.success && result.data) {
         const formattedStudents = result.data.map((s: any) => ({
-          id: s.registrationNo,
+          id: s.id,
+          registrationNo: s.registrationNo,
           name: `${s.firstName} ${s.lastName}`,
           class: s.currentClass,
           section: s.section,
@@ -204,7 +205,7 @@ export default function StudentsPage() {
               {students.length > 0 ? (
                 students.map((student) => (
                   <tr key={student.id} className="hover:bg-primary/[0.01] transition-colors group">
-                    <td className="px-10 py-8 font-mono text-[11px] font-black text-primary/70">{student.id}</td>
+                    <td className="px-10 py-8 font-mono text-[11px] font-black text-primary/70">{student.registrationNo || student.id}</td>
                     <td className="px-10 py-8">
                       <div className="font-black text-text-primary text-base leading-none mb-1 group-hover:text-primary transition-colors">{student.name}</div>
                       <div className="text-[10px] text-text-muted font-bold opacity-60 uppercase tracking-widest flex items-center gap-1">
