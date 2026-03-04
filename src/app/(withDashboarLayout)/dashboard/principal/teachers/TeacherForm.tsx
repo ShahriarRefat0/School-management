@@ -22,8 +22,10 @@ import {
     Clock
 } from "lucide-react";
 import { addTeacher, getTeacher, updateTeacher, deleteTeacher } from "@/app/actions/teacher";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function TeacherForm() {
+    const {signUp} = useAuth()
     const router = useRouter();
     const params = useParams();
     const teacherIdFromUrl = params?.id ? decodeURIComponent(params.id as string) : "";
@@ -117,6 +119,18 @@ export default function TeacherForm() {
             const result = isEdit
                 ? await updateTeacher(teacherIdFromUrl!, form)
                 : await addTeacher(form);
+
+                //register teacher 
+                const {data,error} = await signUp(
+                    form.email,
+                    '123456', //default pass use kora holo
+                    'teacher'
+                )
+
+                if(error || !data.user){
+                    alert(error?.message || "Teacher account creation failed")
+                    return 
+                }
 
             if (result.success) {
                 setSuccess(true);

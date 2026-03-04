@@ -148,6 +148,8 @@ CREATE TABLE "User" (
     "status" "UserStatus" NOT NULL DEFAULT 'active',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -190,31 +192,7 @@ CREATE TABLE "TeacherNotice" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "School_slug_key" ON "School"("slug");
-
--- CreateIndex
-CREATE UNIQUE INDEX "School_schoolEmail_key" ON "School"("schoolEmail");
-
--- CreateIndex
-CREATE UNIQUE INDEX "School_registrationId_key" ON "School"("registrationId");
-
--- CreateIndex
-CREATE INDEX "Announcement_schoolId_idx" ON "Announcement"("schoolId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "students_registrationNo_key" ON "students"("registrationNo");
-
--- CreateIndex
-CREATE UNIQUE INDEX "students_email_key" ON "students"("email");
-
--- CreateIndex
 CREATE UNIQUE INDEX "students_userId_key" ON "students"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "teachers_teacherId_key" ON "teachers"("teacherId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "teachers_email_key" ON "teachers"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "teachers_userId_key" ON "teachers"("userId");
@@ -223,13 +201,13 @@ CREATE UNIQUE INDEX "teachers_userId_key" ON "teachers"("userId");
 CREATE UNIQUE INDEX "User_authUserId_key" ON "User"("authUserId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
 CREATE INDEX "StudyMaterial_schoolId_idx" ON "StudyMaterial"("schoolId");
 
 -- CreateIndex
 CREATE INDEX "TeacherNotice_schoolId_idx" ON "TeacherNotice"("schoolId");
-
--- AddForeignKey
-ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "students" ADD CONSTRAINT "students_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
