@@ -1,26 +1,34 @@
-"use server"
+import { PrismaClient } from "@prisma/client";
 
-import { prisma } from "@/lib/prisma"
-import { Role } from "@prisma/client"
+const prisma = new PrismaClient();
 
-export async function createUser(data: {
-  authUserId: string
-  name: string
-  email: string
-  role: Role
-  schoolId: string
-}) {
+export async function getSchoolUsers(schoolId: string) {
   try {
-    return await prisma.user.create({
-      data
-    })
-  } catch (error: any) {
-    console.error("❌ Create User Error:", error.message)
+    const users = await prisma.user.findMany({
+      where: {
+        schoolId: schoolId, // নির্দিষ্ট স্কুলের ইউজারদের ফিল্টার করবে
+      },
+      include: {
+        // ইউজারের সাথে স্কুলের তথ্যও আসবে
+        school: {
+          select: {
+            schoolName: true,
+            slug: true,
+          },
+        },
+        // যদি ইউজারটি Student হয়, তবে তার ডাটা আসবে
+        student: true, 
+        // যদি ইউজারটি Teacher হয়, তবে তার ডাটা আসবে
+        teacher: true, 
+      },
+      orderBy: {
+        createdAt: "desc", // নতুন ইউজার আগে দেখাবে
+      },
+    });
 
-    if (error.code === "P2002") {
-      throw new Error("User with this email or auth ID already exists.")
-    }
-
-    throw new Error("Failed to create user.")
+    return users;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw new Error("Failed to fetch users");
   }
 }

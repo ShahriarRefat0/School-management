@@ -1,169 +1,172 @@
 "use client"
-import React, { useState, useEffect } from 'react'
-import { 
-  Search, Edit, School, Mail, CheckCircle, Ban, 
-  Users, ArrowUpRight, ShieldCheck 
-} from 'lucide-react'
-import Link from 'next/link'
-import { getAllUsers } from '@/app/actions/school' // একশন ইম্পোর্ট
 
-export default function ClientManagement() {
-  const [admins, setAdmins] = useState<any[]>([]); // রিয়েল ডাটা স্টেট
-  const [loading, setLoading] = useState(true);
-  const [searchEmail, setSearchEmail] = useState("");
-  const [schoolFilter, setSchoolFilter] = useState(""); // সার্চ বাই স্কুল নেম
-  const [statusFilter, setStatusFilter] = useState("ALL");
+import React, { useState, useEffect, useMemo } from 'react'
+import { getAllUsers } from '@/app/actions/school' 
+import { Mail, Building, Search, User as UserIcon, Loader2, Filter } from 'lucide-react'
 
-  // ডাটা লোড করা
+export default function UsersList() {
+  const [users, setUsers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  // ফিল্টার স্টেটসমূহ
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedRole, setSelectedRole] = useState("all")
+  const [selectedSchool, setSelectedSchool] = useState("all")
+
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const res = await getAllUsers();
-      if (res.success) {
-        // ডাটাবেসে status নেই, তাই ফ্রন্টএন্ডে ডিফল্ট ACTIVE যোগ করে দিচ্ছি
-        const dataWithStatus = res.data?.map(u => ({ ...u, status: "ACTIVE" })) || [];
-        setAdmins(dataWithStatus);
+    const loadUsers = async () => {
+      setLoading(true)
+      const result = await getAllUsers()
+      if (result.success) {
+        setUsers(result.data || [])
       }
-      setLoading(false);
+      setLoading(false)
     }
-    loadData();
-  }, []);
+    loadUsers()
+  }, [])
 
-  // ফিল্টার লজিক (রিয়েল ডাটা অনুযায়ী আপডেট করা হয়েছে)
-  const filteredAdmins = admins.filter(admin => {
-    const matchesEmail = admin.adminEmail.toLowerCase().includes(searchEmail.toLowerCase());
-    const matchesSchool = admin.schoolName.toLowerCase().includes(schoolFilter.toLowerCase());
-    const matchesStatus = statusFilter === "ALL" || admin.status === statusFilter;
-    return matchesEmail && matchesSchool && matchesStatus;
-  });
+  // ইউনিক স্কুলের লিস্ট বের করা (ফিল্টার ড্রপডাউনের জন্য)
+  const schools = useMemo(() => {
+    const schoolNames = users
+      .map(u => u.school?.schoolName)
+      .filter((name): name is string => !!name)
+    return ["all", ...Array.from(new Set(schoolNames))]
+  }, [users])
 
-  const toggleStatus = (id: string) => {
-    setAdmins(admins.map(a => 
-      a.id === id ? { ...a, status: a.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE" } : a
-    ));
-  };
+  // ইউনিক রোলের লিস্ট বের করা
+  const roles = useMemo(() => {
+    const userRoles = users.map(u => u.role).filter(Boolean)
+    return ["all", ...Array.from(new Set(userRoles))]
+  }, [users])
+
+  // মাল্টি-লেভেল ফিল্টারিং লজিক
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesRole = selectedRole === "all" || user.role === selectedRole
+    
+    const matchesSchool = selectedSchool === "all" || user.school?.schoolName === selectedSchool
+
+    return matchesSearch && matchesRole && matchesSchool
+  })
 
   return (
-    <div className="space-y-6 p-2 md:p-0">
-      {/* Header Section */}
+    <div className="space-y-6 p-4">
+      {/* Header & Stats */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-[var(--color-text-primary)] flex items-center gap-3 tracking-tighter uppercase">
-            <ShieldCheck className="text-[var(--color-primary)]" size={32} />
-            Client Directory
-          </h2>
-          <p className="text-[var(--color-text-muted)] font-medium">Manage institutional owners and their platform access.</p>
+          <h2 className="text-2xl font-black text-[var(--color-text-primary)] uppercase tracking-tight">System Users</h2>
+          <p className="text-sm text-[var(--color-text-muted)]">Advanced filtering for school administrators.</p>
         </div>
-        <div className="flex gap-2">
-          <div className="bg-blue-500/10 text-blue-600 px-4 py-2 rounded-2xl border border-blue-500/20 text-sm font-black uppercase tracking-tighter">
-            Total Clients: {admins.length}
-          </div>
+        <div className="px-4 py-2 bg-[var(--color-primary)]/10 rounded-2xl border border-[var(--color-primary)]/20">
+            <span className="text-[var(--color-primary)] font-bold text-sm">Total: {filteredUsers.length} Users</span>
         </div>
       </div>
 
-      {/* Modern Filter Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--color-bg-card)] p-4 rounded-3xl border border-[var(--color-border-light)] shadow-sm">
-        {/* Email Search */}
+      {/* Advanced Filter Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--color-bg-card)] p-4 rounded-3xl border border-[var(--color-border-light)]">
+        
+        {/* Search Input */}
         <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
-          <input
-            type="text" placeholder="Search by email..." value={searchEmail}
-            onChange={(e) => setSearchEmail(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold focus:ring-2 focus:ring-[var(--color-primary)]/20"
-          />
-        </div>
-
-        {/* School Search */}
-        <div className="relative">
-          <School className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <input 
-            type="text" placeholder="Search school name..." 
-            onChange={(e) => setSchoolFilter(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold"
+            type="text" 
+            placeholder="Search name or email..." 
+            className="w-full pl-10 pr-4 py-2 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-sm"
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        {/* Status Filter */}
+        {/* Role Filter */}
         <div className="relative">
-          <select
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-2xl outline-none text-sm font-bold cursor-pointer appearance-none"
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <select 
+            className="w-full pl-10 pr-4 py-2 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-sm appearance-none capitalize"
+            onChange={(e) => setSelectedRole(e.target.value)}
           >
-            <option value="ALL">All Status</option>
-            <option value="ACTIVE">Active Only</option>
-            <option value="SUSPENDED">Suspended Only</option>
+            <option value="all">All Roles</option>
+            {roles.filter(r => r !== "all").map(role => (
+              <option key={role} value={role}>{role}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* School Filter */}
+        <div className="relative">
+          <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <select 
+            className="w-full pl-10 pr-4 py-2 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-sm appearance-none"
+            onChange={(e) => setSelectedSchool(e.target.value)}
+          >
+            <option value="all">All Institutions</option>
+            {schools.filter(s => s !== "all").map(school => (
+              <option key={school} value={school}>{school}</option>
+            ))}
           </select>
         </div>
       </div>
 
-      {/* Admin Table */}
-      <div className="bg-[var(--color-bg-card)] rounded-[40px] border border-[var(--color-border-light)] overflow-hidden shadow-xl">
+      {/* Table Section */}
+      <div className="bg-[var(--color-bg-card)] rounded-3xl border border-[var(--color-border-light)] overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[var(--color-bg-page)] text-[var(--color-text-muted)] text-[11px] uppercase font-black tracking-[0.15em] border-b border-[var(--color-border-light)]">
-                <th className="px-8 py-5">Owner Identity</th>
-                <th className="px-8 py-5">Institution</th>
-                <th className="px-8 py-5">Access Status</th>
-                <th className="px-8 py-5">Joined Date</th>
-                <th className="px-8 py-5 text-right">Management</th>
+            <thead className="bg-[var(--color-bg-page)] text-[10px] uppercase font-black tracking-widest text-[var(--color-text-muted)] border-b border-[var(--color-border-light)]">
+              <tr>
+                <th className="px-6 py-5">User Details</th>
+                <th className="px-6 py-5">Institution</th>
+                <th className="px-6 py-5">Role</th>
+                <th className="px-6 py-5 text-right">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border-light)]">
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-20 font-black text-gray-500 animate-pulse uppercase tracking-widest">Loading Database...</td></tr>
-              ) : filteredAdmins.length > 0 ? (
-                filteredAdmins.map((admin) => (
-                  <tr key={admin.id} className="hover:bg-[var(--color-bg-page)]/40 transition-all group">
-                    <td className="px-8 py-6">
-                      <div className="flex flex-col">
-                        <span className="font-black text-[15px] text-[var(--color-text-primary)]">{admin.adminName}</span>
-                        <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 font-medium">
-                          <Mail size={12} className="opacity-60" /> {admin.adminEmail}
-                        </span>
+                <tr>
+                  <td colSpan={4} className="p-20 text-center text-[var(--color-text-muted)]">
+                    <Loader2 className="animate-spin mx-auto mb-2" size={32} />
+                    <p className="text-xs font-bold uppercase">Fetching Data...</p>
+                  </td>
+                </tr>
+              ) : filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-[var(--color-bg-page)]/50 transition-all group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 group-hover:from-[var(--color-primary)] group-hover:to-[var(--color-primary)] group-hover:text-white transition-all duration-300">
+                          <UserIcon size={18} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-sm text-[var(--color-text-primary)]">{user.name}</span>
+                          <span className="text-[11px] text-gray-500 flex items-center gap-1"><Mail size={10}/> {user.email}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                      <div className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700">
-                        <School size={14} className="text-[var(--color-primary)]" />
-                        <span className="text-xs font-black text-[var(--color-text-secondary)] uppercase tracking-tighter">{admin.schoolName}</span>
+                    <td className="px-6 py-4">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--color-bg-page)] rounded-lg border border-[var(--color-border-light)] text-xs font-semibold text-[var(--color-primary)]">
+                        <Building size={12} />
+                        {user.school?.schoolName || "Super Admin"}
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${
-                        admin.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
-                      }`}>
-                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${admin.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        {admin.status}
+                    <td className="px-6 py-4">
+                      <span className="text-[11px] font-bold uppercase tracking-tighter text-[var(--color-text-muted)]">
+                        {user.role}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-xs font-bold text-[var(--color-text-muted)] font-mono">
-                      {new Date(admin.createdAt).toISOString().split('T')[0]}
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                      <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                        <Link 
-                          href={`/dashboard/super-admin/schools/edit/${admin.id}`}
-                          className="p-2.5 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-2xl hover:bg-[var(--color-primary)] hover:text-white transition-all shadow-sm"
-                        >
-                          <Edit size={18} />
-                        </Link>
-                        <button 
-                          onClick={() => toggleStatus(admin.id)}
-                          className={`p-2.5 rounded-2xl transition-all shadow-sm ${
-                            admin.status === 'ACTIVE' 
-                            ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white' 
-                            : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
-                          }`}
-                        >
-                          {admin.status === 'ACTIVE' ? <Ban size={18} /> : <CheckCircle size={18} />}
-                        </button>
-                      </div>
+                    <td className="px-6 py-4 text-right">
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase inline-block ${
+                        user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {user.status}
+                      </span>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan={5} className="text-center py-20 font-black text-gray-500 uppercase tracking-widest">No Clients Found</td></tr>
+                <tr>
+                  <td colSpan={4} className="p-20 text-center text-gray-400 italic">
+                    No results found for current filters.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

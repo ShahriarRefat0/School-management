@@ -137,15 +137,13 @@ model Teacher {
 model User {
   id         String     @id @default(uuid())
   authUserId String     @unique
-
-  name      String
-  email     String @unique
-
   schoolId   String
   role       Role
   status     UserStatus @default(active)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
+  email      String     @unique
+  name       String
   school     School     @relation("SchoolUsers", fields: [schoolId], references: [id])
   student    Student?   @relation("UserStudent")
   teacher    Teacher?   @relation("UserTeacher")
