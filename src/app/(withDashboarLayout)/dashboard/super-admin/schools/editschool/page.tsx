@@ -1,0 +1,211 @@
+"use client"
+import React, { useState, useEffect } from 'react'
+import { 
+  Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
+  Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon, Save, Trash2
+} from 'lucide-react' // বা lucide-react
+import { updateSchool, deleteSchool } from '@/app/actions/school' 
+import Swal from 'sweetalert2'
+import { useRouter } from 'next/navigation'
+
+interface EditSchoolProps {
+  initialData: any; 
+}
+
+export default function EditSchool({ initialData }: EditSchoolProps) {
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  // ১. সব ফিল্ড স্টেট হিসেবে ডিফাইন করা
+  const [formData, setFormData] = useState({
+    schoolName: '',
+    slug: '',
+    schoolEmail: '',
+    phone: '',
+    address: '',
+    plan: 'basic',
+    duration: '12',
+    schoolCategory: 'high-school',
+    expectedStudents: '',
+    registrationId: '',
+    facebookUrl: '',
+    websiteUrl: '',
+    language: 'english'
+  })
+
+  // ২. ডাটাবেজ থেকে আসা ডাটা ফর্মে বসানো
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        schoolName: initialData.schoolName || '',
+        slug: initialData.slug || '',
+        schoolEmail: initialData.schoolEmail || '',
+        phone: initialData.phone || '',
+        address: initialData.address || '',
+        plan: initialData.plan || 'basic',
+        duration: initialData.duration || '12',
+        schoolCategory: initialData.schoolCategory || 'high-school',
+        expectedStudents: initialData.expectedStudents?.toString() || '',
+        registrationId: initialData.registrationId || '',
+        facebookUrl: initialData.facebookUrl || '',
+        websiteUrl: initialData.websiteUrl || '',
+        language: initialData.language || 'english',
+      })
+    }
+  }, [initialData])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const result = await updateSchool(initialData.id, formData)
+      if (!result.success) throw new Error(result.error)
+
+      Swal.fire({ icon: 'success', title: 'Updated!', text: 'Institution info updated.', timer: 2000, showConfirmButton: false })
+      router.push('/dashboard/super-admin/schools') 
+    } catch (err: any) {
+      Swal.fire({ icon: 'error', title: 'Update Failed', text: err.message })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up pb-12 pt-6">
+      
+      {/* Header & Back */}
+      <div className="flex items-center justify-between px-2">
+        <button onClick={() => router.back()} className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors font-bold uppercase text-xs tracking-widest">
+          <ArrowLeft size={18} /> Back
+        </button>
+        <div className="text-right">
+            <h2 className="text-2xl font-black text-[var(--color-text-primary)] uppercase tracking-tight">Update Institution</h2>
+            <p className="text-xs text-[var(--color-text-muted)]">Modify existing school instance parameters</p>
+        </div>
+      </div>
+
+      <div className="bg-[var(--color-bg-card)] p-8 rounded-3xl border border-[var(--color-border-light)] shadow-xl">
+        <form className="space-y-10" onSubmit={handleSubmit}>
+          
+          {/* 1. Institutional Profile */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-black text-[var(--color-primary)] flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
+              <Building size={20} /> Institutional Profile
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">School Name</label>
+                <input required type="text" name="schoolName" value={formData.schoolName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)]" onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Sub-domain / Slug (ReadOnly)</label>
+                <input type="text" value={formData.slug} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl opacity-60 cursor-not-allowed font-mono text-sm text-[var(--color-text-primary)]" readOnly />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">School Category</label>
+                <select name="schoolCategory" value={formData.schoolCategory} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange}>
+                  <option value="primary">Primary School</option>
+                  <option value="high-school">High School</option>
+                  <option value="college">College / University</option>
+                  <option value="madrasa">Madrasa</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Registration ID</label>
+                <input required type="text" name="registrationId" value={formData.registrationId} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Expected Students</label>
+                <input type="number" name="expectedStudents" value={formData.expectedStudents} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">System Language</label>
+                <select name="language" value={formData.language} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange}>
+                  <option value="english">English</option>
+                  <option value="bangla">Bangla</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Communication & Web */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-black text-emerald-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
+              <Globe size={20} /> Communication & Web
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Official Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input required type="email" name="schoolEmail" value={formData.schoolEmail} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Phone Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input type="text" name="phone" value={formData.phone} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Website URL</label>
+                <div className="relative">
+                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input type="text" name="websiteUrl" value={formData.websiteUrl} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Facebook Page</label>
+                <div className="relative">
+                  <Facebook className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input type="text" name="facebookUrl" value={formData.facebookUrl} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange} />
+                </div>
+              </div>
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Physical Address</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-4 text-[var(--color-text-muted)]" size={18} />
+                  <textarea name="address" value={formData.address} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl min-h-[80px] text-[var(--color-text-primary)]" onChange={handleChange}></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Subscription & Plan */}
+          <div className="p-6 bg-[var(--color-bg-page)] rounded-2xl border border-[var(--color-border-light)] space-y-6">
+            <h3 className="text-lg font-black text-purple-500 flex items-center gap-2 uppercase tracking-tighter">
+              <CreditCard size={20} /> Subscription & Billing
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <select name="plan" value={formData.plan} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange}>
+                <option value="basic">Basic Plan</option>
+                <option value="standard">Standard Plan</option>
+                <option value="premium">Premium / Enterprise</option>
+              </select>
+              <select name="duration" value={formData.duration} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange}>
+                <option value="1">1 Month</option>
+                <option value="6">6 Months</option>
+                <option value="12">12 Months</option>
+                <option value="24">24 Months</option>
+              </select>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-[var(--color-primary)] text-white font-black py-5 rounded-2xl shadow-lg hover:scale-[1.01] transition-all text-lg uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50"
+          >
+            {loading ? "Saving Changes..." : <><Save size={24} /> Save School Updates</>}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}

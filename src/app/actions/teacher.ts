@@ -11,7 +11,7 @@ export async function addTeacher(formData: any) {
 console.log("🥲CURRENT USER:", currentUser)
   if (!currentUser) {
     console.log("user nai", currentUser)
-    return { success: false, error: "Unauthorized hocy na" }
+    return { success: false, error: "Unauthorized , token nai" }
   }
 
   try {
@@ -27,8 +27,8 @@ console.log("🥲CURRENT USER:", currentUser)
       // 1️⃣ Create User first
       const user = await tx.user.create({
         data: {
-          authUserId: formData.authUserId, // temporary until supabase part added
-          name: formData.firstName + " " + formData.lastName,
+          authUserId: crypto.randomUUID(), // temporary until supabase part added
+          name: formData.firstName,
           email: formData.email,
           role: "teacher",
           schoolId: schoolId,

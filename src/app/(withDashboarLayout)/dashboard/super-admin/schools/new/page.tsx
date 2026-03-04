@@ -2,11 +2,13 @@
 import React, { useState } from 'react'
 import { 
   Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
-  Layers, Users, FileText, Facebook, Layout, Languages
+  Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon
 } from 'lucide-react'
 import { z } from 'zod'
-import { createSchool } from '@/app/actions/school' // অ্যাকশনটি ইমপোর্ট করুন
+import { createSchool } from '@/app/actions/school' 
 import { useAuth } from '@/hooks/useAuth'
+import Swal from 'sweetalert2'
+import { useRouter } from 'next/navigation'
 
 // Zod Schema
 const schoolSchema = z.object({
@@ -18,7 +20,7 @@ const schoolSchema = z.object({
   plan: z.string(),
   duration: z.string(),
   schoolCategory: z.string(),
-  expectedStudents: z.any().optional(),
+  expectedStudents: z.preprocess((val) => Number(val), z.number().optional()),
   registrationId: z.string().min(1, "Registration ID is required"),
   facebookUrl: z.string().optional(),
   websiteUrl: z.string().optional(),
@@ -30,7 +32,8 @@ const schoolSchema = z.object({
 
 export default function NewSchool() {
   const [loading, setLoading] = useState(false)
-  const {signUp} = useAuth()
+  const { signUp } = useAuth()
+  const router = useRouter()
 
   const [formData, setFormData] = useState({
     schoolName: '',
@@ -64,107 +67,101 @@ export default function NewSchool() {
     }
   }
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  setLoading(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
 
-  const validation = schoolSchema.safeParse(formData)
+    const validation = schoolSchema.safeParse(formData)
+    if (!validation.success) {
+      Swal.fire({ icon: 'error', title: 'Validation Error', text: validation.error.errors[0].message })
+      setLoading(false)
+      return
+    }
 
-  if (!validation.success) {
-    alert("Please fill all required fields correctly.")
-    setLoading(false)
-    return
+    try {
+      const { data, error } = await signUp(formData.adminEmail, formData.adminPassword, "admin")
+      if (error || !data?.user) throw new Error(error?.message || "Admin account creation failed")
+
+      const result = await createSchool({
+        ...formData,
+        expectedStudents: parseInt(formData.expectedStudents) || 0,
+        adminId: data.user.id
+      })
+
+      if (!result.success) throw new Error(result.error)
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Institution Deployed Successfully!',
+        timer: 2000,
+        showConfirmButton: false
+      })
+
+      // ✅ এখান পরিবর্তন করা হয়েছে: সরাসরি স্কুল ম্যানেজমেন্ট লিস্টে যাবে
+      router.push('/dashboard/super-admin/schools') 
+
+    } catch (err: any) {
+      Swal.fire({ icon: 'error', title: 'Submission Failed', text: err.message })
+    } finally {
+      setLoading(false)
+    }
   }
-
-  // 1️⃣ Create Supabase Auth User
-  const { data, error } = await signUp(
-    formData.adminEmail,
-    formData.adminPassword,
-    "admin"
-  )
-
-  if (error || !data?.user) {
-    alert(error?.message || "Admin account creation failed")
-    setLoading(false)
-    return
-  }
-
-  // 2️⃣ Create School + Prisma User
-  const result = await createSchool({
-    ...formData,
-    adminId: data.user.id
-  })
-
-  if (!result.success) {
-
-    // ❗ Rollback Supabase user (optional improvement)
-    // এখানে future এ deleteUser logic দিতে পারো
-
-    alert("❌ Error: " + result.error)
-    setLoading(false)
-    return
-  }
-
-  alert("🎉 Institution Deployed Successfully!")
-
-  setLoading(false)
-}
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up pb-12">
-      <div className="text-center">
-        <h2 className="text-3xl font-black text-[var(--color-text-primary)] tracking-tight uppercase">Register New Institution</h2>
-        <p className="text-[var(--color-text-muted)] font-medium">Setup a new tenant environment.</p>
+    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up pb-12 pt-6">
+      
+      {/* Top Navigation & Header */}
+      <div className="flex items-center justify-between px-2">
+        <button 
+          onClick={() => router.back()} 
+          className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors font-bold uppercase text-xs tracking-widest"
+        >
+          <ArrowLeft size={18} /> Back to Management
+        </button>
+        <div className="text-right">
+            <h2 className="text-2xl font-black text-[var(--color-text-primary)] uppercase tracking-tight">Register New School</h2>
+            <p className="text-xs text-[var(--color-text-muted)]">Create a new institutional instance</p>
+        </div>
       </div>
 
-      <div className="bg-[var(--color-bg-card)] p-8 rounded-3xl border border-[var(--color-border-light)] shadow-xl space-y-10">
+      <div className="bg-[var(--color-bg-card)] p-8 rounded-3xl border border-[var(--color-border-light)] shadow-xl">
         <form className="space-y-10" onSubmit={handleSubmit}>
           
-          {/* Institutional Profile */}
+          {/* 1. Institutional Profile */}
           <div className="space-y-6">
             <h3 className="text-lg font-black text-[var(--color-primary)] flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
               <Building size={20} /> Institutional Profile
             </h3>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">School Name</label>
-                <div className="relative">
-                  <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
-                  <input required type="text" name="schoolName" value={formData.schoolName} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)]" onChange={handleChange} />
-                </div>
+                <input required type="text" name="schoolName" value={formData.schoolName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
               </div>
-
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Sub-domain / Slug</label>
-                <div className="relative">
-                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
-                  <input type="text" value={formData.slug} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)] opacity-70 cursor-not-allowed font-mono" readOnly />
-                </div>
+                <input type="text" value={formData.slug} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl opacity-70 cursor-not-allowed font-mono text-sm" readOnly />
               </div>
-
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">School Category</label>
-                <select name="schoolCategory" value={formData.schoolCategory} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)]" onChange={handleChange}>
+                <select name="schoolCategory" value={formData.schoolCategory} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
                   <option value="primary">Primary School</option>
                   <option value="high-school">High School</option>
                   <option value="college">College / University</option>
+                  <option value="madrasa">Madrasa</option>
                 </select>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Expected Students</label>
-                <input type="number" name="expectedStudents" value={formData.expectedStudents} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
-              </div>
-
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Registration ID</label>
-                <input required type="text" name="registrationId" value={formData.registrationId} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
+                <input required type="text" name="registrationId" value={formData.registrationId} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
               </div>
-
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Language</label>
-                <select name="language" value={formData.language} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange}>
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Expected Students</label>
+                <input type="number" name="expectedStudents" value={formData.expectedStudents} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">System Language</label>
+                <select name="language" value={formData.language} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
                   <option value="english">English</option>
                   <option value="bangla">Bangla</option>
                 </select>
@@ -172,7 +169,7 @@ export default function NewSchool() {
             </div>
           </div>
 
-          {/* Communication */}
+          {/* 2. Communication & Address */}
           <div className="space-y-6">
             <h3 className="text-lg font-black text-emerald-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
               <Globe size={20} /> Communication & Web
@@ -180,25 +177,88 @@ export default function NewSchool() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Official Email</label>
-                <input required type="email" name="schoolEmail" value={formData.schoolEmail} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input required type="email" name="schoolEmail" value={formData.schoolEmail} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Phone Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input type="text" name="phone" value={formData.phone} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Website URL</label>
+                <div className="relative">
+                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input type="text" name="websiteUrl" value={formData.websiteUrl} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} placeholder="https://..." />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Facebook Page</label>
-                <input type="text" name="facebookUrl" value={formData.facebookUrl} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+                <div className="relative">
+                  <Facebook className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                  <input type="text" name="facebookUrl" value={formData.facebookUrl} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} placeholder="https://facebook.com/..." />
+                </div>
+              </div>
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Physical Address</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-4 text-[var(--color-text-muted)]" size={18} />
+                  <textarea name="address" value={formData.address} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl min-h-[80px]" onChange={handleChange}></textarea>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Admin Account */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-black text-orange-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
-              <ShieldCheck size={20} /> Admin Account
+          {/* 3. Subscription & Plan */}
+          <div className="p-6 bg-[var(--color-bg-page)] rounded-2xl border border-[var(--color-border-light)] space-y-6">
+            <h3 className="text-lg font-black text-purple-500 flex items-center gap-2 uppercase tracking-tighter">
+              <CreditCard size={20} /> Subscription & Billing
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <input required type="text" name="adminName" placeholder="Admin Name" value={formData.adminName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
-              <input required type="email" name="adminEmail" placeholder="Admin Email" value={formData.adminEmail} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
-              <div className="md:col-span-2">
-                <input required type="password" name="adminPassword" placeholder="Initial Password" value={formData.adminPassword} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Select Plan</label>
+                <select name="plan" value={formData.plan} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
+                  <option value="basic">Basic Plan</option>
+                  <option value="standard">Standard Plan</option>
+                  <option value="premium">Premium / Enterprise</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Subscription Duration</label>
+                <select name="duration" value={formData.duration} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
+                  <option value="1">1 Month (Trial)</option>
+                  <option value="6">6 Months</option>
+                  <option value="12">12 Months (Recommended)</option>
+                  <option value="24">24 Months</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Admin Account */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-black text-orange-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
+              <ShieldCheck size={20} /> Master Admin Credentials
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Full Name</label>
+                <input required type="text" name="adminName" value={formData.adminName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Admin Email</label>
+                <input required type="email" name="adminEmail" value={formData.adminEmail} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
+              </div>
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Login Password (Visible)</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
+                  <input required type="text" name="adminPassword" value={formData.adminPassword} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl font-mono text-orange-600 font-bold" onChange={handleChange} />
+                </div>
               </div>
             </div>
           </div>

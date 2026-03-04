@@ -1,13 +1,11 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"; // আপনার প্রিজমা ক্লায়েন্ট পাথ নিশ্চিত করুন
-import { createUser } from "./user"
+import { prisma } from "@/lib/prisma"; 
+import { revalidatePath } from "next/cache"; // এটি খুবই জরুরি ডাটা সাথে সাথে দেখানোর জন্য
 
 export async function createSchool(formData: any) {
   try {
-
     const result = await prisma.$transaction(async (tx) => {
-
       // 1️⃣ Create School
       const newSchool = await tx.school.create({
         data: {
@@ -16,8 +14,8 @@ export async function createSchool(formData: any) {
           schoolEmail: formData.schoolEmail,
           phone: formData.phone || null,
           address: formData.address || null,
-          plan: formData.plan,
-          duration: formData.duration,
+          plan: formData.plan || "basic",
+          duration: formData.duration || "12",
           schoolCategory: formData.schoolCategory,
           expectedStudents: formData.expectedStudents
             ? Number(formData.expectedStudents)
@@ -25,61 +23,55 @@ export async function createSchool(formData: any) {
           registrationId: formData.registrationId,
           facebookUrl: formData.facebookUrl || null,
           websiteUrl: formData.websiteUrl || null,
-          language: formData.language,
+          language: formData.language || "english",
         },
       });
 
       // 2️⃣ Create Admin User
       await tx.user.create({
         data: {
-          authUserId: formData.adminId,
+          authUserId: supabaseUser.data.user?.id, // Supabase থেকে আসা ID
           name: formData.adminName,
           email: formData.adminEmail,
           role: "admin",
           schoolId: newSchool.id,
+          status: "active"
         },
       });
 
       return newSchool;
     });
 
+    // ডাটা ইনসার্ট হওয়ার পর নিচের পাথগুলো রিভ্যালিডেট হবে 
+    // যাতে ইউজার নতুন ডাটা দেখতে পায়
+    revalidatePath("/schools"); 
+    revalidatePath("/"); 
+
     return { success: true, data: result };
 
   } catch (error: any) {
-    console.error("❌ Prisma Error:", error.message);
+    console.error("❌ Prisma Error:", error);
 
+    // ইউনিক কনস্ট্রেইন্ট এরর চেক (ইমেইল বা স্ল্যাগ মিলে গেলে)
     if (error.code === "P2002") {
+      const field = error.meta?.target?.[0] || "field";
       return {
         success: false,
-        error: "School with this Email or Slug already exists!",
+        error: `This ${field} is already in use. Please use a unique one.`,
       };
     }
 
     return {
       success: false,
-      error: "Database error occurred.",
+      error: error.message || "Database error occurred.",
     };
   }
 }
 
-
-
-
-//it will show all data 
-
-// ১. সব স্কুল ডাটা আনার জন্য (শুধু স্কুলের তথ্য)
+// ১. সব স্কুল ডাটা আনার জন্য
 export async function getAllSchools() {
   try {
     const schools = await prisma.school.findMany({
-      select: {
-        id: true,
-        schoolName: true,
-        schoolEmail: true,
-        schoolCategory: true,
-        slug: true,
-        registrationId: true,
-        // admin info গুলো বাদ দেওয়া হয়েছে আপনার চাহিদা মতো
-      },
       orderBy: { createdAt: 'desc' }
     });
     return { success: true, data: schools };
@@ -88,64 +80,95 @@ export async function getAllSchools() {
   }
 }
 
-// ১. আইডি দিয়ে স্কুল খুঁজে বের করা
-export async function getSchoolById(id: string) {
+// ২. সব ইউজার ডাটা আনার জন্য (স্কুলের নাম সহ)
+export async function getAllUsers() {
   try {
-    const school = await prisma.school.findUnique({
-      where: { id }
+    const users = await prisma.user.findMany({
+      include: {
+        school: {
+          select: {
+            schoolName: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     });
-    return { success: true, data: school };
-  } catch (error) {
-    return { success: false, error: "School not found" };
+    return { success: true, data: users };
+  } catch (error: any) {
+    return { success: false, error: "ইউজার ডাটা আনতে সমস্যা হয়েছে।" };
   }
 }
-
-// ২. স্কুল আপডেট করা
+// ১. স্কুল আপডেট করার ফাংশন
 export async function updateSchool(id: string, formData: any) {
   try {
     const updated = await prisma.school.update({
       where: { id },
       data: {
-        ...formData,
+        schoolName: formData.schoolName,
+        slug: formData.slug,
+        schoolEmail: formData.schoolEmail,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        plan: formData.plan,
+        duration: formData.duration,
+        schoolCategory: formData.schoolCategory,
         expectedStudents: formData.expectedStudents ? Number(formData.expectedStudents) : null,
-      }
+        registrationId: formData.registrationId,
+        facebookUrl: formData.facebookUrl || null,
+        websiteUrl: formData.websiteUrl || null,
+        language: formData.language,
+      },
     });
+
+    revalidatePath("/schools"); // যেখানে লিস্ট দেখান সেই পাথ
+    revalidatePath(`/schools/${id}`); // স্পেসিফিক পেজ থাকলে
+    
     return { success: true, data: updated };
-  } catch (error) {
-    return { success: false, error: "Update failed" };
+  } catch (error: any) {
+    console.error("❌ Update Error:", error.message);
+    return { success: false, error: "Update failed: " + error.message };
   }
 }
 
-
-
-
-//------------------------eta hocce je all users-----------------------------//
-
-
-// action/school.ts ফাইলে এটি যোগ করুন
-
-export async function getAllUsers() {
+// এই ফাংশনটি আপনার action/school.ts এ যোগ করুন
+export async function getSchoolById(id: string) {
   try {
-    const users = await prisma.user.findMany({
-  include: {
-    school: {
-      select: {
-        schoolName: true,
-      },
-    },
-  },
-      orderBy: {
-        createdAt: 'desc',
-      },
+    const school = await prisma.school.findUnique({
+      where: { id }
+    });
+    if (!school) return { success: false, error: "School not found" };
+    return { success: true, data: school };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ২. স্কুল ডিলিট করার ফাংশন (ফিক্সড)
+export async function deleteSchool(id: string) {
+  try {
+    // transaction ব্যবহার করছি যাতে ইউজার এবং স্কুল দুটাই ডিলিট হয়
+    await prisma.$transaction(async (tx) => {
+      
+      // ১. প্রথমে এই স্কুলের সাথে যুক্ত সব ইউজার ডিলিট করতে হবে
+      await tx.user.deleteMany({
+        where: { schoolId: id },
+      });
+
+      // ২. এবার স্কুল ডিলিট হবে
+      await tx.school.delete({
+        where: { id },
+      });
     });
 
-    return { success: true, data: users };
+    // আপনার লিস্ট পেজের পাথটি রিভ্যালিডেট করুন
+    revalidatePath("/dashboard/super-admin/schools"); 
+    
+    return { success: true, message: "School and its users deleted successfully" };
   } catch (error: any) {
-    console.error("❌ Prisma User Fetch Error:", error.message);
-    return { success: false, error: "ইউজার ডাটা আনতে সমস্যা হয়েছে।" };
+    console.error("❌ Delete Error:", error.message);
+    return { 
+      success: false, 
+      error: "এই স্কুলের অধীনে ডাটা (User/Student) থাকায় ডিলিট করা যাচ্ছে না।" 
+    };
   }
 }
-
-
-
-

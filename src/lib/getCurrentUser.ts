@@ -1,16 +1,34 @@
+import { cookies } from "next/headers"
+import { createServerClient } from "@supabase/ssr"
 import { prisma } from "@/lib/prisma"
-import { createClient } from "@/lib/supabase/server"
 
 export async function getCurrentUser() {
 
-  const supabase = await createClient()
+  const cookieStore = await cookies()
 
-  const { data, error } = await supabase.auth.getUser()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        }
+      }
+    }
+  )
 
-  if (error || !data.user) return null
+  const {
+    data: { user },
+    error
+  } = await supabase.auth.getUser()
 
-  const dbUser = await prisma.user.findFirst({
-    where: { authUserId: data.user.id }
+  if (error || !user) return null
+
+  const dbUser = await prisma.user.findUnique({
+    where: {
+      authUserId: user.id
+    }
   })
 
   return dbUser

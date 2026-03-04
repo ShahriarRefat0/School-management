@@ -23,6 +23,7 @@ model School {
   language         String   @default("english")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  users            User[]   @relation("SchoolUsers")
 }
 
 model Announcement {
@@ -68,7 +69,8 @@ model Student {
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  userId           String
+  userId           String   @unique
+  user             User     @relation("UserStudent", fields: [userId], references: [id])
 
   @@map("students")
 }
@@ -104,9 +106,6 @@ model SupportTicket {
 model Teacher {
   id               String   @id @default(uuid())
   teacherId        String
-  firstName        String
-  lastName         String
-  email            String
   phone            String
   dateOfBirth      DateTime
   gender           String
@@ -122,19 +121,25 @@ model Teacher {
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  userId           String
+  userId           String   @unique
+  user             User     @relation("UserTeacher", fields: [userId], references: [id])
 
   @@map("teachers")
 }
 
 model User {
   id         String     @id @default(uuid())
-  authUserId String
+  authUserId String     @unique
   schoolId   String
   role       Role
   status     UserStatus @default(active)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
+  email      String     @unique
+  name       String
+  school     School     @relation("SchoolUsers", fields: [schoolId], references: [id])
+  student    Student?   @relation("UserStudent")
+  teacher    Teacher?   @relation("UserTeacher")
 
   @@map("User")
 }
