@@ -1,81 +1,85 @@
 "use server"
 
+import { getCurrentUser } from "@/lib/getCurrentUser"
 import { prisma } from "@/lib/prisma"
+// import { email, success } from "zod"
 
-export async function addTeacher(formData: {
-    teacherId: string
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    dateOfBirth: string
-    gender: string
-    bloodGroup?: string
-    religion?: string
-    designation: string
-    department: string
-    qualification: string
-    presentAddress: string
-    permanentAddress?: string
-}) {
+export async function addTeacher(formData: any) {
     console.log("📥 Receiving teacher request:", formData.teacherId);
+    
+  const currentUser = await getCurrentUser()
+console.log("🥲CURRENT USER:", currentUser)
+  if (!currentUser) {
+    console.log("user nai", currentUser)
+    return { success: false, error: "Unauthorized hocy na" }
+  }
 
-    try {
-        if (!prisma.teacherAdd) {
-            console.error("❌ Prisma teacherAdd model is UNDEFINED!");
-            return { success: false, error: "Database error: Teacher model missing." };
-        }
+  try {
+    const schoolId = currentUser.schoolId
 
-        // Date parsing with validation
-        const birthDate = new Date(formData.dateOfBirth);
-        if (isNaN(birthDate.getTime())) {
-            return { success: false, error: "জন্ম তারিখ ভুল ফরম্যাটে আছে!" };
-        }
+    const result = await prisma.$transaction(async (tx) => {
 
-        const newTeacher = await prisma.teacherAdd.create({
-            data: {
-                teacherId: formData.teacherId,
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                phone: formData.phone,
-                dateOfBirth: birthDate,
-                gender: formData.gender,
-                bloodGroup: formData.bloodGroup?.trim() || null,
-                religion: formData.religion?.trim() || null,
-                designation: formData.designation,
-                department: formData.department,
-                qualification: formData.qualification,
-                presentAddress: formData.presentAddress,
-                permanentAddress: formData.permanentAddress?.trim() || null,
-            },
-        })
+      const birthDate = new Date(formData.dateOfBirth)
+      if (isNaN(birthDate.getTime())) {
+        throw new Error("Invalid date format")
+      }
 
-        console.log("✅ Teacher successfully created:", newTeacher.id)
-        return { success: true, data: newTeacher }
+      // 1️⃣ Create User first
+      const user = await tx.user.create({
+        data: {
+          authUserId: formData.authUserId, // temporary until supabase part added
+          name: formData.firstName + " " + formData.lastName,
+          email: formData.email,
+          role: "teacher",
+          schoolId: schoolId,
+        },
+      })
 
-    } catch (error: any) {
-        console.error("❌ Teacher Create Database Error:", error);
-
-        if (error.code === 'P2002') {
-            const fields = error.meta?.target || [];
-            if (fields.includes('teacherId')) {
-                return { success: false, error: "এই Teacher ID টি আগেই ব্যবহার করা হয়েছে!" };
-            }
-            if (fields.includes('email')) {
-                return { success: false, error: "এই Email টি আগেই ব্যবহার করা হয়েছে!" };
-            }
-            return { success: false, error: "এই তথ্যটি আগে থেকেই ডাটাবেসে আছে!" };
-        }
-
-        return { success: false, error: `সার্ভার এরর: ${error.message || "Database error occurred"}` }
-    }
+      // 2️⃣ Create Teacher and connect user
+      const newTeacher = await tx.teacher.create({
+        data: {
+          teacherId: formData.teacherId,
+        //   firstName: formData.firstName,
+        //   lastName: formData.lastName,
+        //   email: formData.email,
+          phone: formData.phone,
+          dateOfBirth: birthDate,
+          gender: formData.gender,
+          bloodGroup: formData.bloodGroup?.trim() || null,
+          religion: formData.religion?.trim() || null,
+          designation: formData.designation,
+          department: formData.department,
+          qualification: formData.qualification,
+          presentAddress: formData.presentAddress,
+          permanentAddress: formData.permanentAddress?.trim() || null,
+          user: {
+  connect: {
+    id: user.id
+  }
 }
+        },
+      })
+
+      return newTeacher
+    })
+
+    return { success: true, data: result }
+
+  } catch (error: any) {
+
+    if (error.code === "P2002") {
+      return { success: false, error: "Email or Teacher ID already exists!" }
+    }
+
+    return { success: false, error: error.message }
+  }
+}
+
 
 export async function getTeachers() {
     try {
-        if (!prisma.teacherAdd) return { success: false, error: "Database error." };
-        const teachers = await prisma.teacherAdd.findMany({
+        if (!prisma.teacher) return { success: false, error: "Database error." };
+        const teachers = await prisma.teacher.findMany({
             orderBy: { createdAt: 'desc' }
         })
         return { success: true, data: teachers }
@@ -88,7 +92,7 @@ export async function getTeachers() {
 export async function updateTeacher(id: string, formData: any) {
     try {
         const birthDate = formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined;
-        const updated = await prisma.teacherAdd.update({
+        const updated = await prisma.teacher.update({
             where: { teacherId: id },
             data: {
                 ...formData,
@@ -104,7 +108,7 @@ export async function updateTeacher(id: string, formData: any) {
 
 export async function deleteTeacher(id: string) {
     try {
-        await prisma.teacherAdd.delete({
+        await prisma.teacher.delete({
             where: { teacherId: id }
         });
         return { success: true };
@@ -117,13 +121,13 @@ export async function getTeacher(id: string) {
     console.log("🔍 Fetching teacher with ID:", id);
     try {
         // Try finding by public teacherId first
-        let teacher = await prisma.teacherAdd.findUnique({
+        let teacher = await prisma.teacher.findUnique({
             where: { teacherId: id }
         });
 
         // If not found, try finding by UUID
         if (!teacher) {
-            teacher = await prisma.teacherAdd.findUnique({
+            teacher = await prisma.teacher.findUnique({
                 where: { id: id }
             });
         }

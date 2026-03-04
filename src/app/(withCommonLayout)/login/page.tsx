@@ -48,6 +48,8 @@ const UnifiedLoginPage = () => {
       return;
     }
 
+    router.refresh();
+
     setTimeout(() => {
      switch (role) {
   case "admin":
