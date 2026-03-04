@@ -7,24 +7,23 @@ datasource db {
 }
 
 model School {
-  id               String         @id @default(cuid())
+  id               String   @id @default(cuid())
   schoolName       String
-  slug             String         @unique
-  schoolEmail      String         @unique
+  slug             String
+  schoolEmail      String
   phone            String?
   address          String?
-  plan             String         @default("basic")
-  duration         String         @default("12")
+  plan             String   @default("basic")
+  duration         String   @default("12")
   schoolCategory   String
   expectedStudents Int?
-  registrationId   String         @unique
+  registrationId   String
   facebookUrl      String?
   websiteUrl       String?
-  language         String         @default("english")
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  announcements    Announcement[]
-  users            User[]         @relation("SchoolUsers")
+  language         String   @default("english")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  users            User[]   @relation("SchoolUsers")
 }
 
 model Announcement {
@@ -44,14 +43,11 @@ model Announcement {
   authorName    String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  @@index([schoolId])
 }
 
 model Student {
   id               String   @id @default(uuid())
-  registrationNo   String   @unique
+  registrationNo   String
   firstName        String
   lastName         String
   dateOfBirth      DateTime
@@ -67,7 +63,7 @@ model Student {
   motherName       String
   guardianPhone    String
   emergencyContact String?
-  email            String?  @unique
+  email            String?
   presentAddress   String
   permanentAddress String?
   isActive         Boolean  @default(true)
@@ -109,10 +105,7 @@ model SupportTicket {
 
 model Teacher {
   id               String   @id @default(uuid())
-  teacherId        String   @unique
-  firstName        String
-  lastName         String
-  email            String   @unique
+  teacherId        String
   phone            String
   dateOfBirth      DateTime
   gender           String
@@ -157,7 +150,7 @@ model StudyMaterial {
   type          String
   subject       String
   class         String
-  description   String?  @db.Text
+  description   String?
   attachmentUrl String
   size          String?
   schoolId      String
@@ -169,22 +162,23 @@ model StudyMaterial {
 }
 
 model TeacherNotice {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
-  content     String    @db.Text
-  audience    String    @default("students")
+  content     String
+  audience    String   @default("students")
   targetClass String?
-  category    String    @default("academic")
-  priority    String    @default("normal")
-  status      String    @default("published")
+  category    String   @default("academic")
+  priority    String   @default("normal")
+  status      String   @default("published")
   schoolId    String
   authorId    String?
   authorName  String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([schoolId])
 }
+
 enum Role {
   super_admin
   admin
@@ -198,4 +192,3 @@ enum UserStatus {
   active
   blocked
 }
-
