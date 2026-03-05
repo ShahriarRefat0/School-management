@@ -44,6 +44,28 @@ export async function createStudyMaterial(formData: {
     }
 }
 
+export async function updateStudyMaterial(id: string, formData: {
+    title: string;
+    type: string;
+    subject: string;
+    class: string;
+    description?: string;
+    attachmentUrl: string;
+    size?: string;
+}) {
+    try {
+        const material = await prisma.studyMaterial.update({
+            where: { id },
+            data: formData
+        });
+        revalidatePath("/dashboard/teacher/study-materials");
+        return { success: true, data: material };
+    } catch (error) {
+        console.error("Error updating study material:", error);
+        return { success: false, error: "Failed to update study material" };
+    }
+}
+
 export async function deleteStudyMaterial(id: string) {
     try {
         await prisma.studyMaterial.delete({

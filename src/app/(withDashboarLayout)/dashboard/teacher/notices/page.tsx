@@ -11,18 +11,22 @@ import {
     Plus,
     X,
     MessageSquare,
-    Users
+    Users,
+    Edit,
+    Trash2
 } from 'lucide-react';
 
 import { TeacherHeader } from "../TeacherHeader";
 import { useAuth } from "@/hooks/useAuth";
-import { createTeacherNotice, getTeacherNotices } from "@/app/actions/teacher/createTeacherNotice";
+import { createTeacherNotice, getTeacherNotices, updateTeacherNotice, deleteTeacherNotice } from "@/app/actions/teacher/createTeacherNotice";
 import toast from "react-hot-toast";
+import Swal from 'sweetalert2';
 
 export default function NoticesPage() {
     const [showPostModal, setShowPostModal] = React.useState(false);
     const [selectedNotice, setSelectedNotice] = React.useState<any | null>(null);
     const [activeFilter, setActiveFilter] = React.useState("all");
+    const [editNotice, setEditNotice] = React.useState<any | null>(null);
 
     // Form states
     const { user } = useAuth();
@@ -58,6 +62,47 @@ export default function NoticesPage() {
         fetchNotices();
     }, [schoolId]);
 
+    const openEditModal = (notice: any) => {
+        setEditNotice(notice);
+        setTitle(notice.title);
+        setContent(notice.content);
+        setAudience(notice.audience || "All Faculty & Students");
+        setCategory(notice.category || "Academic");
+        setShowPostModal(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Yes, delete it!',
+            background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+            color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a'
+        });
+
+        if (result.isConfirmed) {
+            const deleteResult = await deleteTeacherNotice(id);
+            if (deleteResult.success) {
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'The notice has been deleted.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a'
+                });
+                fetchNotices();
+            } else {
+                toast.error(deleteResult.error || "Failed to delete notice");
+            }
+        }
+    };
+
     const handleSubmit = async () => {
         if (!title.trim() || !content.trim()) {
             toast.error("Title and Content are required");
@@ -71,17 +116,28 @@ export default function NoticesPage() {
                 content,
                 audience,
                 category,
-                priority: "normal", // Default priority
+                priority: editNotice?.priority || "normal", // Preserve priority if editing
                 schoolId,
                 authorId,
                 authorName
             };
 
-            const result = await createTeacherNotice(formData);
+            const result = editNotice
+                ? await updateTeacherNotice(editNotice.id, formData)
+                : await createTeacherNotice(formData);
 
             if (result.success) {
-                toast.success("Notice published successfully!");
+                Swal.fire({
+                    title: editNotice ? 'Updated!' : 'Published!',
+                    text: editNotice ? 'Notice updated successfully.' : 'Notice published successfully!',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a'
+                });
                 setShowPostModal(false);
+                setEditNotice(null);
                 setTitle("");
                 setContent("");
                 setAudience("All Faculty & Students");
@@ -231,6 +287,22 @@ export default function NoticesPage() {
                                         Read More
                                         <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                                     </button>
+                                    <div className="flex items-center gap-2 ml-4">
+                                        <button
+                                            onClick={() => openEditModal(notice)}
+                                            className="p-2 hover:bg-primary/10 rounded-lg text-text-muted hover:text-primary transition-all"
+                                            title="Edit"
+                                        >
+                                            <Edit size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(notice.id)}
+                                            className="p-2 hover:bg-red-50 rounded-lg text-text-muted hover:text-red-500 transition-all"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -266,10 +338,10 @@ export default function NoticesPage() {
                     <div className="bg-bg-card w-full max-w-2xl max-h-[90vh] rounded-[3rem] overflow-hidden relative z-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-slideInBottom border border-white/5 flex flex-col">
                         <div className="px-8 md:px-12 py-8 bg-gradient-to-r from-primary to-indigo-700 text-white flex items-center justify-between shrink-0">
                             <div>
-                                <h3 className="text-2xl font-black uppercase tracking-[0.2em]">New Notice</h3>
-                                <p className="text-white/70 text-[10px] font-bold mt-1 uppercase tracking-widest">Broadcast to classes or school</p>
+                                <h3 className="text-2xl font-black uppercase tracking-[0.2em]">{editNotice ? 'Update Notice' : 'New Notice'}</h3>
+                                <p className="text-white/70 text-[10px] font-bold mt-1 uppercase tracking-widest">{editNotice ? 'Modify your announcement' : 'Broadcast to classes or school'}</p>
                             </div>
-                            <button onClick={() => setShowPostModal(false)} className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all">
+                            <button onClick={() => { setShowPostModal(false); setEditNotice(null); }} className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all">
                                 <X size={24} />
                             </button>
                         </div>
@@ -341,7 +413,7 @@ export default function NoticesPage() {
                                     {isSubmitting ? (
                                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                     ) : null}
-                                    {isSubmitting ? "Publishing..." : "Publish Announcement"}
+                                    {isSubmitting ? "Processing..." : editNotice ? "Update Announcement" : "Publish Announcement"}
                                 </button>
                             </div>
                         </div>
