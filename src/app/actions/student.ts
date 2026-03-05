@@ -131,8 +131,22 @@ export async function updateStudent(id: string, formData: any) {
     try {
         const birthDate = formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined;
 
+        let student = await prisma.student.findFirst({
+            where: { registrationNo: id }
+        });
+
+        if (!student && id.length > 20) {
+            student = await prisma.student.findUnique({
+                where: { id }
+            });
+        }
+
+        if (!student) {
+            return { success: false, error: "Student not found." };
+        }
+
         const updated = await prisma.student.update({
-            where: { registrationNo: id },
+            where: { id: student.id },
             data: {
                 ...formData,
                 rollNo: formData.rollNo ? Number(formData.rollNo) : undefined,
@@ -148,11 +162,33 @@ export async function updateStudent(id: string, formData: any) {
 
 export async function deleteStudent(id: string) {
     try {
-        await prisma.student.delete({
+        let student = await prisma.student.findFirst({
             where: { registrationNo: id }
         });
+
+        if (!student && id.length > 20) {
+            student = await prisma.student.findUnique({
+                where: { id }
+            });
+        }
+
+        if (!student) {
+            return { success: false, error: "Student not found." };
+        }
+
+        await prisma.student.delete({
+            where: { id: student.id }
+        });
+
+        if (student.userId) {
+            await prisma.user.delete({
+                where: { id: student.userId }
+            });
+        }
+
         return { success: true };
     } catch (error: any) {
+        console.error("❌ Delete Student Error:", error.message);
         return { success: false, error: "মুছে ফেলতে সমস্যা হয়েছে।" };
     }
 }
@@ -161,12 +197,12 @@ export async function getStudent(id: string) {
     console.log("🔍 Fetching student with ID:", id);
     try {
         // Try finding by registration No first
-        let student = await prisma.student.findUnique({
+        let student = await prisma.student.findFirst({
             where: { registrationNo: id }
         });
 
         // If not found, try finding by UUID
-        if (!student) {
+        if (!student && id.length > 20) {
             student = await prisma.student.findUnique({
                 where: { id: id }
             });
