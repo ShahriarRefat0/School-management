@@ -42,6 +42,49 @@ export async function createTeacherNotice(formData: {
     }
 }
 
+export async function updateTeacherNotice(id: string, formData: {
+    title: string;
+    content: string;
+    audience: string;
+    targetClass?: string | null;
+    category: string;
+    priority: string;
+}) {
+    try {
+        const updatedNotice = await prisma.teacherNotice.update({
+            where: { id },
+            data: {
+                title: formData.title,
+                content: formData.content,
+                audience: formData.audience,
+                targetClass: formData.audience === "students" ? formData.targetClass : null,
+                category: formData.category,
+                priority: formData.priority,
+            },
+        });
+
+        revalidatePath("/dashboard/teacher/notices");
+        return { success: true, data: updatedNotice };
+    } catch (error: any) {
+        console.error("❌ updateTeacherNotice Error:", error.message);
+        return { success: false, error: "Error: " + error.message };
+    }
+}
+
+export async function deleteTeacherNotice(id: string) {
+    try {
+        await prisma.teacherNotice.delete({
+            where: { id },
+        });
+
+        revalidatePath("/dashboard/teacher/notices");
+        return { success: true };
+    } catch (error: any) {
+        console.error("❌ deleteTeacherNotice Error:", error.message);
+        return { success: false, error: "Error: " + error.message };
+    }
+}
+
 export async function getTeacherNotices(schoolId?: string) {
     try {
         const whereClause = schoolId ? { schoolId } : {};
