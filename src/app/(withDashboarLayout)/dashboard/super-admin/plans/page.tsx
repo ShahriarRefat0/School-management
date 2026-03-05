@@ -6,6 +6,7 @@ import {
   Trash2, Users, UserRound, HardDrive, LayoutGrid, Edit, Hash, Loader2
 } from 'lucide-react';
 import { getPlans, deletePlan } from '@/app/actions/plans';
+import Swal from 'sweetalert2';
 
 const iconMap: Record<string, React.ElementType> = {
   Zap,
@@ -36,23 +37,77 @@ export default function PlansSetup() {
     fetchPlans();
   }, []);
 
-  const handleDeletePlan = async (id: string) => {
-    const confirmDelete = confirm(`Are you sure you want to delete plan ID: ${id}?`);
-    if (confirmDelete) {
-      try {
-        const res = await deletePlan(id);
-        if (res.success) {
-          alert(`Plan deleted successfully!`);
-          fetchPlans(); // Refresh list after deletion
-        } else {
-          alert(`Failed to delete plan: ${res.error}`);
-        }
-      } catch (error) {
-        console.error('Error deleting plan:', error);
-        alert('An error occurred while deleting the plan');
-      }
+  // const handleDeletePlan = async (id: string) => {
+  //   const confirmDelete = confirm(`Are you sure you want to delete plan ID: ${id}?`);
+  //   if (confirmDelete) {
+  //     try {
+  //       const res = await deletePlan(id);
+  //       if (res.success) {
+  //         alert(`Plan deleted successfully!`);
+  //         fetchPlans(); // Refresh list after deletion
+  //       } else {
+  //         alert(`Failed to delete plan: ${res.error}`);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error deleting plan:', error);
+  //       alert('An error occurred while deleting the plan');
+  //     }
+  //   }
+  // };
+
+
+const handleDeletePlan = async (id: string) => {
+
+  const result = await Swal.fire({
+    title: "Delete Plan?",
+    text: `Are you sure you want to delete plan ID: ${id}?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel",
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    const res = await deletePlan(id);
+
+    if (res.success) {
+
+      await Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "Plan deleted successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      fetchPlans(); // refresh list
+
+    } else {
+
+      Swal.fire({
+        icon: "error",
+        title: "Failed!",
+        text: res.error || "Failed to delete plan",
+      });
+
     }
-  };
+
+  } catch (error) {
+
+    console.error("Error deleting plan:", error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "An error occurred while deleting the plan",
+    });
+
+  }
+};
 
   return (
     <div className="space-y-8 animate-fade-in-up">

@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import { Megaphone, Users, Calendar, AlertCircle, Layers, FileText, Send } from 'lucide-react'
 import { createAnnouncement } from '@/app/actions/announcement'
+import Swal from 'sweetalert2'
 
 export default function NewAnnouncement({ schoolId }: { schoolId: string }) {
   const [loading, setLoading] = useState(false)
@@ -20,20 +21,37 @@ export default function NewAnnouncement({ schoolId }: { schoolId: string }) {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    
-    const result = await createAnnouncement(formData)
-    
-    if (result.success) {
-      alert("🎉 Announcement Published Successfully!")
-      setFormData({ ...formData, title: '', content: '', expiryDate: '' }) // ফর্ম রিসেট
-    } else {
-      alert("❌ Error: " + result.error)
-    }
-    setLoading(false)
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+
+  const result = await createAnnouncement(formData);
+
+  if (result.success) {
+    Swal.fire({
+      icon: "success",
+      title: "Success!",
+      text: "🎉 Announcement Published Successfully!",
+      confirmButtonColor: "#3085d6",
+    });
+
+    setFormData({
+      ...formData,
+      title: "",
+      content: "",
+      expiryDate: "",
+    });
+  } else {
+    Swal.fire({
+      icon: "error",
+      title: "Error!",
+      text: result.error || "Something went wrong",
+      confirmButtonColor: "#d33",
+    });
   }
+
+  setLoading(false);
+};
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-fade-in-up pb-12">
