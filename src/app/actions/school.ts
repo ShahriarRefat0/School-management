@@ -42,7 +42,6 @@ export async function createSchool(formData: any) {
       return newSchool;
     });
 
-    // ডাটা ইনসার্ট হওয়ার পর নিচের পাথগুলো রিভ্যালিডেট হবে 
     // যাতে ইউজার নতুন ডাটা দেখতে পায়
     revalidatePath("/schools"); 
     revalidatePath("/"); 
