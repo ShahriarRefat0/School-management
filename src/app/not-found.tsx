@@ -45,7 +45,7 @@ export default function NotFound() {
                     width: 400, height: 400, borderRadius: "50%",
                     background: "radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)",
                     filter: "blur(80px)",
-                }} />
+                }} />   
                 <div style={{
                     position: "absolute", top: "50%", left: "50%",
                     transform: "translate(-50%, -50%)",

@@ -68,12 +68,12 @@ export default function TeacherForm() {
                     console.log("🛠️ TeacherForm: Fetch Result:", result);
 
                     if (result.success && result.data) {
-                        const d = result.data;
+                        const d = result.data as any;
                         setForm({
                             teacherId: d.teacherId,
-                            firstName: d.firstName,
-                            lastName: d.lastName,
-                            email: d.email,
+                            firstName: d.user?.name?.split(' ')[0] || d.firstName || '',
+                            lastName: d.user?.name?.split(' ').slice(1).join(' ') || d.lastName || '',
+                            email: d.user?.email || d.email || '',
                             phone: d.phone,
                             dateOfBirth: d.dateOfBirth ? new Date(d.dateOfBirth).toISOString().split('T')[0] : "",
                             gender: d.gender,

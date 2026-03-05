@@ -31,7 +31,7 @@ export default function ActivityHelpDesk() {
   const loadTickets = async () => {
     setLoading(true);
     const result = await getAllSupportTickets();
-    if (result.success) setActivities(result.data);
+    if (result.success && result.data) setActivities(result.data);
     setLoading(false);
   };
 
@@ -53,49 +53,49 @@ export default function ActivityHelpDesk() {
     }
     setUpdating(false);
   };
-const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string) => {
 
-  const confirm = await Swal.fire({
-    title: "Delete Ticket?",
-    text: "Are you sure you want to delete this ticket?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#ef4444",
-    cancelButtonColor: "#6b7280",
-    confirmButtonText: "Yes, delete it!",
-    cancelButtonText: "Cancel",
-  });
-
-  if (!confirm.isConfirmed) return;
-
-  const result = await deleteTicket(id);
-
-  if (result.success) {
-
-    await Swal.fire({
-      icon: "success",
-      title: "Deleted!",
-      text: "Ticket deleted successfully.",
-      timer: 1500,
-      showConfirmButton: false,
+    const confirm = await Swal.fire({
+      title: "Delete Ticket?",
+      text: "Are you sure you want to delete this ticket?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
 
-    setActivities((prev) => prev.filter((t) => t.id !== id));
+    if (!confirm.isConfirmed) return;
 
-    if (selectedTicket?.id === id) {
-      setSelectedTicket(null);
+    const result = await deleteTicket(id);
+
+    if (result.success) {
+
+      await Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: "Ticket deleted successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      setActivities((prev) => prev.filter((t) => t.id !== id));
+
+      if (selectedTicket?.id === id) {
+        setSelectedTicket(null);
+      }
+
+    } else {
+
+      Swal.fire({
+        icon: "error",
+        title: "Failed!",
+        text: result.error || "Failed to delete ticket.",
+      });
+
     }
-
-  } else {
-
-    Swal.fire({
-      icon: "error",
-      title: "Failed!",
-      text: result.error || "Failed to delete ticket.",
-    });
-
-  }
-};
+  };
   if (loading)
     return (
       <div className="p-10 text-center font-black animate-pulse text-primary flex flex-col items-center gap-4">

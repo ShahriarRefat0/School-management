@@ -5,10 +5,10 @@ import { prisma } from "@/lib/prisma"
 // import { email, success } from "zod"
 
 export async function addTeacher(formData: any) {
-    console.log("📥 Receiving teacher request:", formData.teacherId);
-    
+  console.log("📥 Receiving teacher request:", formData.teacherId);
+
   const currentUser = await getCurrentUser()
-console.log("🥲CURRENT USER:", currentUser)
+  console.log("🥲CURRENT USER:", currentUser)
   if (!currentUser) {
     console.log("user nai", currentUser)
     return { success: false, error: "Unauthorized , token nai" }
@@ -39,9 +39,9 @@ console.log("🥲CURRENT USER:", currentUser)
       const newTeacher = await tx.teacher.create({
         data: {
           teacherId: formData.teacherId,
-        //   firstName: formData.firstName,
-        //   lastName: formData.lastName,
-        //   email: formData.email,
+          //   firstName: formData.firstName,
+          //   lastName: formData.lastName,
+          //   email: formData.email,
           phone: formData.phone,
           dateOfBirth: birthDate,
           gender: formData.gender,
@@ -53,10 +53,10 @@ console.log("🥲CURRENT USER:", currentUser)
           presentAddress: formData.presentAddress,
           permanentAddress: formData.permanentAddress?.trim() || null,
           user: {
-  connect: {
-    id: user.id
-  }
-}
+            connect: {
+              id: user.id
+            }
+          }
         },
       })
 
@@ -77,68 +77,70 @@ console.log("🥲CURRENT USER:", currentUser)
 
 
 export async function getTeachers() {
-    try {
-        if (!prisma.teacher) return { success: false, error: "Database error." };
-        const teachers = await prisma.teacher.findMany({
-            orderBy: { createdAt: 'desc' }
-        })
-        return { success: true, data: teachers }
-    } catch (error: any) {
-        console.error("❌ Get Teachers Error:", error.message)
-        return { success: false, error: "শিক্ষকদের তথ্য লোড করতে সমস্যা হয়েছে।" }
-    }
+  try {
+    if (!prisma.teacher) return { success: false, error: "Database error." };
+    const teachers = await prisma.teacher.findMany({
+      orderBy: { createdAt: 'desc' }
+    })
+    return { success: true, data: teachers }
+  } catch (error: any) {
+    console.error("❌ Get Teachers Error:", error.message)
+    return { success: false, error: "শিক্ষকদের তথ্য লোড করতে সমস্যা হয়েছে।" }
+  }
 }
 
 export async function updateTeacher(id: string, formData: any) {
-    try {
-        const birthDate = formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined;
-        const updated = await prisma.teacher.update({
-            where: { teacherId: id },
-            data: {
-                ...formData,
-                dateOfBirth: birthDate,
-            }
-        });
-        return { success: true, data: updated };
-    } catch (error: any) {
-        console.error("❌ Update Teacher Error:", error.message);
-        return { success: false, error: "তথ্য আপডেট করতে সমস্যা হয়েছে।" };
-    }
+  try {
+    const birthDate = formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined;
+    const updated = await prisma.teacher.update({
+      where: { teacherId: id },
+      data: {
+        ...formData,
+        dateOfBirth: birthDate,
+      }
+    });
+    return { success: true, data: updated };
+  } catch (error: any) {
+    console.error("❌ Update Teacher Error:", error.message);
+    return { success: false, error: "তথ্য আপডেট করতে সমস্যা হয়েছে।" };
+  }
 }
 
 export async function deleteTeacher(id: string) {
-    try {
-        await prisma.teacher.delete({
-            where: { teacherId: id }
-        });
-        return { success: true };
-    } catch (error: any) {
-        return { success: false, error: "মুছে ফেলতে সমস্যা হয়েছে।" };
-    }
+  try {
+    await prisma.teacher.delete({
+      where: { teacherId: id }
+    });
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: "মুছে ফেলতে সমস্যা হয়েছে।" };
+  }
 }
 
 export async function getTeacher(id: string) {
-    console.log("🔍 Fetching teacher with ID:", id);
-    try {
-        // Try finding by public teacherId first
-        let teacher = await prisma.teacher.findUnique({
-            where: { teacherId: id }
-        });
+  console.log("🔍 Fetching teacher with ID:", id);
+  try {
+    // Try finding by public teacherId first
+    let teacher = await prisma.teacher.findUnique({
+      where: { teacherId: id },
+      include: { user: true }
+    });
 
-        // If not found, try finding by UUID
-        if (!teacher) {
-            teacher = await prisma.teacher.findUnique({
-                where: { id: id }
-            });
-        }
-
-        if (!teacher) {
-            return { success: false, error: "Teacher profile not found in directory." };
-        }
-
-        return { success: true, data: teacher };
-    } catch (error: any) {
-        console.error("❌ getTeacher Error:", error.message);
-        return { success: false, error: "Failed to communicate with faculty database." };
+    // If not found, try finding by UUID
+    if (!teacher) {
+      teacher = await prisma.teacher.findUnique({
+        where: { id: id },
+        include: { user: true }
+      });
     }
+
+    if (!teacher) {
+      return { success: false, error: "Teacher profile not found in directory." };
+    }
+
+    return { success: true, data: teacher };
+  } catch (error: any) {
+    console.error("❌ getTeacher Error:", error.message);
+    return { success: false, error: "Failed to communicate with faculty database." };
+  }
 }

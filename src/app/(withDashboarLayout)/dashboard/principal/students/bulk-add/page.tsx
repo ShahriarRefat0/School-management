@@ -367,7 +367,8 @@ export default function BulkAddStudentPage() {
 
                             <motion.div
                                 animate={isPdfUploading ? { opacity: [0.5, 1, 0.5] } : {}}
-                                transition={{ repeat: Infinity, text: "linear", duration: 1.5 }}
+                                // transition={{ repeat: Infinity, text: "linear", duration: 1.5 }}
+                                transition={{ repeat: Infinity, ease: "linear", duration: 1.5 }}
                                 className={`mb-4 ${isPdfUploading ? "text-indigo-500" : "text-gray-400 group-hover:text-indigo-500 transition-colors"}`}
                             >
                                 {isPdfUploading ? <RefreshCcw size={48} className="animate-spin" /> : <FileUp size={48} />}

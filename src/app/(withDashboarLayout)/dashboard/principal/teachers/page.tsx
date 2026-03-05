@@ -80,7 +80,7 @@ export default function TeachersPage() {
       if (result.success && result.data) {
         setTeachers(result.data.map((t: any) => ({
           id: t.teacherId,
-          name: `${t.firstName} ${t.lastName}`,
+          name: t.user?.name || `${t.firstName || ''} ${t.lastName || ''}`.trim() || 'Unknown',
           designation: t.designation,
           department: t.department,
           phone: t.phone,
