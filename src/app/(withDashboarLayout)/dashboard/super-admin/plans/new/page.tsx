@@ -4,6 +4,7 @@ import { Save, Zap, Users, UserRound, HardDrive, LayoutGrid, ArrowLeft, Loader2 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createPlan } from '@/app/actions/plans';
+import Swal from 'sweetalert2';
 
 export default function NewPlan() {
   const router = useRouter();
@@ -43,14 +44,30 @@ export default function NewPlan() {
     try {
       const res = await createPlan(formData);
       if (res.success) {
-        alert('Plan created successfully!');
+        Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Plan created successfully!',
+                timer: 2000,
+                showConfirmButton: false
+              })
+        // alert('Plan created successfully!');
         router.push('/dashboard/super-admin/plans');
       } else {
-        alert(`Failed to create plan: ${res.error}`);
+        Swal.fire({ 
+          icon: 'error',
+           title: 'Validation Error',
+            text: `Failed to create plan: ${res.error}` })
+        // alert(`Failed to create plan: ${res.error}`);
       }
     } catch (error) {
-      console.error('Submission error:', error);
-      alert('An error occurred while creating the plan.');
+     // console.error('Submission error:', error);
+           Swal.fire({ 
+          icon: 'error',
+           title: 'Validation Error',
+            text: 'An error occurred while creating the plan.'
+           })
+     // alert('An error occurred while creating the plan.');
     } finally {
       setLoading(false);
     }

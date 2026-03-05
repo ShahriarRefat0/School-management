@@ -71,25 +71,48 @@ export default function EditPlan({ params }: { params: Promise<{ id: string }> }
         });
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-        try {
-            const res = await updatePlan(id, formData);
-            if (res.success) {
-                alert('Plan updated successfully!');
-                router.push('/dashboard/super-admin/plans');
-            } else {
-                alert(`Failed to update plan: ${res.error}`);
-            }
-        } catch (error) {
-            console.error('Submission error:', error);
-            alert('An error occurred while updating the plan.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  try {
+    const res = await updatePlan(id, formData);
+
+    if (res.success) {
+
+      await Swal.fire({
+        icon: "success",
+        title: "Updated!",
+        text: "Plan updated successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      router.push("/dashboard/super-admin/plans");
+
+    } else {
+
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: res.error || "Failed to update plan",
+      });
+
+    }
+
+  } catch (error) {
+    console.error("Submission error:", error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "An error occurred while updating the plan.",
+    });
+
+  } finally {
+    setLoading(false);
+  }
+};
 
     if (initialLoading) {
         return (

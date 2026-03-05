@@ -21,6 +21,7 @@ import {
   getAllSupportTickets,
   deleteTicket,
 } from '@/app/actions/principle/support';
+import Swal from 'sweetalert2';
 
 export default function SupportDashboard() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -50,7 +51,11 @@ export default function SupportDashboard() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size should be less than 5MB');
+             Swal.fire({ 
+          icon: 'error',
+           title: 'Validation Error',
+            text: 'File size should be less than 5MB'})
+        //alert('File size should be less than 5MB');
         return;
       }
       const reader = new FileReader();
@@ -61,11 +66,52 @@ export default function SupportDashboard() {
 
   const removeImage = () => setImagePreview(null);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this ticket?')) return;
-    const result = await deleteTicket(id);
-    if (result.success) loadTickets();
-  };
+  // const handleDelete = async (id: string) => {
+  //   if (!confirm('Are you sure you want to delete this ticket?')) return;
+  //   const result = await deleteTicket(id);
+  //   if (result.success) loadTickets();
+  // };
+
+const handleDelete = async (id: string) => {
+
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "This ticket will be permanently deleted!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel"
+  });
+
+  if (!result.isConfirmed) return;
+
+  const deleteResult = await deleteTicket(id);
+
+  if (deleteResult.success) {
+
+    await Swal.fire({
+      icon: "success",
+      title: "Deleted!",
+      text: "Ticket deleted successfully.",
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+    loadTickets();
+
+  } else {
+
+    Swal.fire({
+      icon: "error",
+      title: "Failed!",
+      text: deleteResult.error || "Something went wrong."
+    });
+
+  }
+};
+
 
   // ফর্ম সাবমিট হ্যান্ডলার
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -263,170 +309,168 @@ export default function SupportDashboard() {
       </div>
 
       {/* --- ADD MODAL --- */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="w-full max-w-4xl bg-[var(--color-bg-card)] rounded-[40px] border border-[var(--color-border-light)] shadow-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
-            {/* Header */}
-            <div className="p-6 md:p-8 border-b border-[var(--color-border-light)] flex justify-between items-center bg-primary/5 shrink-0">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary rounded-2xl text-white shadow-lg shadow-primary/20">
-                  <Plus size={24} />
-                </div>
-                <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">
-                  New Support Ticket
-                </h1>
-              </div>
-              <button
-                onClick={() => {
-                  setIsModalOpen(false);
-                  removeImage();
-                }}
-                className="p-3 hover:bg-rose-500/10 text-rose-500 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
+   {isModalOpen && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm min-h-screen"
+    onClick={() => {
+      setIsModalOpen(false);
+      removeImage();
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="w-full max-w-3xl bg-[var(--color-bg-card)] rounded-[32px] border border-[var(--color-border-light)] shadow-2xl flex flex-col max-h-[90vh]"
+    >
+      {/* HEADER */}
+      <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-[var(--color-border-light)] bg-[var(--color-bg-card)] rounded-t-[32px]">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-primary text-white rounded-xl">
+            <Plus size={20} />
+          </div>
+
+          <h2 className="text-lg font-black uppercase tracking-wide">
+            New Support Ticket
+          </h2>
+        </div>
+
+        <button
+          onClick={() => {
+            setIsModalOpen(false);
+            removeImage();
+          }}
+          className="p-2 rounded-lg hover:bg-rose-500/10 text-rose-500"
+        >
+          <X size={22} />
+        </button>
+      </div>
+
+      {/* BODY */}
+      <div className="overflow-y-auto p-6 md:p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          {/* LEFT SIDE */}
+          <div className="space-y-5">
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] uppercase">
+                Issue Subject
+              </label>
+
+              <input
+                name="subject"
+                required
+                className="w-full mt-1 px-4 py-3 rounded-xl border border-[var(--color-border-light)] bg-[var(--color-bg-page)]"
+              />
             </div>
 
-            {/* Scrollable Form Body */}
-            <div className="p-6 md:p-12 overflow-y-auto custom-scrollbar">
-              <form
-                onSubmit={handleSubmit}
-                className="grid grid-cols-1 lg:grid-cols-5 gap-10"
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] uppercase">
+                Priority
+              </label>
+
+              <select
+                name="priority"
+                className="w-full mt-1 px-4 py-3 rounded-xl border border-[var(--color-border-light)] bg-[var(--color-bg-page)]"
               >
-                {/* Inputs (3/5) */}
-                <div className="lg:col-span-3 space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-black uppercase tracking-widest text-[var(--color-text-muted)] ml-1">
-                      Issue Subject
-                    </label>
-                    <input
-                      name="subject"
-                      required
-                      placeholder="কী নিয়ে সমস্যা?"
-                      className="w-full px-6 py-4 rounded-2xl bg-[var(--color-bg-page)] border border-[var(--color-border-light)] outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold text-[var(--color-text-primary)]"
-                    />
-                  </div>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-black uppercase tracking-widest text-[var(--color-text-muted)] ml-1">
-                      Priority Level
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['low', 'medium', 'high'].map((p) => (
-                        <label
-                          key={p}
-                          className="relative cursor-pointer group"
-                        >
-                          <input
-                            type="radio"
-                            name="priority"
-                            value={p}
-                            defaultChecked={p === 'low'}
-                            className="peer hidden"
-                          />
-                          <div className="p-3 text-center rounded-xl border border-[var(--color-border-light)] bg-[var(--color-bg-page)] peer-checked:bg-primary peer-checked:text-white peer-checked:border-primary font-black text-[10px] uppercase transition-all whitespace-nowrap">
-                            {p}
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] uppercase">
+                Description
+              </label>
 
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-black uppercase tracking-widest text-[var(--color-text-muted)] ml-1">
-                      Details
-                    </label>
-                    <textarea
-                      name="description"
-                      rows={5}
-                      required
-                      placeholder="বিস্তারিত লিখুন..."
-                      className="w-full px-6 py-4 rounded-2xl bg-[var(--color-bg-page)] border border-[var(--color-border-light)] outline-none resize-none font-medium text-[var(--color-text-primary)]"
-                    />
-                  </div>
-                </div>
-
-                {/* Image & Submit (2/5) */}
-                <div className="lg:col-span-2 flex flex-col space-y-6">
-                  <div className="flex flex-col flex-grow">
-                    <label className="text-[11px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mb-3 italic">
-                      Screenshot Preview
-                    </label>
-                    <div className="relative h-full min-h-[250px] lg:min-h-0">
-                      {!imagePreview ? (
-                        <label className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-[var(--color-border-light)] rounded-[32px] cursor-pointer bg-[var(--color-bg-page)] hover:bg-primary/5 transition-all group overflow-hidden">
-                          <div className="flex flex-col items-center justify-center p-6 text-center">
-                            <ImageIcon
-                              size={32}
-                              className="text-primary mb-2"
-                            />
-                            <p className="text-[10px] font-black uppercase tracking-widest">
-                              Add Screenshot
-                            </p>
-                          </div>
-                          <input
-                            type="file"
-                            name="image"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                          />
-                        </label>
-                      ) : (
-                        <div className="relative group w-full h-full rounded-[32px] overflow-hidden border-2 border-primary/20 shadow-2xl">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
-                            <button
-                              type="button"
-                              onClick={removeImage}
-                              className="p-4 bg-rose-500 text-white rounded-2xl active:scale-90"
-                            >
-                              <Trash2 size={24} />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    disabled={formLoading}
-                    type="submit"
-                    className="w-full bg-primary text-white py-6 rounded-[28px] font-black text-xs uppercase tracking-[3px] hover:bg-black transition-all shadow-2xl shadow-primary/30 flex items-center justify-center gap-3 disabled:opacity-50"
-                  >
-                    {formLoading ? (
-                      <Loader2 className="animate-spin" size={20} />
-                    ) : (
-                      <>
-                        <Send size={18} /> Submit Ticket
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-
-              {status && (
-                <div
-                  className={`mt-8 p-5 rounded-2xl flex items-center gap-4 animate-fade-in-down ${status.type === 'success' ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 border border-rose-500/20'}`}
-                >
-                  {status.type === 'success' ? (
-                    <CheckCircle2 size={22} />
-                  ) : (
-                    <AlertCircle size={22} />
-                  )}
-                  <p className="text-[11px] font-black uppercase tracking-tight">
-                    {status.msg}
-                  </p>
-                </div>
-              )}
+              <textarea
+                name="description"
+                rows={4}
+                required
+                className="w-full mt-1 px-4 py-3 rounded-xl border border-[var(--color-border-light)] bg-[var(--color-bg-page)] resize-none"
+              />
             </div>
           </div>
-        </div>
-      )}
+
+          {/* RIGHT SIDE */}
+          <div className="flex flex-col justify-between">
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] uppercase">
+                Screenshot
+              </label>
+
+              <div className="mt-2 border-2 border-dashed border-[var(--color-border-light)] rounded-2xl p-6 text-center">
+                {!imagePreview ? (
+                  <>
+                    <ImageIcon className="mx-auto mb-2 text-primary" size={28} />
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="text-xs"
+                    />
+                  </>
+                ) : (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      className="rounded-xl max-h-48 mx-auto"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 bg-rose-500 text-white p-1 rounded-md"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SUBMIT */}
+            <button
+              type="submit"
+              disabled={formLoading}
+              className="mt-6 w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"
+            >
+              {formLoading ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <>
+                  <Send size={16} />
+                  Submit Ticket
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+
+        {/* STATUS */}
+        {status && (
+          <div
+            className={`mt-6 p-4 rounded-xl flex items-center gap-3 text-sm ${
+              status.type === "success"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {status.type === "success" ? (
+              <CheckCircle2 size={18} />
+            ) : (
+              <AlertCircle size={18} />
+            )}
+
+            {status.msg}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

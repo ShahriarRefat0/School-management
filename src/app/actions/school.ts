@@ -30,7 +30,7 @@ export async function createSchool(formData: any) {
       // 2️⃣ Create Admin User
       await tx.user.create({
         data: {
-          authUserId: supabaseUser.data.user?.id, // Supabase থেকে আসা ID
+          authUserId: formData.adminId, // Supabase থেকে আসা ID
           name: formData.adminName,
           email: formData.adminEmail,
           role: "admin",

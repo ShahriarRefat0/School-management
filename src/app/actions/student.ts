@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 
+
 export async function addStudent(formData: {
     registrationNo: string
     firstName: string
