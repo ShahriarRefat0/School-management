@@ -15,53 +15,126 @@ import {
 } from 'lucide-react';
 
 import { TeacherHeader } from "../TeacherHeader";
+import { useAuth } from "@/hooks/useAuth";
+import { createTeacherNotice, getTeacherNotices } from "@/app/actions/teacher/createTeacherNotice";
+import toast from "react-hot-toast";
 
 export default function NoticesPage() {
     const [showPostModal, setShowPostModal] = React.useState(false);
+    const [selectedNotice, setSelectedNotice] = React.useState<any | null>(null);
     const [activeFilter, setActiveFilter] = React.useState("all");
 
-    const notices = [
-        {
-            id: 1,
-            title: "Annual Sports Day 2026",
-            content: "We are pleased to announce the Annual Sports Day on March 15th. All classes are invited to participate.",
-            date: "Feb 12, 2026",
-            tag: "Event",
-            category: "General",
-            tagColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-            isPinned: true
-        },
-        {
-            id: 2,
-            title: "Mid-Term Examination Schedule",
-            content: "The mid-term examinations will begin from March 1st. Please check the detailed schedule on the board.",
-            date: "Feb 10, 2026",
-            tag: "Academic",
-            category: "General",
-            tagColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-            isPinned: false
-        },
-        {
-            id: 3,
-            title: "Physics Lab Session Change",
-            content: "The lab session for Class X-A on Monday has been moved to 10:00 AM instead of 11:30 AM.",
-            date: "Feb 08, 2026",
-            tag: "Update",
-            category: "Class X-A",
-            tagColor: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-            isPinned: true
-        },
-        {
-            id: 4,
-            title: "Math Homework Reminder",
-            content: "Please ensure all students submit their trigonometry assignments by tomorrow afternoon.",
-            date: "Feb 05, 2026",
-            tag: "Urgent",
-            category: "Class IX-B",
-            tagColor: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-            isPinned: false
+    // Form states
+    const { user } = useAuth();
+    const [title, setTitle] = React.useState("");
+    const [audience, setAudience] = React.useState("All Faculty & Students");
+    const [category, setCategory] = React.useState("Academic");
+    const [content, setContent] = React.useState("");
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+    const schoolId = user?.user_metadata?.schoolId || "";
+    const authorName = user?.user_metadata?.name || user?.email || "Teacher";
+    const authorId = user?.id || "";
+
+    // Data states
+    const [notices, setNotices] = React.useState<any[]>([]);
+    const [isLoadingNotices, setIsLoadingNotices] = React.useState(true);
+
+    const fetchNotices = async () => {
+        setIsLoadingNotices(true);
+        try {
+            const result = await getTeacherNotices(schoolId || undefined);
+            if (result.success) {
+                setNotices(result.data || []);
+            }
+        } catch (error) {
+            console.error("Failed to load notices", error);
+        } finally {
+            setIsLoadingNotices(false);
         }
-    ];
+    };
+
+    React.useEffect(() => {
+        fetchNotices();
+    }, [schoolId]);
+
+    const handleSubmit = async () => {
+        if (!title.trim() || !content.trim()) {
+            toast.error("Title and Content are required");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const formData = {
+                title,
+                content,
+                audience,
+                category,
+                priority: "normal", // Default priority
+                schoolId,
+                authorId,
+                authorName
+            };
+
+            const result = await createTeacherNotice(formData);
+
+            if (result.success) {
+                toast.success("Notice published successfully!");
+                setShowPostModal(false);
+                setTitle("");
+                setContent("");
+                setAudience("All Faculty & Students");
+                setCategory("Academic");
+                // Reload notices after successful post
+                fetchNotices();
+            } else {
+                toast.error(result.error || "Failed to publish notice");
+            }
+        } catch (error) {
+            console.error("Error submitting notice:", error);
+            toast.error("An unexpected error occurred.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Formatting Dates
+    const formatDate = (isoString?: string | Date | null) => {
+        if (!isoString) return "N/A";
+        const date = new Date(isoString);
+        return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    };
+
+    const getRelativeTime = (isoString?: string | Date | null) => {
+        if (!isoString) return "Just now";
+        const date = new Date(isoString);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.round(diffMs / 60000);
+
+        if (diffMins < 1) return "Just now";
+        if (diffMins < 60) return `${diffMins} mins ago`;
+        if (diffMins < 1440) return `${Math.round(diffMins / 60)} hours ago`;
+        return `${Math.round(diffMins / 1440)} days ago`;
+    };
+
+    const getTagColor = (category: string) => {
+        switch (category?.toLowerCase()) {
+            case "academic": return "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300";
+            case "event": return "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300";
+            case "urgent": return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300";
+            case "update": return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300";
+            default: return "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300";
+        }
+    };
+
+    const filteredNotices = notices.filter(notice => {
+        if (activeFilter === "all") return true;
+        if (activeFilter === "General") return notice.category === "General";
+        if (activeFilter === "Administration") return notice.category === "Urgent";
+        return notice.audience === activeFilter || notice.targetClass === activeFilter;
+    });
 
     return (
         <div className="space-y-8 animate-fadeIn">
@@ -82,7 +155,7 @@ export default function NoticesPage() {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex bg-bg-card p-1.5 rounded-2xl border border-border-light overflow-x-auto scrollbar-hide">
-                    {["all", "General", "Class X-A", "Class IX-B"].map((filter) => (
+                    {["all", "General", "Administration", "Class X-A", "Class IX-B"].map((filter) => (
                         <button
                             key={filter}
                             onClick={() => setActiveFilter(filter)}
@@ -104,71 +177,94 @@ export default function NoticesPage() {
             </div>
 
             <div className="grid gap-6">
-                {notices.map((notice) => (
-                    <div
-                        key={notice.id}
-                        className="group bg-bg-card p-6 rounded-3xl border border-border-light shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 relative overflow-hidden"
-                    >
-                        {notice.isPinned && (
-                            <div className="absolute top-0 right-0 p-4">
-                                <Pin size={18} className="text-primary rotate-45" />
-                            </div>
-                        )}
-
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div className="space-y-3 flex-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${notice.tagColor}`}>
-                                        {notice.tag}
-                                    </span>
-                                    <div className="flex items-center gap-1.5 text-text-muted">
-                                        <Calendar size={12} />
-                                        <span className="text-xs font-bold">{notice.date}</span>
-                                    </div>
-                                </div>
-
-                                <h3 className="text-xl font-bold text-text-primary group-hover:text-primary transition-colors leading-snug">
-                                    {notice.title}
-                                </h3>
-
-                                <p className="text-text-secondary text-sm leading-relaxed max-w-3xl">
-                                    {notice.content}
-                                </p>
-                            </div>
-
-                            <div className="flex items-center justify-end">
-                                <button className="flex items-center gap-2 text-sm font-bold text-primary group/btn">
-                                    Read More
-                                    <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 pt-6 border-t border-border-light/50 flex items-center justify-between">
-                            <div className="flex flex-wrap items-center gap-4 text-text-muted">
-                                <div className="flex items-center gap-1.5 bg-bg-page px-3 py-1 rounded-lg border border-border-light/30">
-                                    <Users size={12} className="text-primary/70" />
-                                    <span className="text-[10px] font-black uppercase tracking-tighter">{notice.category}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <Clock size={12} />
-                                    <span className="text-[10px] font-black uppercase tracking-tighter">5 mins ago</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1 text-[10px] font-black text-primary/40 uppercase tracking-widest">
-                                ID: {notice.id}00{notice.id}
-                            </div>
-                        </div>
+                {isLoadingNotices ? (
+                    <div className="flex flex-col items-center justify-center p-12 text-text-muted">
+                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-sm font-bold animate-pulse">Loading notices...</p>
                     </div>
-                ))}
+                ) : filteredNotices.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center p-12 bg-bg-card rounded-3xl border border-dashed border-border-light text-center">
+                        <MessageSquare className="w-12 h-12 text-primary/30 mb-4" />
+                        <h3 className="text-lg font-bold text-text-primary mb-2">No Notices Found</h3>
+                        <p className="text-sm text-text-muted max-w-sm">There are currently no active announcements matching your filters. Click 'Post Notice' to create one.</p>
+                    </div>
+                ) : (
+                    filteredNotices.map((notice) => (
+                        <div
+                            key={notice.id}
+                            className="group bg-bg-card p-6 rounded-3xl border border-border-light shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500 relative overflow-hidden"
+                        >
+                            {notice.priority === "high" || notice.priority === "urgent" ? (
+                                <div className="absolute top-0 right-0 p-4">
+                                    <Pin size={18} className="text-red-500 rotate-45" />
+                                </div>
+                            ) : null}
+
+                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                <div className="space-y-3 flex-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${getTagColor(notice.category)}`}>
+                                            {notice.category}
+                                        </span>
+                                        <div className="flex items-center gap-1.5 text-text-muted">
+                                            <Calendar size={12} />
+                                            <span className="text-xs font-bold">{formatDate(notice.createdAt)}</span>
+                                        </div>
+                                    </div>
+
+                                    <h3 className="text-xl font-bold text-text-primary group-hover:text-primary transition-colors leading-snug">
+                                        {notice.title}
+                                    </h3>
+
+                                    <p className="text-text-secondary text-sm leading-relaxed max-w-3xl whitespace-pre-wrap">
+                                        {notice.content.length > 200
+                                            ? `${notice.content.substring(0, 200)}...`
+                                            : notice.content}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center justify-end">
+                                    <button
+                                        onClick={() => setSelectedNotice(notice)}
+                                        className="flex items-center gap-2 text-sm font-bold text-primary group/btn"
+                                    >
+                                        Read More
+                                        <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 pt-6 border-t border-border-light/50 flex items-center justify-between">
+                                <div className="flex flex-wrap items-center gap-4 text-text-muted">
+                                    <div className="flex items-center gap-1.5 bg-bg-page px-3 py-1 rounded-lg border border-border-light/30">
+                                        <Users size={12} className="text-primary/70" />
+                                        <span className="text-[10px] font-black uppercase tracking-tighter">{notice.audience} {notice.targetClass ? `(${notice.targetClass})` : ''}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <Clock size={12} />
+                                        <span className="text-[10px] font-black uppercase tracking-tighter">{getRelativeTime(notice.createdAt)}</span>
+                                    </div>
+                                    {notice.authorName && (
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[10px] font-black text-text-muted">By: {notice.authorName}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-1 text-[10px] font-black text-primary/40 uppercase tracking-widest" title={notice.id}>
+                                    ID: {notice.id.slice(-6).toUpperCase()}
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Post Notice Modal */}
             {showPostModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-6 overflow-hidden">
                     <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-fadeIn" onClick={() => setShowPostModal(false)}></div>
-                    <div className="bg-bg-card w-full max-w-2xl rounded-[3rem] overflow-hidden relative z-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-slideInBottom border border-white/5 flex flex-col">
-                        <div className="px-8 md:px-12 py-8 bg-gradient-to-r from-primary to-indigo-700 text-white flex items-center justify-between">
+                    <div className="bg-bg-card w-full max-w-2xl max-h-[90vh] rounded-[3rem] overflow-hidden relative z-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-slideInBottom border border-white/5 flex flex-col">
+                        <div className="px-8 md:px-12 py-8 bg-gradient-to-r from-primary to-indigo-700 text-white flex items-center justify-between shrink-0">
                             <div>
                                 <h3 className="text-2xl font-black uppercase tracking-[0.2em]">New Notice</h3>
                                 <p className="text-white/70 text-[10px] font-bold mt-1 uppercase tracking-widest">Broadcast to classes or school</p>
@@ -178,52 +274,153 @@ export default function NoticesPage() {
                             </button>
                         </div>
 
-                        <div className="p-8 md:p-12 space-y-8">
+                        <div className="p-8 md:p-12 space-y-8 overflow-y-auto flex-1">
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-1">Announcement Title</label>
-                                <input type="text" className="w-full px-6 py-4.5 bg-bg-page border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-text-secondary" placeholder="e.g. Schedule for Practical Exams" />
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    className="w-full px-6 py-4.5 bg-bg-page border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-text-secondary"
+                                    placeholder="e.g. Schedule for Practical Exams"
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-1">Target Audience</label>
-                                    <select className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary">
-                                        <option>All Faculty & Students</option>
-                                        <option>Class X - A</option>
-                                        <option>Class IX - B</option>
-                                        <option>Class X - C</option>
+                                    <select
+                                        value={audience}
+                                        onChange={(e) => setAudience(e.target.value)}
+                                        className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary"
+                                    >
+                                        <option value="All Faculty & Students">All Faculty & Students</option>
+                                        <option value="Class X - A">Class X - A</option>
+                                        <option value="Class IX - B">Class X - B</option>
+                                        <option value="Class X - C">Class X - C</option>
                                     </select>
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-1">Category</label>
-                                    <select className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary">
-                                        <option>Academic</option>
-                                        <option>Event</option>
-                                        <option>Urgent</option>
-                                        <option>Holiday</option>
+                                    <select
+                                        value={category}
+                                        onChange={(e) => setCategory(e.target.value)}
+                                        className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary"
+                                    >
+                                        <option value="Academic">Academic</option>
+                                        <option value="Event">Event</option>
+                                        <option value="Urgent">Urgent</option>
+                                        <option value="Holiday">Holiday</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-1">Notice Content</label>
-                                <textarea className="w-full px-6 py-4.5 bg-bg-page border border-border-light rounded-[2rem] text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary min-h-[150px] resize-none text-text-secondary shadow-inner" placeholder="Detailed announcement goes here..."></textarea>
+                                <textarea
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    className="w-full px-6 py-4.5 bg-bg-page border border-border-light rounded-[2rem] text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary min-h-[150px] resize-none text-text-secondary shadow-inner"
+                                    placeholder="Detailed announcement goes here..."
+                                ></textarea>
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <button
                                     onClick={() => setShowPostModal(false)}
-                                    className="w-full sm:flex-1 py-5 bg-bg-page border-2 border-border-light text-text-muted rounded-2xl font-black text-[11px] uppercase tracking-widest hover:text-text-primary transition-all"
+                                    disabled={isSubmitting}
+                                    className="w-full sm:flex-1 py-5 bg-bg-page border-2 border-border-light text-text-muted rounded-2xl font-black text-[11px] uppercase tracking-widest hover:text-text-primary transition-all disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={() => setShowPostModal(false)}
-                                    className="w-full sm:flex-[2] py-5 bg-primary text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-primary-dark transition-all shadow-2xl shadow-primary/40 active:scale-[0.98]"
+                                    onClick={handleSubmit}
+                                    disabled={isSubmitting}
+                                    className="w-full sm:flex-[2] py-5 bg-primary text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.3em] hover:bg-primary-dark transition-all shadow-2xl shadow-primary/40 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    Publish Announcement
+                                    {isSubmitting ? (
+                                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                    ) : null}
+                                    {isSubmitting ? "Publishing..." : "Publish Announcement"}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* View Notice Modal */}
+            {selectedNotice && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-6 overflow-hidden">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-fadeIn" onClick={() => setSelectedNotice(null)}></div>
+                    <div className="bg-bg-card w-full max-w-3xl max-h-[90vh] rounded-[3rem] overflow-hidden relative z-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-slideInBottom border border-white/5 flex flex-col">
+                        <div className="px-8 md:px-12 py-10 bg-gradient-to-r from-bg-card to-bg-card border-b border-border-light/50 flex items-center justify-between shrink-0">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getTagColor(selectedNotice.category)}`}>
+                                        {selectedNotice.category}
+                                    </span>
+                                    <span className="text-[11px] font-bold text-text-muted flex items-center gap-1.5 bg-bg-page px-3 py-1 rounded-full border border-border-light/40">
+                                        <Clock size={12} className="text-primary/70" />
+                                        {formatDate(selectedNotice.createdAt)}
+                                    </span>
+                                </div>
+                                <h3 className="text-3xl md:text-4xl font-black text-text-primary leading-tight tracking-tight">{selectedNotice.title}</h3>
+                            </div>
+                            <button onClick={() => setSelectedNotice(null)} className="p-3.5 bg-bg-page hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all self-start border border-border-light/50 group">
+                                <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+                            </button>
+                        </div>
+
+                        <div className="p-8 md:p-12 overflow-y-auto flex-1 space-y-10 custom-scrollbar">
+                            <div className="prose prose-slate dark:prose-invert max-w-none">
+                                <p className="text-text-secondary text-base md:text-xl leading-relaxed whitespace-pre-wrap font-medium border-l-4 border-primary/20 pl-6 italic">
+                                    {selectedNotice.content}
+                                </p>
+                            </div>
+
+                            <div className="pt-10 border-t border-border-light/50 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
+                                    <div className="flex items-center gap-2 text-primary/60">
+                                        <Users size={14} />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Audience</p>
+                                    </div>
+                                    <p className="text-sm font-black text-text-primary truncate">{selectedNotice.audience}</p>
+                                </div>
+                                <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
+                                    <div className="flex items-center gap-2 text-primary/60">
+                                        <Bell size={14} />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Class</p>
+                                    </div>
+                                    <p className="text-sm font-black text-text-primary truncate">{selectedNotice.targetClass || "Full School"}</p>
+                                </div>
+                                <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
+                                    <div className="flex items-center gap-2 text-primary/60">
+                                        <Megaphone size={14} />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Posted By</p>
+                                    </div>
+                                    <p className="text-sm font-black text-text-primary truncate break-all" title={selectedNotice.authorName || "Teacher"}>
+                                        {selectedNotice.authorName || "Teacher"}
+                                    </p>
+                                </div>
+                                <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
+                                    <div className="flex items-center gap-2 text-primary/60">
+                                        <Clock size={14} />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Exact Time</p>
+                                    </div>
+                                    <p className="text-sm font-black text-text-primary">
+                                        {selectedNotice.createdAt ? new Date(selectedNotice.createdAt).toLocaleTimeString() : "N/A"}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="px-12 py-8 bg-bg-page/50 border-t border-border-light/50 flex justify-end shrink-0 backdrop-blur-md">
+                            <button
+                                onClick={() => setSelectedNotice(null)}
+                                className="px-10 py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)] hover:bg-primary-dark transition-all active:scale-95 shadow-primary/20"
+                            >
+                                Close Announcement
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -1,24 +1,194 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  // provider = "prisma-client"
-  // output   = "../src/generated/prisma"
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  
 }
 
+model School {
+  id               String   @id @default(cuid())
+  schoolName       String
+  slug             String
+  schoolEmail      String
+  phone            String?
+  address          String?
+  plan             String   @default("basic")
+  duration         String   @default("12")
+  schoolCategory   String
+  expectedStudents Int?
+  registrationId   String
+  facebookUrl      String?
+  websiteUrl       String?
+  language         String   @default("english")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  users            User[]   @relation("SchoolUsers")
+}
+
+model Announcement {
+  id            String    @id @default(cuid())
+  title         String
+  content       String
+  audience      String    @default("all")
+  targetClass   String?
+  category      String    @default("academic")
+  priority      String    @default("normal")
+  attachmentUrl String?
+  publishDate   DateTime  @default(now())
+  expiryDate    DateTime?
+  status        String    @default("published")
+  schoolId      String
+  authorId      String?
+  authorName    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Student {
+  id               String   @id @default(uuid())
+  registrationNo   String
+  firstName        String
+  lastName         String
+  dateOfBirth      DateTime
+  gender           String
+  bloodGroup       String?
+  religion         String?
+  currentClass     String
+  section          String
+  rollNo           Int
+  session          String
+  admissionDate    DateTime @default(now())
+  fatherName       String
+  motherName       String
+  guardianPhone    String
+  emergencyContact String?
+  email            String?
+  presentAddress   String
+  permanentAddress String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  userId           String   @unique
+  user             User     @relation("UserStudent", fields: [userId], references: [id])
+
+  @@map("students")
+}
+
+model Plan {
+  id        String   @id @default(cuid())
+  name      String
+  price     String
+  duration  String
+  icon      String?
+  color     String?
+  students  String
+  teachers  String
+  storage   String
+  modules   String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SupportTicket {
+  id            String   @id @default(cuid())
+  subject       String
+  description   String
+  priority      String   @default("low")
+  status        String   @default("open")
+  schoolId      String?
+  userEmail     String
+  attachmentUrl String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Teacher {
+  id               String   @id @default(uuid())
+  teacherId        String   @unique
+  phone            String
+  dateOfBirth      DateTime
+  gender           String
+  bloodGroup       String?
+  religion         String?
+  designation      String
+  department       String
+  qualification    String
+  joiningDate      DateTime @default(now())
+  salary           Float?
+  presentAddress   String
+  permanentAddress String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  userId           String   @unique
+  user             User     @relation("UserTeacher", fields: [userId], references: [id])
+
+  @@map("teachers")
+}
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+  id         String     @id @default(uuid())
+  authUserId String     @unique
+  schoolId   String
+  role       Role
+  status     UserStatus @default(active)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  email      String     @unique
+  name       String
+  school     School     @relation("SchoolUsers", fields: [schoolId], references: [id])
+  student    Student?   @relation("UserStudent")
+  teacher    Teacher?   @relation("UserTeacher")
+
+  @@map("User")
+}
+
+model StudyMaterial {
+  id            String   @id @default(cuid())
+  title         String
+  type          String
+  subject       String
+  class         String
+  description   String?
+  attachmentUrl String
+  size          String?
+  schoolId      String
+  teacherId     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([schoolId])
+}
+
+model TeacherNotice {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  audience    String   @default("students")
+  targetClass String?
+  category    String   @default("academic")
+  priority    String   @default("normal")
+  status      String   @default("published")
+  schoolId    String
+  authorId    String?
+  authorName  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([schoolId])
+}
+
+enum Role {
+  super_admin
+  admin
+  teacher
+  student
+  parent
+  accountant
+}
+
+enum UserStatus {
+  active
+  blocked
 }
