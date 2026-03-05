@@ -11,16 +11,25 @@ import {
     Trash2,
     MoreVertical,
     Upload,
-    Loader2
+    Loader2,
+    Edit
 } from 'lucide-react';
-import { getStudyMaterials, createStudyMaterial, deleteStudyMaterial } from '@/app/actions/teacher/studyMaterials';
+import { getStudyMaterials, createStudyMaterial, deleteStudyMaterial, updateStudyMaterial } from '@/app/actions/teacher/studyMaterials';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/hooks/useAuth';
+import Swal from 'sweetalert2';
 
 export default function StudyMaterialsPage() {
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [materials, setMaterials] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [editMaterial, setEditMaterial] = useState<any | null>(null);
+
+    const { user } = useAuth();
+    const schoolId = user?.user_metadata?.schoolId || "";
+    const teacherId = user?.id || "";
 
     // Form states
     const [formData, setFormData] = useState({
@@ -33,17 +42,15 @@ export default function StudyMaterialsPage() {
         size: '2.4 MB'
     });
 
-    // Mock IDs for testing - these should come from auth/context in a real scenario
-    const schoolId = "cm7qy0k6d0000uxu88zq3z9f6"; // Placeholder schoolId
-    const teacherId = "T-1001"; // Placeholder teacherId
-
     useEffect(() => {
-        fetchMaterials();
-    }, []);
+        if (schoolId) {
+            fetchMaterials();
+        }
+    }, [schoolId]);
 
     const fetchMaterials = async () => {
         setLoading(true);
-        const response = await getStudyMaterials(schoolId);
+        const response = await getStudyMaterials(schoolId || undefined);
         if (response.success) {
             setMaterials(response.data || []);
         } else {
@@ -52,19 +59,47 @@ export default function StudyMaterialsPage() {
         setLoading(false);
     };
 
+    const openEditModal = (material: any) => {
+        setEditMaterial(material);
+        setFormData({
+            title: material.title,
+            class: material.class,
+            subject: material.subject,
+            description: material.description || '',
+            type: material.type,
+            attachmentUrl: material.attachmentUrl,
+            size: material.size || '2.4 MB'
+        });
+        setShowUploadModal(true);
+    };
+
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        const response = await createStudyMaterial({
+
+        const submissionData = {
             ...formData,
             schoolId,
             teacherId
-        });
+        };
+
+        const response = editMaterial
+            ? await updateStudyMaterial(editMaterial.id, formData)
+            : await createStudyMaterial(submissionData);
 
         if (response.success) {
-            toast.success("Material published successfully!");
+            Swal.fire({
+                title: editMaterial ? 'Updated!' : 'Published!',
+                text: editMaterial ? 'Material updated successfully.' : 'Material published successfully!',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false,
+                background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+                color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a'
+            });
             setShowUploadModal(false);
-            setMaterials([response.data, ...materials]);
+            setEditMaterial(null);
+            fetchMaterials();
             // Reset form
             setFormData({
                 title: '',
@@ -76,20 +111,40 @@ export default function StudyMaterialsPage() {
                 size: '2.4 MB'
             });
         } else {
-            toast.error(response.error || "Failed to publish material");
+            toast.error(response.error || "Failed to process material");
         }
         setIsSubmitting(false);
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this material?")) return;
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Yes, delete it!',
+            background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+            color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a'
+        });
 
-        const response = await deleteStudyMaterial(id);
-        if (response.success) {
-            toast.success("Material deleted");
-            setMaterials(materials.filter(m => m.id !== id));
-        } else {
-            toast.error(response.error || "Failed to delete material");
+        if (result.isConfirmed) {
+            const response = await deleteStudyMaterial(id);
+            if (response.success) {
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'The material has been deleted.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
+                    color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a'
+                });
+                setMaterials(materials.filter(m => m.id !== id));
+            } else {
+                toast.error(response.error || "Failed to delete material");
+            }
         }
     };
 
@@ -166,6 +221,13 @@ export default function StudyMaterialsPage() {
                                             <Eye size={18} />
                                         </a>
                                         <button
+                                            onClick={() => openEditModal(material)}
+                                            className="p-2 hover:bg-primary/10 rounded-lg text-text-muted hover:text-primary transition-all"
+                                            title="Edit"
+                                        >
+                                            <Edit size={18} />
+                                        </button>
+                                        <button
                                             onClick={() => handleDelete(material.id)}
                                             className="p-2 hover:bg-red-50 rounded-lg text-text-muted hover:text-red-500 transition-all"
                                             title="Delete"
@@ -186,9 +248,9 @@ export default function StudyMaterialsPage() {
             {/* Upload Modal */}
             {showUploadModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isSubmitting && setShowUploadModal(false)}></div>
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isSubmitting && { setShowUploadModal: (val: boolean) => { setShowUploadModal(val); if (!val) setEditMaterial(null); } }}></div>
                     <form onSubmit={handleUpload} className="bg-bg-card w-full max-w-md rounded-3xl p-8 relative z-10 shadow-2xl animate-slideInBottom border border-border-light">
-                        <h3 className="text-2xl font-bold text-text-primary mb-6">Upload Material</h3>
+                        <h3 className="text-2xl font-bold text-text-primary mb-6">{editMaterial ? 'Update Material' : 'Upload Material'}</h3>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">Title</label>
@@ -245,7 +307,7 @@ export default function StudyMaterialsPage() {
                                 <button
                                     type="button"
                                     disabled={isSubmitting}
-                                    onClick={() => setShowUploadModal(false)}
+                                    onClick={() => { setShowUploadModal(false); setEditMaterial(null); }}
                                     className="flex-1 py-3 border border-border-light text-text-secondary rounded-xl font-bold text-sm hover:bg-bg-page transition-colors"
                                 >
                                     Cancel
@@ -256,7 +318,7 @@ export default function StudyMaterialsPage() {
                                     className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary-dark transition-all shadow-lg flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : null}
-                                    {isSubmitting ? 'Publishing...' : 'Publish'}
+                                    {isSubmitting ? 'Processing...' : editMaterial ? 'Update' : 'Publish'}
                                 </button>
                             </div>
                         </div>
