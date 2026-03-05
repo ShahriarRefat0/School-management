@@ -25,7 +25,7 @@ import { addTeacher, getTeacher, updateTeacher, deleteTeacher } from "@/app/acti
 import { useAuth } from "@/hooks/useAuth";
 
 export default function TeacherForm() {
-    const {signUp} = useAuth()
+    const { signUp } = useAuth()
     const router = useRouter();
     const params = useParams();
     const teacherIdFromUrl = params?.id ? decodeURIComponent(params.id as string) : "";
@@ -68,12 +68,12 @@ export default function TeacherForm() {
                     console.log("🛠️ TeacherForm: Fetch Result:", result);
 
                     if (result.success && result.data) {
-                        const d = result.data;
+                        const d = result.data as any;
                         setForm({
                             teacherId: d.teacherId,
-                            firstName: d.firstName,
-                            lastName: d.lastName,
-                            email: d.email,
+                            firstName: d.user?.name?.split(' ')[0] || d.firstName || '',
+                            lastName: d.user?.name?.split(' ').slice(1).join(' ') || d.lastName || '',
+                            email: d.user?.email || d.email || '',
                             phone: d.phone,
                             dateOfBirth: d.dateOfBirth ? new Date(d.dateOfBirth).toISOString().split('T')[0] : "",
                             gender: d.gender,
@@ -120,17 +120,17 @@ export default function TeacherForm() {
                 ? await updateTeacher(teacherIdFromUrl!, form)
                 : await addTeacher(form);
 
-                //register teacher 
-                const {data,error} = await signUp(
-                    form.email,
-                    '123456', //default pass use kora holo
-                    'teacher'
-                )
+            //register teacher 
+            const { data, error } = await signUp(
+                form.email,
+                '123456', //default pass use kora holo
+                'teacher'
+            )
 
-                if(error || !data.user){
-                    alert(error?.message || "Teacher account creation failed")
-                    return 
-                }
+            if (error || !data.user) {
+                alert(error?.message || "Teacher account creation failed")
+                return
+            }
 
             if (result.success) {
                 setSuccess(true);

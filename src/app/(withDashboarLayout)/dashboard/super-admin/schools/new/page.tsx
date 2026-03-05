@@ -1,11 +1,11 @@
 "use client"
 import React, { useState } from 'react'
-import { 
+import {
   Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
   Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon
 } from 'lucide-react'
 import { z } from 'zod'
-import { createSchool } from '@/app/actions/school' 
+import { createSchool } from '@/app/actions/school'
 import { useAuth } from '@/hooks/useAuth'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/navigation'
@@ -73,7 +73,7 @@ export default function NewSchool() {
 
     const validation = schoolSchema.safeParse(formData)
     if (!validation.success) {
-      Swal.fire({ icon: 'error', title: 'Validation Error', text: validation.error.errors[0].message })
+      Swal.fire({ icon: 'error', title: 'Validation Error', text: validation.error.issues[0].message })
       setLoading(false)
       return
     }
@@ -99,7 +99,7 @@ export default function NewSchool() {
       })
 
       // ✅ এখান পরিবর্তন করা হয়েছে: সরাসরি স্কুল ম্যানেজমেন্ট লিস্টে যাবে
-      router.push('/dashboard/super-admin/schools') 
+      router.push('/dashboard/super-admin/schools')
 
     } catch (err: any) {
       Swal.fire({ icon: 'error', title: 'Submission Failed', text: err.message })
@@ -110,24 +110,24 @@ export default function NewSchool() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up pb-12 pt-6">
-      
+
       {/* Top Navigation & Header */}
       <div className="flex items-center justify-between px-2">
-        <button 
-          onClick={() => router.back()} 
+        <button
+          onClick={() => router.back()}
           className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors font-bold uppercase text-xs tracking-widest"
         >
           <ArrowLeft size={18} /> Back to Management
         </button>
         <div className="text-right">
-            <h2 className="text-2xl font-black text-[var(--color-text-primary)] uppercase tracking-tight">Register New School</h2>
-            <p className="text-xs text-[var(--color-text-muted)]">Create a new institutional instance</p>
+          <h2 className="text-2xl font-black text-[var(--color-text-primary)] uppercase tracking-tight">Register New School</h2>
+          <p className="text-xs text-[var(--color-text-muted)]">Create a new institutional instance</p>
         </div>
       </div>
 
       <div className="bg-[var(--color-bg-card)] p-8 rounded-3xl border border-[var(--color-border-light)] shadow-xl">
         <form className="space-y-10" onSubmit={handleSubmit}>
-          
+
           {/* 1. Institutional Profile */}
           <div className="space-y-6">
             <h3 className="text-lg font-black text-[var(--color-primary)] flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
@@ -263,8 +263,8 @@ export default function NewSchool() {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full bg-[var(--color-primary)] text-white font-black py-5 rounded-2xl shadow-lg hover:scale-[1.01] transition-all text-lg uppercase tracking-widest disabled:opacity-50"
           >

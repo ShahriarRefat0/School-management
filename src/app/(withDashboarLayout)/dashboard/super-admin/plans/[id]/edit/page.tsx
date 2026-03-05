@@ -4,6 +4,7 @@ import { Save, Users, UserRound, HardDrive, LayoutGrid, ArrowLeft, Loader2 } fro
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPlan, updatePlan } from '@/app/actions/plans';
+import Swal from 'sweetalert2';
 
 export default function EditPlan({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();

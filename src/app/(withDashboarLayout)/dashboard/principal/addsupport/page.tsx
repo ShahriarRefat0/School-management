@@ -38,7 +38,7 @@ export default function SupportDashboard() {
   const loadTickets = async () => {
     setLoading(true);
     const result = await getAllSupportTickets();
-    if (result.success) setTickets(result.data);
+if (result.success) setTickets(result.data ?? []);
     setLoading(false);
   };
 
