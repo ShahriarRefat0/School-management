@@ -74,6 +74,10 @@ export default function TeachersPage() {
   const [loading, setLoading] = useState(true);
   const [teachers, setTeachers] = useState<any[]>([]);
 
+  // Search and Filter State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
   useEffect(() => {
     async function fetchData() {
       const result = await getTeachers();
@@ -91,6 +95,18 @@ export default function TeachersPage() {
     }
     fetchData();
   }, []);
+
+  // Derived state for filtering
+  const filteredTeachers = teachers.filter(teacher => {
+    const matchesSearch =
+      teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      teacher.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      teacher.department?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === "All" || teacher.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const totalTeachers = teachers.length;
   const activeTeachers = teachers.filter(t => t.status === "Active").length;
@@ -173,13 +189,25 @@ export default function TeachersPage() {
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted w-4 h-4 opacity-40" />
               <input
                 type="text"
-                placeholder="Search by ID or Name..."
+                placeholder="Search by ID, Name or Dept..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-14 pr-8 py-3 bg-bg-page/50 border-2 border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:border-primary/30 transition-all w-full md:w-80"
               />
             </div>
-            <button className="p-4 bg-bg-card border-2 border-border-light rounded-2xl text-text-muted hover:bg-bg-page transition-all shadow-sm">
-              <Filter className="w-4 h-4" />
-            </button>
+
+            <div className="relative select-wrapper">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="appearance-none p-4 pr-10 bg-bg-card border-2 border-border-light rounded-2xl text-text-muted hover:bg-bg-page transition-all shadow-sm font-bold text-sm focus:outline-none focus:border-primary/30"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Active">Active Only</option>
+                <option value="Inactive">Inactive Only</option>
+              </select>
+              <Filter className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            </div>
           </div>
         </div>
 
@@ -196,8 +224,8 @@ export default function TeachersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border-light/50">
-              {teachers.length > 0 ? (
-                teachers.map((teacher) => (
+              {filteredTeachers.length > 0 ? (
+                filteredTeachers.map((teacher) => (
                   <tr key={teacher.id} className="hover:bg-primary/[0.01] transition-colors group">
                     <td className="px-10 py-8 font-mono text-[11px] font-black text-primary/70">{teacher.id}</td>
                     <td className="px-10 py-8">

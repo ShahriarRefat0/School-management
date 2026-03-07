@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 
 export async function createTeacherNotice(formData: {
     title: string;
@@ -15,8 +16,12 @@ export async function createTeacherNotice(formData: {
     authorName?: string | null;
 }) {
     try {
-        // Temporary: Using a dummy ID if missing for testing purposes
-        const targetSchoolId = formData.schoolId || "default-school-id";
+        const currentUser = await getCurrentUser();
+        const schoolId = currentUser?.schoolId || formData.schoolId;
+
+        if (!schoolId || !currentUser) {
+            return { success: false, error: "Authentication Error: Could not determine valid session or school." };
+        }
 
         const newNotice = await prisma.teacherNotice.create({
             data: {
@@ -26,9 +31,9 @@ export async function createTeacherNotice(formData: {
                 targetClass: formData.audience === "students" ? formData.targetClass : null,
                 category: formData.category,
                 priority: formData.priority,
-                schoolId: targetSchoolId,
-                authorId: formData.authorId,
-                authorName: formData.authorName,
+                schoolId: schoolId,
+                authorId: currentUser.id, // Securely from session
+                authorName: currentUser.name, // Securely from session
                 status: "published",
             },
         });

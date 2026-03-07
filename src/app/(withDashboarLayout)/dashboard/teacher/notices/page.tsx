@@ -27,6 +27,7 @@ export default function NoticesPage() {
     const [selectedNotice, setSelectedNotice] = React.useState<any | null>(null);
     const [activeFilter, setActiveFilter] = React.useState("all");
     const [editNotice, setEditNotice] = React.useState<any | null>(null);
+    const [searchQuery, setSearchQuery] = React.useState("");
 
     // Form states
     const { user } = useAuth();
@@ -186,10 +187,20 @@ export default function NoticesPage() {
     };
 
     const filteredNotices = notices.filter(notice => {
-        if (activeFilter === "all") return true;
-        if (activeFilter === "General") return notice.category === "General";
-        if (activeFilter === "Administration") return notice.category === "Urgent";
-        return notice.audience === activeFilter || notice.targetClass === activeFilter;
+        // 1. Filter by category
+        let matchesFilter = true;
+        if (activeFilter === "General") matchesFilter = notice.category === "General";
+        else if (activeFilter === "Administration") matchesFilter = notice.category === "Urgent";
+        else if (activeFilter !== "all") {
+            matchesFilter = notice.audience === activeFilter || notice.targetClass === activeFilter;
+        }
+
+        // 2. Filter by search query
+        const matchesSearch =
+            notice.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            notice.content.toLowerCase().includes(searchQuery.toLowerCase());
+
+        return matchesFilter && matchesSearch;
     });
 
     return (
@@ -226,7 +237,9 @@ export default function NoticesPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted transition-colors group-focus-within:text-primary" size={18} />
                     <input
                         type="text"
-                        placeholder="Filter announcements..."
+                        placeholder="Search announcements..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-12 pr-4 py-4 md:py-3.5 bg-bg-card border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-text-secondary shadow-sm"
                     />
                 </div>

@@ -113,24 +113,12 @@ export default function TeacherForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setError("");
-
         try {
+            // Call the consolidated server action
+            // This now handles both Supabase Auth and Prisma DB records
             const result = isEdit
                 ? await updateTeacher(teacherIdFromUrl!, form)
                 : await addTeacher(form);
-
-            //register teacher 
-            const { data, error } = await signUp(
-                form.email,
-                '123456', //default pass use kora holo
-                'teacher'
-            )
-
-            if (error || !data.user) {
-                alert(error?.message || "Teacher account creation failed")
-                return
-            }
 
             if (result.success) {
                 setSuccess(true);
@@ -141,7 +129,8 @@ export default function TeacherForm() {
                 setError(result.error || `Failed to ${isEdit ? 'update' : 'register'} teacher.`);
             }
         } catch (err: any) {
-            setError("Server communication failure.");
+            console.error("Submission error:", err);
+            setError(err.message || "Server communication failure. Please check your internet connection.");
         } finally {
             setIsSubmitting(false);
         }

@@ -76,6 +76,10 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<any[]>([]);
 
+  // Search and Filter State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
   useEffect(() => {
     async function fetchData() {
       const result = await getStudents();
@@ -97,6 +101,18 @@ export default function StudentsPage() {
     }
     fetchData();
   }, []);
+
+  // Derived state for filtering
+  const filteredStudents = students.filter(student => {
+    const matchesSearch =
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.registrationNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.id.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === "All" || student.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const totalStudents = students.length;
   const activeStudents = students.filter(s => s.status === "Active").length;
@@ -180,12 +196,24 @@ export default function StudentsPage() {
               <input
                 type="text"
                 placeholder="Search by ID or Name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-14 pr-8 py-3 bg-bg-page/50 border-2 border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:border-primary/30 transition-all w-full md:w-80"
               />
             </div>
-            <button className="p-4 bg-bg-card border-2 border-border-light rounded-2xl text-text-muted hover:bg-bg-page transition-all shadow-sm">
-              <Filter className="w-4 h-4" />
-            </button>
+
+            <div className="relative select-wrapper">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="appearance-none p-4 pr-10 bg-bg-card border-2 border-border-light rounded-2xl text-text-muted hover:bg-bg-page transition-all shadow-sm font-bold text-sm focus:outline-none focus:border-primary/30"
+              >
+                <option value="All">All Statuses</option>
+                <option value="Active">Active Only</option>
+                <option value="Inactive">Inactive Only</option>
+              </select>
+              <Filter className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+            </div>
           </div>
         </div>
 
@@ -202,8 +230,8 @@ export default function StudentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border-light/50">
-              {students.length > 0 ? (
-                students.map((student) => (
+              {filteredStudents.length > 0 ? (
+                filteredStudents.map((student) => (
                   <tr key={student.id} className="hover:bg-primary/[0.01] transition-colors group">
                     <td className="px-10 py-8 font-mono text-[11px] font-black text-primary/70">{student.registrationNo || student.id}</td>
                     <td className="px-10 py-8">

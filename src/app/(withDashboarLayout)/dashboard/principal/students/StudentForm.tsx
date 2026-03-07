@@ -53,6 +53,7 @@ export default function StudentForm() {
         email: "",
         presentAddress: "",
         permanentAddress: "",
+        password: "",
     });
 
     useEffect(() => {
@@ -282,6 +283,19 @@ export default function StudentForm() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Blood Group</label>
                                     <Input name="bloodGroup" value={form.bloodGroup} onChange={handleChange} className="h-14 rounded-2xl bg-bg-page/40 font-bold" />
                                 </div>
+                                {!isEdit && (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-primary uppercase tracking-widest">Login Password (Default: Student@1234)</label>
+                                        <Input
+                                            name="password"
+                                            type="password"
+                                            value={(form as any).password || ""}
+                                            onChange={handleChange}
+                                            placeholder="Leave blank for Student@1234"
+                                            className="h-14 rounded-2xl bg-primary/[0.03] border-primary/20 font-bold border-2 focus:border-primary transition-all"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 

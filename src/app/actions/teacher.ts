@@ -4,116 +4,226 @@ import { getCurrentUser } from "@/lib/getCurrentUser"
 import { prisma } from "@/lib/prisma"
 // import { email, success } from "zod"
 
+import { supabaseAdmin } from "@/lib/supabase/admin"
+
 export async function addTeacher(formData: any) {
   console.log("📥 Receiving teacher request:", formData.teacherId);
 
   const currentUser = await getCurrentUser()
-  console.log("🥲CURRENT USER:", currentUser)
-  if (!currentUser) {
-    console.log("user nai", currentUser)
-    return { success: false, error: "Unauthorized , token nai" }
+  if (!currentUser || (currentUser.role as string) !== 'admin') {
+    console.error("❌ Unauthorized access attempt by:", currentUser?.email || "Unknown")
+    return { success: false, error: "Unauthorized: Principal access required." }
   }
 
+  let authUserId: string | null = null;
   try {
     const schoolId = currentUser.schoolId
+    if (!schoolId) {
+      return { success: false, error: "System Error: Your account is not linked to any school." };
+    }
 
-    const result = await prisma.$transaction(async (tx) => {
+    // 🛡️ CRITICAL KEY CHECK
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY === "") {
+      console.error("❌ SUPABASE_SERVICE_ROLE_KEY is missing/empty in server environment.");
+      return {
+        success: false,
+        error: "Authentication Error: The 'Service Role Key' is missing from the server configuration. " +
+          "Please add SUPABASE_SERVICE_ROLE_KEY to your .env file to enable teacher registration."
+      };
+    }
 
+    // 1️⃣ Create the user in Supabase Auth via Admin Client
+    console.log("🛠️ Attempting to create Supabase Auth account for:", formData.email);
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: formData.email,
+      password: "Teacher@1234",
+      email_confirm: true,
+      user_metadata: { role: 'teacher' }
+    });
+
+    if (authError) {
+      console.error("❌ Supabase Admin Auth Error:", authError.message);
+      if (authError.message.includes("already registered")) {
+        return { success: false, error: "This email is already registered in the system." };
+      }
+      return { success: false, error: "Supabase Error: " + authError.message };
+    }
+
+    authUserId = authData.user.id;
+    console.log("✅ Supabase Auth created:", authUserId);
+
+    // 2️⃣ Create database records inside a transaction
+    const result = await prisma.$transaction(async (tx: any) => {
       const birthDate = new Date(formData.dateOfBirth)
       if (isNaN(birthDate.getTime())) {
-        throw new Error("Invalid date format")
+        throw new Error("Invalid date format provided for Date of Birth.")
       }
 
-      // 1️⃣ Create User first
+      // A. Create Core User
       const user = await tx.user.create({
         data: {
-          authUserId: crypto.randomUUID(), // temporary until supabase part added
-          name: formData.firstName,
+          authUserId: authUserId,
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
           email: formData.email,
           role: "teacher",
           schoolId: schoolId,
-        },
+          status: "active"
+        }
       })
 
-      // 2️⃣ Create Teacher and connect user
+      // B. Create Teacher Record
       const newTeacher = await tx.teacher.create({
         data: {
           teacherId: formData.teacherId,
-          //   firstName: formData.firstName,
-          //   lastName: formData.lastName,
-          //   email: formData.email,
           phone: formData.phone,
           dateOfBirth: birthDate,
           gender: formData.gender,
-          bloodGroup: formData.bloodGroup?.trim() || null,
-          religion: formData.religion?.trim() || null,
+          bloodGroup: formData.bloodGroup || null,
+          religion: formData.religion || null,
           designation: formData.designation,
           department: formData.department,
           qualification: formData.qualification,
           presentAddress: formData.presentAddress,
-          permanentAddress: formData.permanentAddress?.trim() || null,
-          user: {
-            connect: {
-              id: user.id
-            }
-          }
-        },
+          permanentAddress: formData.permanentAddress || null,
+          salary: formData.salary ? parseFloat(formData.salary.toString()) : null,
+          schoolId: schoolId,
+          userId: user.id
+        }
       })
 
       return newTeacher
     })
 
+    console.log("✅ Teacher created successfully:", result.id)
     return { success: true, data: result }
 
   } catch (error: any) {
+    console.error("❌ addTeacher CRITICAL ERROR:", error);
 
-    if (error.code === "P2002") {
-      return { success: false, error: "Email or Teacher ID already exists!" }
+    // Rollback Auth User if Prisma fails
+    if (authUserId) {
+      await supabaseAdmin.auth.admin.deleteUser(authUserId).catch(err =>
+        console.error("Failed to rollback auth account:", err)
+      );
     }
 
-    return { success: false, error: error.message }
+    if (error.code === "P2002") {
+      const field = error.meta?.target?.[0] || "field";
+      return {
+        success: false,
+        error: `This ${field} is already in use. Please use a unique one.`,
+      };
+    }
+
+    const errorMessage = error.message || (typeof error === 'string' ? error : "Unknown Server Error");
+    return { success: false, error: `Database Transaction Failed: ${errorMessage}` }
   }
 }
 
 
+
 export async function getTeachers() {
+  const currentUser = await getCurrentUser()
+  if (!currentUser || (currentUser.role as string) !== 'admin') {
+    return { success: false, error: "Unauthorized access." }
+  }
+
   try {
-    if (!prisma.teacher) return { success: false, error: "Database error." };
     const teachers = await prisma.teacher.findMany({
+      where: {
+        user: {
+          schoolId: currentUser.schoolId
+        }
+      },
+      include: { user: true },
       orderBy: { createdAt: 'desc' }
     })
     return { success: true, data: teachers }
   } catch (error: any) {
     console.error("❌ Get Teachers Error:", error.message)
-    return { success: false, error: "শিক্ষকদের তথ্য লোড করতে সমস্যা হয়েছে।" }
+    return { success: false, error: "Database Error: Could not load teacher list." }
   }
 }
 
 export async function updateTeacher(id: string, formData: any) {
+  const currentUser = await getCurrentUser()
+  if (!currentUser || (currentUser.role as string) !== 'admin') {
+    return { success: false, error: "Unauthorized: Principal access required." }
+  }
+
   try {
     const birthDate = formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined;
-    const updated = await prisma.teacher.update({
-      where: { teacherId: id },
-      data: {
-        ...formData,
-        dateOfBirth: birthDate,
-      }
-    });
-    return { success: true, data: updated };
+    if (birthDate && isNaN(birthDate.getTime())) {
+      return { success: false, error: "Invalid date format for Date of Birth." }
+    }
+
+    const result = await prisma.$transaction(async (tx: any) => {
+      // 0. Find the teacher to get their internal IDs
+      const teacher = await tx.teacher.findFirst({
+        where: { teacherId: id },
+        select: { id: true, userId: true }
+      });
+
+      if (!teacher) throw new Error("Teacher not found in directory.");
+
+      // 1. Update Core User info
+      await tx.user.update({
+        where: { id: teacher.userId },
+        data: {
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: formData.email
+        }
+      })
+
+      // 2. Update Teacher profile
+      const updated = await tx.teacher.update({
+        where: { id: teacher.id },
+        data: {
+          phone: formData.phone,
+          dateOfBirth: birthDate,
+          gender: formData.gender,
+          bloodGroup: formData.bloodGroup || null,
+          religion: formData.religion || null,
+          designation: formData.designation,
+          department: formData.department,
+          qualification: formData.qualification,
+          presentAddress: formData.presentAddress,
+          permanentAddress: formData.permanentAddress || null,
+          salary: formData.salary ? parseFloat(formData.salary.toString()) : null,
+        }
+      });
+      return updated
+    })
+
+    return { success: true, data: result };
   } catch (error: any) {
-    console.error("❌ Update Teacher Error:", error.message);
-    return { success: false, error: "তথ্য আপডেট করতে সমস্যা হয়েছে।" };
+    console.error("❌ Update Teacher Error:", error);
+    return { success: false, error: `Update Failed: ${error.message}` };
   }
 }
 
 export async function deleteTeacher(id: string) {
+  const currentUser = await getCurrentUser()
+  if (!currentUser || (currentUser.role as string) !== 'admin') {
+    return { success: false, error: "Unauthorized: Principal access required." }
+  }
+
   try {
+    // Find the record first to get internal ID
+    const teacher = await prisma.teacher.findFirst({
+      where: { teacherId: id },
+      select: { id: true }
+    })
+
+    if (!teacher) return { success: false, error: "Teacher not found." }
+
     await prisma.teacher.delete({
-      where: { teacherId: id }
+      where: { id: teacher.id }
     });
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: "মুছে ফেলতে সমস্যা হয়েছে।" };
+    console.error("❌ Delete Teacher Error:", error.message);
+    return { success: false, error: `Deletion Failed: ${error.message}` };
   }
 }
 
@@ -121,7 +231,7 @@ export async function getTeacher(id: string) {
   console.log("🔍 Fetching teacher with ID:", id);
   try {
     // Try finding by public teacherId first
-    let teacher = await prisma.teacher.findUnique({
+    let teacher = await prisma.teacher.findFirst({
       where: { teacherId: id },
       include: { user: true }
     });
