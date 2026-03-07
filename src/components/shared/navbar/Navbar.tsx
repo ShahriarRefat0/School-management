@@ -67,14 +67,14 @@ const Navbar = () => {
           {/* CENTER: Desktop nav links */}
           <div className="hidden md:flex items-center gap-10">
             {["Features", "Pricing", "Support", "Privacy"].map((item) => (
-              <a
+              <Link
                 key={item}
-                href={`#${item.toLowerCase()}`}
+                href={`/${item.toLowerCase()}`}
                 className="text-text-secondary text-sm font-bold hover:text-primary transition-all relative group"
               >
                 {item}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </a>
+              </Link>
             ))}
           </div>
 
