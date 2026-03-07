@@ -61,10 +61,18 @@ export async function createSchool(formData: any) {
         },
       });
 
-      // 3️⃣ Create Admin User record
-      await tx.user.create({
-        data: {
-          authUserId: authUserId,
+      // 3️⃣ Update or Create Admin User record
+      await tx.user.upsert({
+        where: { authUserId: authUserId as string },
+        update: {
+          name: formData.adminName,
+          email: formData.adminEmail,
+          role: "admin",
+          schoolId: newSchool.id,
+          status: "active"
+        },
+        create: {
+          authUserId: authUserId as string,
           name: formData.adminName,
           email: formData.adminEmail,
           role: "admin",

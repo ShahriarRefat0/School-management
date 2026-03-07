@@ -50,7 +50,7 @@ function TeacherActions({ teacher, onDeleted }: { teacher: any, onDeleted: () =>
               className="absolute right-0 mt-2 w-48 bg-bg-card border border-border-light rounded-2xl shadow-2xl z-40 overflow-hidden"
             >
               <button
-                onClick={() => router.push(`/dashboard/principal/teachers/edit/${teacher.id}`)}
+                onClick={() => router.push(`/dashboard/principal/teachers/edit/${teacher.dbId}`)}
                 className="w-full px-5 py-4 text-left text-xs font-black uppercase tracking-widest text-text-primary hover:bg-blue-50 hover:text-blue-600 flex items-center gap-3 transition-colors"
               >
                 <Edit size={16} /> Edit Profile
@@ -83,7 +83,8 @@ export default function TeachersPage() {
       const result = await getTeachers();
       if (result.success && result.data) {
         setTeachers(result.data.map((t: any) => ({
-          id: t.teacherId,
+          id: t.teacherId, // The public teacher ID used for routing
+          dbId: t.id,      // The internal UUID
           name: t.user?.name || `${t.firstName || ''} ${t.lastName || ''}`.trim() || 'Unknown',
           designation: t.designation,
           department: t.department,
@@ -226,7 +227,7 @@ export default function TeachersPage() {
             <tbody className="divide-y divide-border-light/50">
               {filteredTeachers.length > 0 ? (
                 filteredTeachers.map((teacher) => (
-                  <tr key={teacher.id} className="hover:bg-primary/[0.01] transition-colors group">
+                  <tr key={teacher.dbId} className="hover:bg-primary/[0.01] transition-colors group">
                     <td className="px-10 py-8 font-mono text-[11px] font-black text-primary/70">{teacher.id}</td>
                     <td className="px-10 py-8">
                       <div className="font-black text-text-primary text-base leading-none mb-1 group-hover:text-primary transition-colors">{teacher.name}</div>
@@ -252,7 +253,7 @@ export default function TeachersPage() {
                     </td>
                     <td className="px-10 py-8 text-right">
                       <TeacherActions teacher={teacher} onDeleted={() => {
-                        setTeachers(prev => prev.filter(t => t.id !== teacher.id))
+                        setTeachers(prev => prev.filter(t => t.dbId !== teacher.dbId))
                       }} />
                     </td>
                   </tr>
