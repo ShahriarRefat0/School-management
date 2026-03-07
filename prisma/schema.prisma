@@ -274,12 +274,32 @@ model Result {
   @@index([schoolId])
 }
 
+
+model Payment {
+  id            String   @id @default(cuid())
+  transactionId String   @unique
+  amount        Float
+  currency      String   @default("BDT")
+  status        String   @default("PENDING")
+  studentId     String
+  schoolId      String
+  feeCategory   String
+  method        String?
+  valId         String?
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([schoolId])
+  @@index([studentId])
+}
 enum AttendanceStatus {
   PRESENT
   ABSENT
   LATE
-}
-
+  }
 enum Role {
   super_admin
   admin
