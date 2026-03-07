@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 
 export async function getStudyMaterials(schoolId?: string) {
     try {
@@ -29,11 +30,27 @@ export async function createStudyMaterial(formData: {
     teacherId: string;
 }) {
     try {
-        const targetSchoolId = formData.schoolId || "default-school-id";
+        const currentUser = await getCurrentUser();
+        const schoolId = currentUser?.schoolId || formData.schoolId;
+
+        if (!schoolId || !currentUser) {
+            return { success: false, error: "Authentication Error: School ID or User session missing." };
+        }
+
+        // Find the teacher ID linked to this user
+        const teacher = await prisma.teacher.findUnique({
+            where: { userId: currentUser.id }
+        });
+
+        if (!teacher) {
+            return { success: false, error: "Teacher Profile Error: Your teacher profile was not found in the database. Please contact your administrator." };
+        }
+
         const material = await prisma.studyMaterial.create({
             data: {
                 ...formData,
-                schoolId: targetSchoolId
+                schoolId: schoolId,
+                teacherId: teacher.id // Securely from database
             }
         });
         revalidatePath("/dashboard/teacher/study-materials");

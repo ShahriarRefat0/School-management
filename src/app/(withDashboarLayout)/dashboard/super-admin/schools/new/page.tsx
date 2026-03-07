@@ -1,8 +1,8 @@
 "use client"
 import React, { useState } from 'react'
 import {
-  Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
-  Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon
+    Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
+    Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon
 } from 'lucide-react'
 import { z } from 'zod'
 import { createSchool } from '@/app/actions/school'
@@ -12,266 +12,266 @@ import { useRouter } from 'next/navigation'
 
 // Zod Schema
 const schoolSchema = z.object({
-  schoolName: z.string().min(3, "School name is required"),
-  slug: z.string(),
-  schoolEmail: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  plan: z.string(),
-  duration: z.string(),
-  schoolCategory: z.string(),
-  expectedStudents: z.preprocess((val) => Number(val), z.number().optional()),
-  registrationId: z.string().min(1, "Registration ID is required"),
-  facebookUrl: z.string().optional(),
-  websiteUrl: z.string().optional(),
-  language: z.string(),
-  adminName: z.string().min(3, "Admin name is required"),
-  adminEmail: z.string().email("Invalid admin email"),
-  adminPassword: z.string().min(6, "Password must be at least 6 characters")
+    schoolName: z.string().min(3, "School name is required"),
+    slug: z.string(),
+    schoolEmail: z.string().email("Invalid email address"),
+    phone: z.string().optional(),
+    address: z.string().optional(),
+    plan: z.string(),
+    duration: z.string(),
+    schoolCategory: z.string(),
+    expectedStudents: z.preprocess((val) => Number(val), z.number().optional()),
+    registrationId: z.string().min(1, "Registration ID is required"),
+    facebookUrl: z.string().optional(),
+    websiteUrl: z.string().optional(),
+    language: z.string(),
+    adminName: z.string().min(3, "Admin name is required"),
+    adminEmail: z.string().email("Invalid admin email"),
+    adminPassword: z.string().min(6, "Password must be at least 6 characters")
 })
 
 export default function NewSchool() {
-  const [loading, setLoading] = useState(false)
-  const { signUp } = useAuth()
-  const router = useRouter()
+    const [loading, setLoading] = useState(false)
+    const { signUp } = useAuth()
+    const router = useRouter()
 
-  const [formData, setFormData] = useState({
-    schoolName: '',
-    slug: '',
-    schoolEmail: '',
-    phone: '',
-    address: '',
-    plan: 'basic',
-    duration: '12',
-    schoolCategory: 'high-school',
-    expectedStudents: '',
-    registrationId: '',
-    facebookUrl: '',
-    websiteUrl: '',
-    language: 'english',
-    adminName: '',
-    adminEmail: '',
-    adminPassword: ''
-  })
+    const [formData, setFormData] = useState({
+        schoolName: '',
+        slug: '',
+        schoolEmail: '',
+        phone: '',
+        address: '',
+        plan: 'basic',
+        duration: '12',
+        schoolCategory: 'high-school',
+        expectedStudents: '',
+        registrationId: '',
+        facebookUrl: '',
+        websiteUrl: '',
+        language: 'english',
+        adminName: '',
+        adminEmail: '',
+        adminPassword: ''
+    })
 
-  const generateSlug = (name: string) => {
-    return name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    if (name === 'schoolName') {
-      setFormData(prev => ({ ...prev, schoolName: value, slug: generateSlug(value) }))
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }))
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    const validation = schoolSchema.safeParse(formData)
-    if (!validation.success) {
-      Swal.fire({ icon: 'error', title: 'Validation Error', text: validation.error.issues[0].message })
-      setLoading(false)
-      return
+    const generateSlug = (name: string) => {
+        return name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
     }
 
-    try {
-      const { data, error } = await signUp(formData.adminEmail, formData.adminPassword, "admin")
-      if (error || !data?.user) throw new Error(error?.message || "Admin account creation failed")
-
-      const result = await createSchool({
-        ...formData,
-        expectedStudents: parseInt(formData.expectedStudents) || 0,
-        adminId: data.user.id
-      })
-
-      if (!result.success) throw new Error(result.error)
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Success!',
-        text: 'Institution Deployed Successfully!',
-        timer: 2000,
-        showConfirmButton: false
-      })
-
-      // ✅ এখান পরিবর্তন করা হয়েছে: সরাসরি স্কুল ম্যানেজমেন্ট লিস্টে যাবে
-      router.push('/dashboard/super-admin/schools')
-
-    } catch (err: any) {
-      Swal.fire({ icon: 'error', title: 'Submission Failed', text: err.message })
-    } finally {
-      setLoading(false)
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target
+        if (name === 'schoolName') {
+            setFormData(prev => ({ ...prev, schoolName: value, slug: generateSlug(value) }))
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }))
+        }
     }
-  }
 
-  return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up pb-12 pt-6">
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
 
-      {/* Top Navigation & Header */}
-      <div className="flex items-center justify-between px-2">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors font-bold uppercase text-xs tracking-widest"
-        >
-          <ArrowLeft size={18} /> Back to Management
-        </button>
-        <div className="text-right">
-          <h2 className="text-2xl font-black text-[var(--color-text-primary)] uppercase tracking-tight">Register New School</h2>
-          <p className="text-xs text-[var(--color-text-muted)]">Create a new institutional instance</p>
+        const validation = schoolSchema.safeParse(formData)
+        if (!validation.success) {
+            Swal.fire({ icon: 'error', title: 'Validation Error', text: validation.error.issues[0].message })
+            setLoading(false)
+            return
+        }
+
+        try {
+            const { data, error } = await signUp(formData.adminEmail, formData.adminPassword, "admin")
+            if (error || !data?.user) throw new Error(error?.message || "Admin account creation failed")
+
+            const result = await createSchool({
+                ...formData,
+                expectedStudents: parseInt(formData.expectedStudents) || 0,
+                adminId: data.user.id
+            })
+
+            if (!result.success) throw new Error(result.error)
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Institution Deployed Successfully!',
+                timer: 2000,
+                showConfirmButton: false
+            })
+
+            // ✅ এখান পরিবর্তন করা হয়েছে: সরাসরি স্কুল ম্যানেজমেন্ট লিস্টে যাবে
+            router.push('/dashboard/super-admin/schools')
+
+        } catch (err: any) {
+            Swal.fire({ icon: 'error', title: 'Submission Failed', text: err.message })
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up pb-12 pt-6">
+
+            {/* Top Navigation & Header */}
+            <div className="flex items-center justify-between px-2">
+                <button
+                    onClick={() => router.back()}
+                    className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors font-bold uppercase text-xs tracking-widest"
+                >
+                    <ArrowLeft size={18} /> Back to Management
+                </button>
+                <div className="text-right">
+                    <h2 className="text-2xl font-black text-[var(--color-text-primary)] uppercase tracking-tight">Register New School</h2>
+                    <p className="text-xs text-[var(--color-text-muted)]">Create a new institutional instance</p>
+                </div>
+            </div>
+
+            <div className="bg-[var(--color-bg-card)] p-8 rounded-3xl border border-[var(--color-border-light)] shadow-xl">
+                <form className="space-y-10" onSubmit={handleSubmit}>
+
+                    {/* 1. Institutional Profile */}
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-black text-[var(--color-primary)] flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
+                            <Building size={20} /> Institutional Profile
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">School Name</label>
+                                <input required type="text" name="schoolName" value={formData.schoolName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Sub-domain / Slug</label>
+                                <input type="text" value={formData.slug} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl opacity-70 cursor-not-allowed font-mono text-sm" readOnly />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">School Category</label>
+                                <select name="schoolCategory" value={formData.schoolCategory} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
+                                    <option value="primary">Primary School</option>
+                                    <option value="high-school">High School</option>
+                                    <option value="college">College / University</option>
+                                    <option value="madrasa">Madrasa</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Registration ID</label>
+                                <input required type="text" name="registrationId" value={formData.registrationId} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Expected Students</label>
+                                <input type="number" name="expectedStudents" value={formData.expectedStudents} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">System Language</label>
+                                <select name="language" value={formData.language} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
+                                    <option value="english">English</option>
+                                    <option value="bangla">Bangla</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Communication & Address */}
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-black text-emerald-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
+                            <Globe size={20} /> Communication & Web
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Official Email</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                                    <input required type="email" name="schoolEmail" value={formData.schoolEmail} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Phone Number</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                                    <input type="text" name="phone" value={formData.phone} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Website URL</label>
+                                <div className="relative">
+                                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                                    <input type="text" name="websiteUrl" value={formData.websiteUrl} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} placeholder="https://..." />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Facebook Page</label>
+                                <div className="relative">
+                                    <Facebook className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
+                                    <input type="text" name="facebookUrl" value={formData.facebookUrl} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} placeholder="https://facebook.com/..." />
+                                </div>
+                            </div>
+                            <div className="md:col-span-2 space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Physical Address</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-4 top-4 text-[var(--color-text-muted)]" size={18} />
+                                    <textarea name="address" value={formData.address} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl min-h-[80px]" onChange={handleChange}></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Subscription & Plan */}
+                    <div className="p-6 bg-[var(--color-bg-page)] rounded-2xl border border-[var(--color-border-light)] space-y-6">
+                        <h3 className="text-lg font-black text-purple-500 flex items-center gap-2 uppercase tracking-tighter">
+                            <CreditCard size={20} /> Subscription & Billing
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Select Plan</label>
+                                <select name="plan" value={formData.plan} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
+                                    <option value="basic">Basic Plan</option>
+                                    <option value="standard">Standard Plan</option>
+                                    <option value="premium">Premium / Enterprise</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Subscription Duration</label>
+                                <select name="duration" value={formData.duration} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
+                                    <option value="1">1 Month (Trial)</option>
+                                    <option value="6">6 Months</option>
+                                    <option value="12">12 Months (Recommended)</option>
+                                    <option value="24">24 Months</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 4. Admin Account */}
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-black text-orange-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
+                            <ShieldCheck size={20} /> Master Admin Credentials
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Full Name</label>
+                                <input required type="text" name="adminName" value={formData.adminName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Admin Email</label>
+                                <input required type="email" name="adminEmail" value={formData.adminEmail} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
+                            </div>
+                            <div className="md:col-span-2 space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Login Password (Visible)</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
+                                    <input required type="text" name="adminPassword" value={formData.adminPassword} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl font-mono text-orange-600 font-bold" onChange={handleChange} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-[var(--color-primary)] text-white font-black py-5 rounded-2xl shadow-lg hover:scale-[1.01] transition-all text-lg uppercase tracking-widest disabled:opacity-50"
+                    >
+                        {loading ? "Processing..." : "Deploy School Instance"}
+                    </button>
+                </form>
+            </div>
         </div>
-      </div>
-
-      <div className="bg-[var(--color-bg-card)] p-8 rounded-3xl border border-[var(--color-border-light)] shadow-xl">
-        <form className="space-y-10" onSubmit={handleSubmit}>
-
-          {/* 1. Institutional Profile */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-black text-[var(--color-primary)] flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
-              <Building size={20} /> Institutional Profile
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">School Name</label>
-                <input required type="text" name="schoolName" value={formData.schoolName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Sub-domain / Slug</label>
-                <input type="text" value={formData.slug} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl opacity-70 cursor-not-allowed font-mono text-sm" readOnly />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">School Category</label>
-                <select name="schoolCategory" value={formData.schoolCategory} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
-                  <option value="primary">Primary School</option>
-                  <option value="high-school">High School</option>
-                  <option value="college">College / University</option>
-                  <option value="madrasa">Madrasa</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Registration ID</label>
-                <input required type="text" name="registrationId" value={formData.registrationId} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Expected Students</label>
-                <input type="number" name="expectedStudents" value={formData.expectedStudents} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">System Language</label>
-                <select name="language" value={formData.language} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
-                  <option value="english">English</option>
-                  <option value="bangla">Bangla</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Communication & Address */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-black text-emerald-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
-              <Globe size={20} /> Communication & Web
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Official Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
-                  <input required type="email" name="schoolEmail" value={formData.schoolEmail} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Phone Number</label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
-                  <input type="text" name="phone" value={formData.phone} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Website URL</label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
-                  <input type="text" name="websiteUrl" value={formData.websiteUrl} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} placeholder="https://..." />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Facebook Page</label>
-                <div className="relative">
-                  <Facebook className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={16} />
-                  <input type="text" name="facebookUrl" value={formData.facebookUrl} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} placeholder="https://facebook.com/..." />
-                </div>
-              </div>
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Physical Address</label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-4 text-[var(--color-text-muted)]" size={18} />
-                  <textarea name="address" value={formData.address} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl min-h-[80px]" onChange={handleChange}></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. Subscription & Plan */}
-          <div className="p-6 bg-[var(--color-bg-page)] rounded-2xl border border-[var(--color-border-light)] space-y-6">
-            <h3 className="text-lg font-black text-purple-500 flex items-center gap-2 uppercase tracking-tighter">
-              <CreditCard size={20} /> Subscription & Billing
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Select Plan</label>
-                <select name="plan" value={formData.plan} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
-                  <option value="basic">Basic Plan</option>
-                  <option value="standard">Standard Plan</option>
-                  <option value="premium">Premium / Enterprise</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Subscription Duration</label>
-                <select name="duration" value={formData.duration} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
-                  <option value="1">1 Month (Trial)</option>
-                  <option value="6">6 Months</option>
-                  <option value="12">12 Months (Recommended)</option>
-                  <option value="24">24 Months</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. Admin Account */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-black text-orange-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
-              <ShieldCheck size={20} /> Master Admin Credentials
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Full Name</label>
-                <input required type="text" name="adminName" value={formData.adminName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Admin Email</label>
-                <input required type="email" name="adminEmail" value={formData.adminEmail} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
-              </div>
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Login Password (Visible)</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
-                  <input required type="text" name="adminPassword" value={formData.adminPassword} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl font-mono text-orange-600 font-bold" onChange={handleChange} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[var(--color-primary)] text-white font-black py-5 rounded-2xl shadow-lg hover:scale-[1.01] transition-all text-lg uppercase tracking-widest disabled:opacity-50"
-          >
-            {loading ? "Processing..." : "Deploy School Instance"}
-          </button>
-        </form>
-      </div>
-    </div>
-  )
+    )
 }

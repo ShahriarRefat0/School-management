@@ -1,45 +1,134 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    UserCheck,
     Search,
     CheckCircle2,
     XCircle,
     Clock,
     ChevronRight,
     BookOpen,
-    Calendar
+    Calendar as CalendarIcon,
+    Loader2
 } from 'lucide-react';
-
 import { TeacherHeader } from "../TeacherHeader";
+import { getClasses } from '@/app/actions/teacher/results';
+import { getAttendance, saveAttendance } from '@/app/actions/teacher/attendance';
+import { getStudentsByClass } from '@/app/actions/teacher/results';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
+
+type AttendanceStatusType = 'PRESENT' | 'ABSENT' | 'LATE';
 
 export default function AttendancePage() {
+    const [classes, setClasses] = useState<any[]>([]);
     const [selectedClass, setSelectedClass] = useState<string | null>(null);
-    const [attendance, setAttendance] = useState<Record<string, 'present' | 'absent' | 'late'>>({});
+    const [attendance, setAttendance] = useState<Record<string, AttendanceStatusType>>({});
+    const [students, setStudents] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
-    const classes = [
-        { id: "C1", name: "Class X - Section A", subject: "Higher Mathematics", time: "09:00 AM", studentsCount: 45 },
-        { id: "C2", name: "Class IX - Section B", subject: "General Science", time: "10:30 AM", studentsCount: 38 },
-    ];
+    // Fetch Classes
+    useEffect(() => {
+        const fetchClasses = async () => {
+            setIsLoading(true);
+            const res = await getClasses();
+            if (res.success) {
+                setClasses(res.data);
+            } else {
+                toast.error(res.error || "Failed to load classes");
+            }
+            setIsLoading(false);
+        };
+        fetchClasses();
+    }, []);
+
+    // Fetch Students and existing Attendance
+    useEffect(() => {
+        if (!selectedClass) return;
+
+        const fetchData = async () => {
+            setIsLoading(true);
+            const [studentsRes, attendanceRes] = await Promise.all([
+                getStudentsByClass(selectedClass),
+                getAttendance(selectedClass, selectedDate)
+            ]);
+
+            if (studentsRes.success) {
+                setStudents(studentsRes.data || []);
+
+                // Map existing attendance
+                const attendanceMap: Record<string, AttendanceStatusType> = {};
+                if (attendanceRes.success) {
+                    attendanceRes.data.forEach((rec: any) => {
+                        attendanceMap[rec.studentId] = rec.status;
+                    });
+                }
+                setAttendance(attendanceMap);
+            } else {
+                toast.error(studentsRes.error || "Failed to load students");
+            }
+            setIsLoading(false);
+        };
+        fetchData();
+    }, [selectedClass, selectedDate]);
 
     const currentClassDetails = classes.find(c => c.id === selectedClass);
 
-    const students = [
-        { id: "S101", name: "Rahim Ahmed", roll: "101" },
-        { id: "S102", name: "Fatima Noor", roll: "102" },
-        { id: "S103", name: "Arif Hossein", roll: "103" },
-        { id: "S104", name: "Sumaiya Akhter", roll: "104" },
-        { id: "S105", name: "Karim Ullah", roll: "105" },
-    ];
-
-    const handleStatusChange = (studentId: string, status: 'present' | 'absent' | 'late') => {
+    const handleStatusChange = (studentId: string, status: AttendanceStatusType) => {
         setAttendance(prev => ({ ...prev, [studentId]: status }));
     };
 
     const markAllAsPresent = () => {
-        const allPresent = students.reduce((acc, student) => ({ ...acc, [student.id]: 'present' }), {});
+        const allPresent = students.reduce((acc, student) => ({ ...acc, [student.id]: 'PRESENT' }), {});
         setAttendance(allPresent);
     };
+
+    const handleSave = async () => {
+        if (!selectedClass) return;
+
+        setIsSaving(true);
+        const records = Object.entries(attendance).map(([studentId, status]) => ({
+            studentId,
+            status,
+            date: selectedDate,
+            classId: selectedClass
+        }));
+
+        if (records.length === 0) {
+            toast.error("No attendance data to save");
+            setIsSaving(false);
+            return;
+        }
+
+        const res = await saveAttendance(records);
+        if (res.success) {
+            Swal.fire({
+                title: 'Saved!',
+                text: 'Attendance has been recorded successfully.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } else {
+            toast.error(res.error || "Failed to save attendance");
+        }
+        setIsSaving(false);
+    };
+
+    const filteredStudents = students.filter(s =>
+        `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.rollNo.toString().includes(searchQuery)
+    );
+
+    if (isLoading && !selectedClass) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 animate-fadeIn">
@@ -47,7 +136,7 @@ export default function AttendancePage() {
                 title={selectedClass ? "Marking" : "Take"}
                 highlight={selectedClass ? "Attendance" : "Attendance"}
                 emoji="✔️"
-                subtitle={selectedClass ? `${currentClassDetails?.name} - ${currentClassDetails?.subject}` : "Select a class to record student attendance."}
+                subtitle={selectedClass ? `${currentClassDetails?.name}` : "Select a class to record student attendance."}
                 rightElement={
                     selectedClass && (
                         <button
@@ -76,17 +165,17 @@ export default function AttendancePage() {
                                     <h3 className="text-lg font-bold text-text-primary group-hover:text-primary transition-colors">
                                         {cls.name}
                                     </h3>
-                                    <p className="text-sm font-semibold text-text-muted">{cls.subject}</p>
+                                    <p className="text-xs font-black text-text-muted uppercase tracking-widest mt-0.5">Classes & Attendance</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-text-muted">
                                     <Clock size={16} className="text-primary/60" />
-                                    <span className="text-sm font-bold">{cls.time}</span>
+                                    <span className="text-sm font-bold">Standard Session</span>
                                 </div>
-                                <div className="bg-primary/5 px-3 py-1 rounded-full text-xs font-bold text-primary border border-primary/10">
-                                    {cls.studentsCount} Students
+                                <div className="bg-primary/5 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary border border-primary/10">
+                                    Open Sheet
                                 </div>
                             </div>
 
@@ -97,6 +186,11 @@ export default function AttendancePage() {
                             </div>
                         </div>
                     ))}
+                    {classes.length === 0 && (
+                        <div className="col-span-full p-12 text-center bg-bg-card border border-border-light rounded-3xl">
+                            <p className="text-text-muted font-bold">No classes found. Please contact admin to assign classes.</p>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -115,32 +209,41 @@ export default function AttendancePage() {
                                 Mark All Present
                             </button>
                             <button
-                                className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center gap-2"
                             >
-                                Save Attendance
+                                {isSaving ? <Loader2 className="animate-spin" size={14} /> : null}
+                                {isSaving ? "Saving..." : "Save Attendance"}
                             </button>
                         </div>
                     </div>
 
-                    <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 overflow-hidden">
+                    <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 overflow-hidden relative">
+                        {isLoading && (
+                            <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-20 flex items-center justify-center backdrop-blur-[1px]">
+                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                            </div>
+                        )}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                                    <Calendar size={20} />
+                                    <CalendarIcon size={20} />
                                 </div>
                                 <div>
                                     <h2 className="font-bold text-text-primary">
-                                        Attendance for {classes.find(c => c.id === selectedClass)?.name}
+                                        Attendance for {currentClassDetails?.name}
                                     </h2>
                                     <p className="text-xs text-text-muted font-medium italic">Record daily attendance below.</p>
                                 </div>
                             </div>
                             <div className="flex flex-wrap items-center gap-4">
                                 <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" size={16} />
+                                    <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" size={16} />
                                     <input
                                         type="date"
-                                        defaultValue={new Date().toISOString().split('T')[0]}
+                                        value={selectedDate}
+                                        onChange={(e) => setSelectedDate(e.target.value)}
                                         className="pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/50 text-text-secondary"
                                     />
                                 </div>
@@ -149,6 +252,8 @@ export default function AttendancePage() {
                                     <input
                                         type="text"
                                         placeholder="Search student..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
                                         className="pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full md:w-64"
                                     />
                                 </div>
@@ -163,23 +268,23 @@ export default function AttendancePage() {
                         </div>
 
                         <div className="grid gap-4">
-                            {students.map((student) => (
+                            {filteredStudents.map((student) => (
                                 <div
                                     key={student.id}
                                     className="group bg-bg-page/40 p-4 rounded-2xl border border-border-light/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/20 transition-all duration-300"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <span className="text-sm font-bold text-text-muted w-8">{student.roll}</span>
+                                        <span className="text-sm font-bold text-text-muted w-8">{student.rollNo}</span>
                                         <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md">
-                                            {student.name.split(' ').map(n => n[0]).join('')}
+                                            {student.firstName[0]}{student.lastName[0]}
                                         </div>
-                                        <span className="font-bold text-text-primary">{student.name}</span>
+                                        <span className="font-bold text-text-primary">{student.firstName} {student.lastName}</span>
                                     </div>
 
                                     <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
                                         <button
-                                            onClick={() => handleStatusChange(student.id, 'present')}
-                                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'present'
+                                            onClick={() => handleStatusChange(student.id, 'PRESENT')}
+                                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'PRESENT'
                                                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
                                                 : 'bg-bg-card text-emerald-600 border border-emerald-100 hover:bg-emerald-50'
                                                 }`}
@@ -188,8 +293,8 @@ export default function AttendancePage() {
                                             Present
                                         </button>
                                         <button
-                                            onClick={() => handleStatusChange(student.id, 'late')}
-                                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'late'
+                                            onClick={() => handleStatusChange(student.id, 'LATE')}
+                                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'LATE'
                                                 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
                                                 : 'bg-bg-card text-amber-600 border border-amber-100 hover:bg-amber-50'
                                                 }`}
@@ -198,9 +303,9 @@ export default function AttendancePage() {
                                             Late
                                         </button>
                                         <button
-                                            onClick={() => handleStatusChange(student.id, 'absent')}
-                                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'absent'
-                                                ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
+                                            onClick={() => handleStatusChange(student.id, 'ABSENT')}
+                                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'ABSENT'
+                                                ? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
                                                 : 'bg-bg-card text-red-600 border border-red-100 hover:bg-red-50'
                                                 }`}
                                         >
@@ -210,6 +315,11 @@ export default function AttendancePage() {
                                     </div>
                                 </div>
                             ))}
+                            {filteredStudents.length === 0 && (
+                                <div className="py-20 text-center text-text-muted font-bold">
+                                    No students found matching your search.
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     GraduationCap,
     Search,
@@ -11,27 +11,81 @@ import {
     Settings,
     Calculator,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    Loader2
 } from 'lucide-react';
+import { getClasses, getStudentsByClass, getResults, saveResults } from '@/app/actions/teacher/results';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 export default function ResultsPage() {
+    const [classes, setClasses] = useState<any[]>([]);
     const [selectedClass, setSelectedClass] = useState<string | null>(null);
     const [examType, setExamType] = useState('Final Term');
     const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
     const [subjects, setSubjects] = useState(["Bangla", "English", "Math", "Science", "Religion", "ICT"]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
-    const classes = [
-        { id: "C1", name: "Class X - Section A", exam: "Final Term" },
-        { id: "C2", name: "Class IX - Section B", exam: "Final Term" },
-    ];
+    const [studentsData, setStudentsData] = useState<any[]>([]);
 
-    const [studentsData, setStudentsData] = useState([
-        { id: "S101", name: "Rahim Ahmed", roll: "101", marks: { Bangla: 85, English: 78, Math: 92, Science: 88, Religion: 95, ICT: 82 } },
-        { id: "S102", name: "Fatima Noor", roll: "102", marks: { Bangla: 92, English: 88, Math: 85, Science: 94, Religion: 98, ICT: 90 } },
-        { id: "S103", name: "Arif Hossein", roll: "103", marks: { Bangla: 78, English: 65, Math: 70, Science: 72, Religion: 85, ICT: 68 } },
-        { id: "S104", name: "Sumaiya Akhter", roll: "104", marks: { Bangla: 88, English: 82, Math: 90, Science: 85, Religion: 92, ICT: 88 } },
-        { id: "S105", name: "Karim Ullah", roll: "105", marks: { Bangla: 65, English: 58, Math: 60, Science: 62, Religion: 75, ICT: 70 } },
-    ]);
+    // Fetch Classes
+    useEffect(() => {
+        const fetchClasses = async () => {
+            setIsLoading(true);
+            const res = await getClasses();
+            if (res.success) {
+                setClasses(res.data);
+            } else {
+                toast.error(res.error || "Failed to load classes");
+            }
+            setIsLoading(false);
+        };
+        fetchClasses();
+    }, []);
+
+    // Fetch Students and Results when Class changes
+    useEffect(() => {
+        if (!selectedClass) return;
+
+        const fetchData = async () => {
+            setIsLoading(true);
+            const studentsRes = await getStudentsByClass(selectedClass);
+
+            if (studentsRes.success) {
+                // Fetch all results for these students in this exam type
+                const allResults = await Promise.all(
+                    subjects.map(sub => getResults(selectedClass, sub, examType))
+                );
+
+                const studentMap = studentsRes.data.map((student: any) => {
+                    const marks: Record<string, number> = {};
+                    subjects.forEach((sub, index) => {
+                        const subResult = allResults[index];
+                        if (subResult.success) {
+                            const studentResult = subResult.data.find((r: any) => r.studentId === student.id);
+                            marks[sub] = studentResult ? studentResult.marks : 0;
+                        } else {
+                            marks[sub] = 0;
+                        }
+                    });
+
+                    return {
+                        id: student.id,
+                        name: `${student.firstName} ${student.lastName}`,
+                        roll: student.rollNo,
+                        marks
+                    };
+                });
+                setStudentsData(studentMap);
+            } else {
+                toast.error(studentsRes.error || "Failed to load students");
+            }
+            setIsLoading(false);
+        };
+        fetchData();
+    }, [selectedClass, examType]);
 
     const handleAddSubject = () => {
         const subjectName = prompt("Enter new subject name:");
@@ -62,12 +116,48 @@ export default function ResultsPage() {
         }));
     };
 
+    const handleSave = async () => {
+        if (!selectedClass) return;
+
+        setIsSaving(true);
+        try {
+            const resultsToSave: any[] = [];
+            studentsData.forEach(student => {
+                subjects.forEach(subject => {
+                    resultsToSave.push({
+                        studentId: student.id,
+                        marks: student.marks[subject] || 0,
+                        subject,
+                        examType,
+                        classId: selectedClass
+                    });
+                });
+            });
+
+            const res = await saveResults(resultsToSave);
+            if (res.success) {
+                Swal.fire({
+                    title: 'Saved!',
+                    text: 'Results have been updated successfully.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                toast.error(res.error || "Failed to save results");
+            }
+        } catch (error) {
+            toast.error("An error occurred while saving");
+        }
+        setIsSaving(false);
+    };
+
     const calculateGPA = (studentMarks: Record<string, number>) => {
         const marks = Object.values(studentMarks);
+        if (marks.length === 0) return { gpa: "0.00", grade: "N/A" };
         const total = marks.reduce((sum, m) => sum + m, 0);
         const avg = total / marks.length;
 
-        // Simple GPA mapping
         if (avg >= 80) return { gpa: "5.00", grade: "A+" };
         if (avg >= 70) return { gpa: "4.00", grade: "A" };
         if (avg >= 60) return { gpa: "3.50", grade: "A-" };
@@ -76,6 +166,19 @@ export default function ResultsPage() {
         if (avg >= 33) return { gpa: "1.00", grade: "D" };
         return { gpa: "0.00", grade: "F" };
     };
+
+    const filteredStudents = studentsData.filter(s =>
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.roll.toString().includes(searchQuery)
+    );
+
+    if (isLoading && !selectedClass) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 animate-fadeIn">
@@ -121,7 +224,7 @@ export default function ResultsPage() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-text-muted">
                                     <Trophy size={16} className="text-primary/60" />
-                                    <span className="text-sm font-bold">{cls.exam}</span>
+                                    <span className="text-sm font-bold">{examType}</span>
                                 </div>
                                 <div className="bg-primary/5 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary border border-primary/10">
                                     Open Grid
@@ -135,6 +238,11 @@ export default function ResultsPage() {
                             </div>
                         </div>
                     ))}
+                    {classes.length === 0 && (
+                        <div className="col-span-full p-12 text-center bg-bg-card border border-border-light rounded-3xl">
+                            <p className="text-text-muted font-bold">No classes found. Please contact admin to assign classes.</p>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -146,12 +254,22 @@ export default function ResultsPage() {
                                 <input
                                     type="text"
                                     placeholder="Search by name or roll..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                     className="pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 w-full md:w-64 transition-all"
                                 />
                             </div>
                             <div className="flex items-center gap-2 bg-bg-page border border-border-light px-4 py-2 rounded-xl">
                                 <Filter size={14} className="text-text-muted" />
-                                <span className="text-xs font-bold text-text-secondary">{examType}</span>
+                                <select
+                                    value={examType}
+                                    onChange={(e) => setExamType(e.target.value)}
+                                    className="bg-transparent text-xs font-bold text-text-secondary focus:outline-none cursor-pointer"
+                                >
+                                    <option value="Final Term">Final Term</option>
+                                    <option value="Mid Term">Mid Term</option>
+                                    <option value="First Terminal">First Terminal</option>
+                                </select>
                             </div>
                         </div>
 
@@ -166,15 +284,23 @@ export default function ResultsPage() {
                                 <Settings size={14} /> Export CSV
                             </button>
                             <button
-                                className="flex-1 md:flex-none px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 active:scale-95 flex items-center justify-center gap-2"
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="flex-1 md:flex-none px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
                             >
-                                <Save size={16} /> Save Changes
+                                {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                                {isSaving ? "Saving..." : "Save Changes"}
                             </button>
                         </div>
                     </div>
 
                     {/* Grid Container */}
-                    <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 overflow-hidden">
+                    <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 overflow-hidden relative">
+                        {isLoading && (
+                            <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-20 flex items-center justify-center backdrop-blur-[1px]">
+                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                            </div>
+                        )}
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                                 <Calculator size={20} />
@@ -199,9 +325,9 @@ export default function ResultsPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border-light/50">
-                                    {studentsData.map((student) => {
+                                    {filteredStudents.map((student) => {
                                         const { gpa, grade } = calculateGPA(student.marks);
-                                        const total = Object.values(student.marks).reduce((sum, m) => sum + m, 0);
+                                        const total = Object.values(student.marks).reduce((sum: number, m: any) => sum + (Number(m) || 0), 0);
                                         const isExpanded = expandedStudent === student.id;
 
                                         return (
@@ -259,7 +385,7 @@ export default function ResultsPage() {
                                                                         <div className="relative">
                                                                             <input
                                                                                 type="number"
-                                                                                value={student.marks[subject as keyof typeof student.marks]}
+                                                                                value={student.marks[subject] || 0}
                                                                                 onChange={(e) => handleMarkChange(student.id, subject, e.target.value)}
                                                                                 onClick={(e) => e.stopPropagation()}
                                                                                 min="0"
@@ -277,6 +403,13 @@ export default function ResultsPage() {
                                             </React.Fragment>
                                         );
                                     })}
+                                    {filteredStudents.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="py-20 text-center text-text-muted font-bold">
+                                                No students found matching your search.
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
