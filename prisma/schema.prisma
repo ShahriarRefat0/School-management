@@ -33,6 +33,10 @@ model School {
   classes          Class[]
   attendance       Attendance[]
   results          Result[]
+  subjects         Subject[]
+  exams            Exam[]
+  fees             Fee[]
+  payments         Payment[]
 }
 
 model Announcement {
@@ -85,9 +89,11 @@ model Student {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   userId           String       @unique
+  user             User         @relation("UserStudent", fields: [userId], references: [id], onDelete: Cascade)
   results          Result[]
   attendance       Attendance[]
-  user             User         @relation("UserStudent", fields: [userId], references: [id], onDelete: Cascade)
+  payments         Payment[]
+  parents          Parent[]
 
   @@map("students")
 }
@@ -122,8 +128,8 @@ model SupportTicket {
 }
 
 model Teacher {
-  id               String          @id @default(uuid())
-  teacherId        String          @unique
+  id               String           @id @default(uuid())
+  teacherId        String           @unique
   phone            String
   dateOfBirth      DateTime
   gender           String
@@ -132,21 +138,23 @@ model Teacher {
   designation      String
   department       String
   qualification    String
-  joiningDate      DateTime        @default(now())
+  joiningDate      DateTime         @default(now())
   salary           Float?
   presentAddress   String
   permanentAddress String?
   assignedClasses  String[]
-  isActive         Boolean         @default(true)
+  isActive         Boolean          @default(true)
   schoolId         String
-  school           School          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  userId           String          @unique
-  user             User            @relation("UserTeacher", fields: [userId], references: [id], onDelete: Cascade)
+  school           School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  userId           String           @unique
+  user             User             @relation("UserTeacher", fields: [userId], references: [id], onDelete: Cascade)
   studyMaterials   StudyMaterial[]
   attendances      Attendance[]
   results          Result[]
+  subjects         TeacherSubject[]
+  schedules        ClassSchedule[]
 
   @@map("teachers")
 }
@@ -210,15 +218,19 @@ model TeacherNotice {
 }
 
 model Class {
-  id         String       @id @default(cuid())
+  id         String          @id @default(cuid())
   name       String
   schoolId   String
-  school     School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school     School          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   sections   Section[]
   results    Result[]
   attendance Attendance[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  subjects   Subject[]
+  exams      Exam[]
+  fees       Fee[]
+  schedules  ClassSchedule[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 
   @@index([schoolId])
 }
@@ -256,25 +268,28 @@ model Attendance {
 }
 
 model Result {
-  id        String   @id @default(uuid())
-  examType  String
-  subject   String
-  marks     Float
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  schoolId  String
-  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  teacherId String?
-  teacher   Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
-  classId   String?
-  class     Class?   @relation(fields: [classId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  examType   String?
+  subject    String?
+  marks      Float
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  schoolId   String
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacherId  String?
+  teacher    Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  classId    String?
+  class      Class?   @relation(fields: [classId], references: [id], onDelete: SetNull)
+  examId     String?
+  exam       Exam?    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  subjectId  String?
+  subjectRef Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([studentId])
   @@index([schoolId])
 }
-
 
 model Payment {
   id            String   @id @default(cuid())
@@ -283,7 +298,11 @@ model Payment {
   currency      String   @default("BDT")
   status        String   @default("PENDING")
   studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  feeId         String?
+  fee           Fee?     @relation(fields: [feeId], references: [id], onDelete: SetNull)
   feeCategory   String
   method        String?
   valId         String?
@@ -296,11 +315,99 @@ model Payment {
   @@index([schoolId])
   @@index([studentId])
 }
+
+model Subject {
+  id       String  @id @default(cuid())
+  name     String
+  code     String?
+  classId  String
+  class    Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  schoolId String
+  school   School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  teachers  TeacherSubject[]
+  results   Result[]
+  schedules ClassSchedule[]
+
+  createdAt DateTime @default(now())
+}
+
+model TeacherSubject {
+  id        String @id @default(cuid())
+  teacherId String
+  subjectId String
+
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, subjectId])
+}
+
+model Exam {
+  id       String @id @default(cuid())
+  name     String
+  examType String
+  classId  String
+  schoolId String
+
+  class  Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  results Result[]
+
+  startDate DateTime
+  endDate   DateTime
+
+  createdAt DateTime @default(now())
+}
+
+model Fee {
+  id       String  @id @default(cuid())
+  title    String
+  amount   Float
+  classId  String?
+  schoolId String
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  class  Class? @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+}
+
+model ClassSchedule {
+  id        String @id @default(cuid())
+  classId   String
+  subjectId String
+  teacherId String
+  day       String
+  startTime String
+  endTime   String
+
+  class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+}
+
+model Parent {
+  id        String  @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  studentId String
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
 enum AttendanceStatus {
   PRESENT
   ABSENT
   LATE
-  }
+}
+
 enum Role {
   super_admin
   admin
