@@ -1,6 +1,15 @@
-import { PrismaClient } from "@prisma/client";
+"use server"
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 
-const prisma = new PrismaClient();
+/**
+ * Returns the current authenticated user's schoolId from the database.
+ * Reliable for ALL user types (including those created via supabaseAdmin).
+ */
+export async function getCurrentSchoolId(): Promise<string | null> {
+  const user = await getCurrentUser();
+  return user?.schoolId ?? null;
+}
 
 export async function getSchoolUsers(schoolId: string) {
   try {
@@ -17,9 +26,9 @@ export async function getSchoolUsers(schoolId: string) {
           },
         },
         // যদি ইউজারটি Student হয়, তবে তার ডাটা আসবে
-        student: true, 
+        student: true,
         // যদি ইউজারটি Teacher হয়, তবে তার ডাটা আসবে
-        teacher: true, 
+        teacher: true,
       },
       orderBy: {
         createdAt: "desc", // নতুন ইউজার আগে দেখাবে

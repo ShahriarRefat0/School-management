@@ -59,10 +59,18 @@ export async function addTeacher(formData: any) {
         throw new Error("Invalid date format provided for Date of Birth.")
       }
 
-      // A. Create Core User
-      const user = await tx.user.create({
-        data: {
-          authUserId: authUserId,
+      // A. Update or Create Core User
+      const user = await tx.user.upsert({
+        where: { authUserId: authUserId as string },
+        update: {
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: formData.email,
+          role: "teacher",
+          schoolId: schoolId,
+          status: "active"
+        },
+        create: {
+          authUserId: authUserId as string,
           name: `${formData.firstName} ${formData.lastName}`.trim(),
           email: formData.email,
           role: "teacher",
@@ -159,10 +167,17 @@ export async function updateTeacher(id: string, formData: any) {
 
     const result = await prisma.$transaction(async (tx: any) => {
       // 0. Find the teacher to get their internal IDs
-      const teacher = await tx.teacher.findFirst({
+      let teacher = await tx.teacher.findFirst({
         where: { teacherId: id },
         select: { id: true, userId: true }
       });
+
+      if (!teacher) {
+        teacher = await tx.teacher.findUnique({
+          where: { id: id },
+          select: { id: true, userId: true }
+        });
+      }
 
       if (!teacher) throw new Error("Teacher not found in directory.");
 
@@ -210,10 +225,17 @@ export async function deleteTeacher(id: string) {
 
   try {
     // Find the record first to get internal ID
-    const teacher = await prisma.teacher.findFirst({
+    let teacher = await prisma.teacher.findFirst({
       where: { teacherId: id },
       select: { id: true }
     })
+
+    if (!teacher) {
+      teacher = await prisma.teacher.findUnique({
+        where: { id: id },
+        select: { id: true }
+      });
+    }
 
     if (!teacher) return { success: false, error: "Teacher not found." }
 

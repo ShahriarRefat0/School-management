@@ -79,13 +79,9 @@ export default function NewSchool() {
         }
 
         try {
-            const { data, error } = await signUp(formData.adminEmail, formData.adminPassword, "admin")
-            if (error || !data?.user) throw new Error(error?.message || "Admin account creation failed")
-
             const result = await createSchool({
                 ...formData,
                 expectedStudents: parseInt(formData.expectedStudents) || 0,
-                adminId: data.user.id
             })
 
             if (!result.success) throw new Error(result.error)

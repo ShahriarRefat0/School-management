@@ -79,9 +79,17 @@ export async function addStudent(formData: {
             const schoolId = currentUser.schoolId; // Always use principal's school
             if (!schoolId) throw new Error("Unauthorized: School ID not found for this user.");
 
-            // 2. Create the user record
-            const newUser = await tx.user.create({
-                data: {
+            // 2. Update or create the user record
+            const newUser = await tx.user.upsert({
+                where: { authUserId: authUserId as string },
+                update: {
+                    name: `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'Unknown Student',
+                    email: safeEmail,
+                    schoolId: schoolId,
+                    role: 'student',
+                    status: 'active'
+                },
+                create: {
                     authUserId: authUserId as string,
                     name: `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'Unknown Student',
                     email: safeEmail,
@@ -180,8 +188,22 @@ export async function updateStudent(id: string, formData: any) {
         const updated = await prisma.student.update({
             where: { id: student.id },
             data: {
-                ...formData,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                gender: formData.gender,
+                bloodGroup: formData.bloodGroup || null,
+                religion: formData.religion || null,
+                currentClass: formData.currentClass,
+                sectionName: formData.section, // Map frontend 'section' to DB 'sectionName'
                 rollNo: formData.rollNo ? Number(formData.rollNo) : undefined,
+                session: formData.session,
+                fatherName: formData.fatherName,
+                motherName: formData.motherName,
+                guardianPhone: formData.guardianPhone,
+                emergencyContact: formData.emergencyContact || null,
+                email: formData.email,
+                presentAddress: formData.presentAddress,
+                permanentAddress: formData.permanentAddress || null,
                 dateOfBirth: birthDate,
             }
         });
