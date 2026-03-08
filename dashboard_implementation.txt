@@ -1,0 +1,60 @@
+# Dashboard Implementation Guide
+
+Here is a breakdown of how the newly added database schemas can be utilized across different dashboards for this School Management System:
+
+## 1. Principal / Admin Dashboard
+The principal and school administration need a holistic view over everything.
+
+*   **Subjects & Teachers (`Subject`, `TeacherSubject`)**:
+    *   **Manage Subjects UI**: Can create, edit, and delete subjects. Map subjects to specific classes.
+    *   **Teacher Assignment UI**: Assign specific teachers to specific subjects. Have a view where they can see which subject is taught by which teacher in which class to prevent overlapping and ensure smooth academic operation.
+*   **Exams (`Exam`)**:
+    *   **Exam Management Module**: Can create Midterm, Final, or Monthly unit tests. This includes defining start/end dates.
+*   **Fees & Payments (`Fee`, `Payment`)**:
+    *   **Fee Structure Settings**: Ability to define different types of fees (Tuition, Admission, Sports, Utility) per class and school.
+    *   **Finance/Accounting Overview**: View how much is collected overall, list of pending fees, full tracking of who owes what (revenue stream tracking).
+*   **Class Schedules (`ClassSchedule`)**:
+    *   **Routine Builder Tool**: A complete visual calendar interface where admins map out the weekly timetable, matching Subjects, Classes, and Teachers together into specific time slots without conflicts.
+*   **Parents Management (`Parent`)**:
+    *   **Student Directory**: Have a way to register or view emergency contact info, enabling the admin to broadcast SMS or emails directly to parents.
+
+---
+
+## 2. Teacher Dashboard
+Teachers need a streamlined dashboard tailored purely to their academic and scheduling needs.
+
+*   **Subjects (`TeacherSubject`, `Subject`)**:
+    *   **My Subjects**: See the list of specific subjects they have been assigned to teach.
+*   **Routine/Schedule (`ClassSchedule`)**:
+    *   **My Weekly Routine**: A customized timetable showing what class they need to take on which day, focusing precisely on their assigned classes.
+*   **Results & Exams (`Exam`, `Result`)**:
+    *   **Marks Data Entry Page**: During an active `Exam` period, the teacher gets an interface to easily input student marks specifically for the `Subject(s)` they teach.
+
+---
+
+## 3. Student Dashboard
+Students need an overview of their own academic standing and obligations.
+
+*   **Payment (`Payment`, `Fee`)**:
+    *   **Fees & Dues**: Can check what their total required fees are, check payment history (successful transactions), and verify any pending dues for currently assigned fees.
+*   **Routine (`ClassSchedule`)**:
+    *   **Class Timetable**: See a clear view of their weekly schedule, knowing which subject is on what day and specific time.
+*   **Results & Exams (`Exam`, `Result`)**:
+    *   **Exam Reports / Report Cards**: Once an `Exam` finishes, students can view their specific marks filtered out by each `Subject`.
+
+---
+
+## 4. Parent Dashboard (If existing)
+If you implement a separate login for parents, this makes it very powerful.
+
+*   **Parent Identity (`Parent`)**:
+    *   **Profile**: Manage their own contact details so school updates arrive seamlessly.
+*   **Student Tracking (`Payment`, `Result`, `ClassSchedule`)**:
+    *   **Financials**: Pay their child's `Fees` securely and track partial/pending statuses (`Payment`).
+    *   **Academic Updates**: View their child's `Routine`, check the upcoming `Exam` dates, and monitor performance via `Result` data specifically related to standard `Subjects`.
+
+---
+
+## 5. Accountant Dashboard (If separate from Admin)
+*   **Fees Structure (`Fee`)**: Verify what is set for current configurations.
+*   **Payment Verification (`Payment`)**: Fully dedicated flow to view each individual student's payment, monitor transaction IDs, process offline physical payments manually marking them as "PAID" or "PARTIAL", and generate financial invoices.
