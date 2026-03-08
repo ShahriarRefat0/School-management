@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TeacherHeader } from "../TeacherHeader";
 import {
     MessageSquare,
@@ -10,19 +10,62 @@ import {
     BookOpen,
     Filter,
     CheckCircle2,
-    Users
+    Users,
+    Loader2
 } from 'lucide-react';
-
+import { getTeacherDashboardData } from '@/app/actions/teacher/dashboard';
+import { getStudentsByClass } from '@/app/actions/teacher/results';
+import toast from 'react-hot-toast';
 
 export default function FeedbackPage() {
     const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+    const [assignedClasses, setAssignedClasses] = useState<string[]>([]);
+    const [selectedClass, setSelectedClass] = useState<string>("");
+    const [students, setStudents] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isFetchingStudents, setIsFetchingStudents] = useState(false);
 
-    const students = [
-        { id: "S101", name: "Rahim Ahmed", roll: "101", class: "Class X-A" },
-        { id: "S102", name: "Fatima Noor", roll: "102", class: "Class X-A" },
-        { id: "S103", name: "Arif Hossein", roll: "103", class: "Class IX-B" },
-        { id: "S104", name: "Sumaiya Akhter", roll: "104", class: "Class X-A" },
-    ];
+    useEffect(() => {
+        const fetchClasses = async () => {
+            setIsLoading(true);
+            const res = await getTeacherDashboardData();
+            if (res.success) {
+                setAssignedClasses(res.data.assignedClasses || []);
+                if (res.data.assignedClasses?.length > 0) {
+                    setSelectedClass(res.data.assignedClasses[0]);
+                }
+            }
+            setIsLoading(false);
+        };
+        fetchClasses();
+    }, []);
+
+    useEffect(() => {
+        if (selectedClass) {
+            fetchStudents(selectedClass);
+        }
+    }, [selectedClass]);
+
+    const fetchStudents = async (className: string) => {
+        setIsFetchingStudents(true);
+        const res = await getStudentsByClass(className);
+        if (res.success) {
+            setStudents(res.data || []);
+        } else {
+            toast.error(res.error || "Failed to fetch students");
+        }
+        setIsFetchingStudents(false);
+    };
+
+    const currentStudent = students.find(s => s.id === selectedStudent);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 animate-fadeIn">
@@ -32,62 +75,68 @@ export default function FeedbackPage() {
                 emoji="💬"
                 subtitle="Review and respond to parent concerns and student feedback."
                 rightElement={
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-                        <input
-                            type="text"
-                            placeholder="Filter by student..."
-                            className="pl-10 pr-4 py-2 bg-bg-card border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full md:w-64"
-                        />
-                    </div>
+                    <select
+                        value={selectedClass}
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                        className="px-4 py-2 bg-bg-card border border-border-light rounded-xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer text-text-secondary"
+                    >
+                        {assignedClasses.map((cls, idx) => (
+                            <option key={idx} value={cls}>{cls}</option>
+                        ))}
+                    </select>
                 }
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Student List Sidebar */}
                 <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 space-y-6 lg:h-[70vh] flex flex-col">
-
                     <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
-                        {students.map((student) => (
-                            <button
-                                key={student.id}
-                                onClick={() => setSelectedStudent(student.id)}
-                                className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${selectedStudent === student.id
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                    : 'bg-bg-page/50 text-text-secondary hover:bg-bg-page'
-                                    }`}
-                            >
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${selectedStudent === student.id ? 'bg-white/20' : 'bg-primary/10 text-primary'
-                                    }`}>
-                                    {student.name.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <div className="text-left overflow-hidden">
-                                    <p className="font-bold text-sm truncate">{student.name}</p>
-                                    <p className={`text-[10px] uppercase font-black tracking-widest ${selectedStudent === student.id ? 'text-white/70' : 'text-text-muted'
+                        {isFetchingStudents ? (
+                            <div className="flex justify-center p-10"><Loader2 className="animate-spin text-primary" /></div>
+                        ) : students.length > 0 ? (
+                            students.map((student) => (
+                                <button
+                                    key={student.id}
+                                    onClick={() => setSelectedStudent(student.id)}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${selectedStudent === student.id
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                        : 'bg-bg-page/50 text-text-secondary hover:bg-bg-page'
+                                        }`}
+                                >
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${selectedStudent === student.id ? 'bg-white/20' : 'bg-primary/10 text-primary'
                                         }`}>
-                                        {student.class} • Roll: {student.roll}
-                                    </p>
-                                </div>
-                            </button>
-                        ))}
+                                        {student.firstName[0]}{student.lastName[0]}
+                                    </div>
+                                    <div className="text-left overflow-hidden">
+                                        <p className="font-bold text-sm truncate">{student.firstName} {student.lastName}</p>
+                                        <p className={`text-[10px] uppercase font-black tracking-widest ${selectedStudent === student.id ? 'text-white/70' : 'text-text-muted'
+                                            }`}>
+                                            Roll: {student.rollNo}
+                                        </p>
+                                    </div>
+                                </button>
+                            ))
+                        ) : (
+                            <p className="text-center text-xs text-text-muted py-10">No students found.</p>
+                        )}
                     </div>
                 </div>
 
                 {/* Feedback Form Area */}
                 <div className="lg:col-span-2">
-                    {selectedStudent ? (
+                    {selectedStudent && currentStudent ? (
                         <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-8 space-y-8 h-full">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 bg-gradient-to-br from-primary to-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-xl shadow-primary/20">
-                                    {students.find(s => s.id === selectedStudent)?.name.split(' ').map(n => n[0]).join('')}
+                                    {currentStudent.firstName[0]}{currentStudent.lastName[0]}
                                 </div>
                                 <div>
                                     <h2 className="text-2xl font-bold text-text-primary">
-                                        {students.find(s => s.id === selectedStudent)?.name}
+                                        {currentStudent.firstName} {currentStudent.lastName}
                                     </h2>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="px-2 py-0.5 bg-primary/5 text-primary rounded-md text-[10px] font-black uppercase tracking-widest">
-                                            {students.find(s => s.id === selectedStudent)?.class}
+                                            Roll: {currentStudent.rollNo}
                                         </span>
                                         <span className="text-xs text-text-muted font-medium">Providing feedback as Senior Teacher</span>
                                     </div>
@@ -101,12 +150,11 @@ export default function FeedbackPage() {
                                     </label>
                                     <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <button key={s} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${s <= 4 ? "text-amber-500 bg-amber-500/5 shadow-inner" : "text-text-muted hover:bg-bg-card"}`}>
-                                                <Star size={18} fill={s <= 4 ? "currentColor" : "none"} />
+                                            <button key={s} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-text-muted hover:bg-bg-card">
+                                                <Star size={18} />
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-[9px] font-bold text-text-muted uppercase text-center tracking-tighter">Excellent Progress</p>
                                 </div>
 
                                 <div className="space-y-4">
@@ -115,12 +163,11 @@ export default function FeedbackPage() {
                                     </label>
                                     <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <button key={s} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${s <= 3 ? "text-emerald-500 bg-emerald-500/5 shadow-inner" : "text-text-muted hover:bg-bg-card"}`}>
-                                                <Star size={18} fill={s <= 3 ? "currentColor" : "none"} />
+                                            <button key={s} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-text-muted hover:bg-bg-card">
+                                                <Star size={18} />
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-[9px] font-bold text-text-muted uppercase text-center tracking-tighter">Needs Attention</p>
                                 </div>
 
                                 <div className="space-y-4">
@@ -129,12 +176,11 @@ export default function FeedbackPage() {
                                     </label>
                                     <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <button key={s} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${s <= 5 ? "text-indigo-500 bg-indigo-500/5 shadow-inner" : "text-text-muted hover:bg-bg-card"}`}>
-                                                <Star size={18} fill={s <= 5 ? "currentColor" : "none"} />
+                                            <button key={s} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-text-muted hover:bg-bg-card">
+                                                <Star size={18} />
                                             </button>
                                         ))}
                                     </div>
-                                    <p className="text-[9px] font-bold text-text-muted uppercase text-center tracking-tighter">Very Engaged</p>
                                 </div>
                             </div>
 
@@ -169,11 +215,6 @@ export default function FeedbackPage() {
                             <p className="text-text-muted mt-3 max-w-xs mx-auto text-xs md:text-sm font-medium leading-relaxed">
                                 Pick a student from the directory to start their performance evaluation.
                             </p>
-                            <div className="mt-8 flex gap-2">
-                                <div className="w-2 h-2 rounded-full bg-primary/20 animate-bounce" />
-                                <div className="w-2 h-2 rounded-full bg-primary/40 animate-bounce [animation-delay:0.2s]" />
-                                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce [animation-delay:0.4s]" />
-                            </div>
                         </div>
                     )}
                 </div>

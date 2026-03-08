@@ -9,26 +9,115 @@ export async function getClasses() {
         const currentUser = await getCurrentUser();
         if (!currentUser) return { success: false, error: "Authentication required" };
 
+        const teacher = await prisma.teacher.findUnique({
+            where: { userId: currentUser.id }
+        });
+
+        if (!teacher) return { success: false, error: "Teacher profile not found" };
+
+        // Ensure teacher.assignedClasses are in the Class table
+        for (const className of teacher.assignedClasses) {
+            const cls = await prisma.class.findFirst({
+                where: { schoolId: currentUser.schoolId, name: className }
+            });
+
+            if (!cls) {
+                // Auto-create Class if missing
+                const newCls = await prisma.class.create({
+                    data: {
+                        name: className,
+                        schoolId: currentUser.schoolId || ""
+                    }
+                });
+
+                // Also create a default section for this class
+                await prisma.section.create({
+                    data: {
+                        name: "Section A",
+                        classId: newCls.id
+                    }
+                });
+            } else {
+                // Ensure at least one section exists
+                const section = await prisma.section.findFirst({
+                    where: { classId: cls.id }
+                });
+                if (!section) {
+                    await prisma.section.create({
+                        data: {
+                            name: "Section A",
+                            classId: cls.id
+                        }
+                    });
+                }
+            }
+        }
+
         const classes = await prisma.class.findMany({
-            where: { schoolId: currentUser.schoolId },
+            where: {
+                schoolId: currentUser.schoolId,
+                name: { in: teacher.assignedClasses }
+            },
             orderBy: { name: 'asc' }
         });
+
         return { success: true, data: classes };
-    } catch (error) {
-        console.error("Error fetching classes:", error);
+    } catch (error: any) {
+        console.error("Error fetching classes:", error.message);
         return { success: false, error: "Failed to fetch classes" };
     }
 }
 
 export async function getStudentsByClass(classId: string) {
     try {
+        const cls = await prisma.class.findUnique({
+            where: { id: classId },
+            include: { school: true }
+        });
+
+        if (!cls) return { success: false, error: "Class not found" };
+
+        // Data Repair Logic: Find students who match this class name but have no sectionId
+        // This handles students added via simple strings
+        const studentsToLink = await prisma.student.findMany({
+            where: {
+                schoolId: cls.schoolId,
+                currentClass: cls.name,
+                sectionId: null
+            }
+        });
+
+        if (studentsToLink.length > 0) {
+            // Find or create Section A for this class
+            let section = await prisma.section.findFirst({
+                where: { classId: cls.id }
+            });
+
+            if (!section) {
+                section = await prisma.section.create({
+                    data: { name: "Section A", classId: cls.id }
+                });
+            }
+
+            // Link students to this section
+            for (const student of studentsToLink) {
+                await prisma.student.update({
+                    where: { id: student.id },
+                    data: {
+                        sectionId: section.id,
+                        sectionName: section.name
+                    }
+                });
+            }
+        }
+
         const students = await prisma.student.findMany({
             where: { section: { classId } },
             orderBy: { rollNo: 'asc' }
         });
         return { success: true, data: students };
-    } catch (error) {
-        console.error("Error fetching students by class:", error);
+    } catch (error: any) {
+        console.error("Error fetching students by class:", error.message);
         return { success: false, error: "Failed to fetch students" };
     }
 }

@@ -93,6 +93,7 @@ export async function addTeacher(formData: any) {
           qualification: formData.qualification,
           presentAddress: formData.presentAddress,
           permanentAddress: formData.permanentAddress || null,
+          assignedClasses: Array.isArray(formData.assignedClasses) ? formData.assignedClasses : [],
           salary: formData.salary ? parseFloat(formData.salary.toString()) : null,
           schoolId: schoolId,
           userId: user.id
@@ -204,6 +205,7 @@ export async function updateTeacher(id: string, formData: any) {
           qualification: formData.qualification,
           presentAddress: formData.presentAddress,
           permanentAddress: formData.permanentAddress || null,
+          assignedClasses: Array.isArray(formData.assignedClasses) ? formData.assignedClasses : [],
           salary: formData.salary ? parseFloat(formData.salary.toString()) : null,
         }
       });

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     User,
     Mail,
@@ -13,28 +13,48 @@ import {
     Key,
     UserCircle,
     Calendar,
-    Briefcase
+    Briefcase,
+    Loader2
 } from 'lucide-react';
 import { TeacherHeader } from "../TeacherHeader";
+import { getTeacherDashboardData } from '@/app/actions/teacher/dashboard';
 
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("info");
+    const [data, setData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            const res = await getTeacherDashboardData();
+            if (res.success) {
+                setData(res.data);
+            }
+            setIsLoading(false);
+        };
+        fetchData();
+    }, []);
 
     const teacherData = {
-        name: "Abu Raihan",
-        id: "TR-2026-001",
-        designation: "Senior Mathematics Teacher",
-        department: "Science",
-        joiningDate: "Jan 15, 2022",
-        email: "abu.raihan@school.edu",
-        phone: "+880 1712-345678",
-        address: "Sector 07, Uttara, Dhaka-1230",
-        assignedClasses: [
-            { id: "C1", name: "Class X-A", subject: "Higher Mathematics" },
-            { id: "C2", name: "Class IX-B", subject: "General Science" },
-            { id: "C3", name: "Class X-C", subject: "Physics" },
-        ]
+        name: data?.profile?.name || "Teacher",
+        id: data?.profile?.teacherId || "N/A",
+        designation: data?.profile?.designation || "Faculty",
+        department: data?.profile?.department || "Department",
+        joiningDate: data?.profile?.joiningDate ? new Date(data.profile.joiningDate).toLocaleDateString() : "N/A",
+        email: data?.profile?.user?.email || "N/A",
+        phone: data?.profile?.phone || "N/A",
+        address: data?.profile?.presentAddress || "N/A",
+        assignedClasses: data?.assignedClasses || []
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 animate-fadeIn">
@@ -51,7 +71,7 @@ export default function ProfilePage() {
                     <div className="bg-bg-card rounded-[2.5rem] border border-border-light shadow-sm overflow-hidden text-center p-10">
                         <div className="relative inline-block mb-6">
                             <div className="w-32 h-32 bg-gradient-to-br from-primary to-indigo-600 rounded-[2.5rem] flex items-center justify-center text-white text-4xl font-black shadow-2xl shadow-primary/30">
-                                AR
+                                {teacherData.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                             </div>
                             <button className="absolute -bottom-2 -right-2 p-2.5 bg-white dark:bg-slate-800 border border-border-light rounded-2xl shadow-xl text-primary hover:scale-110 active:scale-95 transition-all">
                                 <Camera size={18} />
@@ -92,19 +112,23 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="bg-bg-card rounded-[2.5rem] border border-border-light shadow-sm p-8">
-                        <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mb-6 px-1">Active Classes</h3>
+                        <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mb-6 px-1">Assigned Classes</h3>
                         <div className="space-y-3">
-                            {teacherData.assignedClasses.map((cls) => (
-                                <div key={cls.id} className="flex items-center justify-between p-4 bg-bg-page/30 rounded-2xl border border-border-light/50 group hover:border-primary/30 transition-all">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                            <BookOpen size={14} />
+                            {teacherData.assignedClasses.length > 0 ? (
+                                teacherData.assignedClasses.map((cls: string, idx: number) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 bg-bg-page/30 rounded-2xl border border-border-light/50 group hover:border-primary/30 transition-all">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                                                <BookOpen size={14} />
+                                            </div>
+                                            <span className="text-xs font-black text-text-secondary uppercase">{cls}</span>
                                         </div>
-                                        <span className="text-xs font-black text-text-secondary uppercase">{cls.name}</span>
+                                        <span className="text-[10px] font-bold text-text-muted">Assigned</span>
                                     </div>
-                                    <span className="text-[10px] font-bold text-text-muted">{cls.subject}</span>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <p className="p-4 text-center text-xs text-text-muted">No classes assigned.</p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -135,13 +159,13 @@ export default function ProfilePage() {
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-2 flex items-center gap-2">
                                                 <User size={14} className="text-primary/60" /> Full Name
                                             </label>
-                                            <input type="text" defaultValue={teacherData.name} className="w-full px-6 py-4.5 bg-bg-page border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-text-secondary" />
+                                            <input type="text" readOnly defaultValue={teacherData.name} className="w-full px-6 py-4.5 bg-bg-page border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-text-secondary opacity-70 cursor-not-allowed" />
                                         </div>
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-2 flex items-center gap-2">
                                                 <Mail size={14} className="text-primary/60" /> Email Address
                                             </label>
-                                            <input type="email" defaultValue={teacherData.email} className="w-full px-6 py-4.5 bg-bg-page border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-text-secondary" />
+                                            <input type="email" readOnly defaultValue={teacherData.email} className="w-full px-6 py-4.5 bg-bg-page border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-text-secondary opacity-70 cursor-not-allowed" />
                                         </div>
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-2 flex items-center gap-2">
