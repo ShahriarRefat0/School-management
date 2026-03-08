@@ -81,7 +81,7 @@ export default function StudentForm() {
                             bloodGroup: d.bloodGroup || "",
                             religion: d.religion || "",
                             currentClass: d.currentClass || "",
-                            section: d.section || "",
+                            section: d.sectionName || "",
                             rollNo: d.rollNo ? String(d.rollNo) : "",
                             session: d.session || "",
                             fatherName: d.fatherName || "",
@@ -310,7 +310,12 @@ export default function StudentForm() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Current Class *</label>
-                                    <Input name="currentClass" value={form.currentClass} onChange={handleChange} required className="h-14 rounded-2xl bg-bg-page/40 font-bold" />
+                                    <select name="currentClass" value={form.currentClass} onChange={handleChange} required className="w-full h-14 rounded-2xl border-2 border-border-light bg-bg-page/40 px-5 text-sm font-bold outline-none">
+                                        <option value="">— Select Class —</option>
+                                        {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                                            <option key={n} value={`Class ${n}`}>Class {n}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Section / Group *</label>
