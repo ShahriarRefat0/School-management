@@ -43,24 +43,25 @@ const revenueData = [
 
 
 export default function SuperAdminOverview() {
-
-  
-const [schoolCount, setSchoolCount] = useState<number>(0)
-
-useEffect(() => {
-  async function loadSchools() {
-    const res = await getAllSchools()
-
-    if (res.success) {
-      setSchoolCount(res.data.length)
-    }
-  }
-
-  loadSchools()
-}, [])
-
+  const [schoolCount, setSchoolCount] = useState<number>(0)
+  const [schools, setSchools] = useState<any[]>([])
   const { loading } = useRoleGuard('super_admin')
-  if (loading) return <p>Super Admin Dashboard id Loading...</p>
+
+  useEffect(() => {
+    async function loadSchools() {
+      const res = await getAllSchools()
+
+      if (res.success) {
+        setSchools(res.data)
+        setSchoolCount(res.data.length)
+      }
+    }
+
+    loadSchools()
+  }, [])
+
+  if (loading) return <p>Super Admin Dashboard is Loading...</p>
+
   const stats = [
     {
       title: "Total Schools",
@@ -75,38 +76,23 @@ useEffect(() => {
     { title: "Expiring Soon", value: "08", icon: AlertTriangle, trend: "Requires Action", up: false, subtitle: "Next 7 Days" },
   ]
 
-  const [schools, setSchools] = useState<any[]>([])
-
-  useEffect(() => {
-  async function loadSchools() {
-    const res = await getAllSchools()
-
-    if (res.success) {
-      setSchools(res.data)
-      setSchoolCount(res.data.length)
+  const planDistribution = [
+    {
+      name: "Basic",
+      value: schools.filter(s => s.plan === "basic").length,
+      color: "#3b82f6"
+    },
+    {
+      name: "Premium",
+      value: schools.filter(s => s.plan === "premium").length,
+      color: "#8b5cf6"
+    },
+    {
+      name: "Enterprise",
+      value: schools.filter(s => s.plan === "enterprise").length,
+      color: "#10b981"
     }
-  }
-
-  loadSchools()
-}, [])
-
- const planDistribution = [
-  {
-    name: "Basic",
-    value: schools.filter(s => s.plan === "basic").length,
-    color: "#3b82f6"
-  },
-  {
-    name: "Premium",
-    value: schools.filter(s => s.plan === "premium").length,
-    color: "#8b5cf6"
-  },
-  {
-    name: "Enterprise",
-    value: schools.filter(s => s.plan === "enterprise").length,
-    color: "#10b981"
-  }
-]
+  ]
 
   return (
     <div className="space-y-8 animate-fade-in-up">
