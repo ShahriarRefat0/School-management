@@ -75,25 +75,37 @@ useEffect(() => {
     { title: "Expiring Soon", value: "08", icon: AlertTriangle, trend: "Requires Action", up: false, subtitle: "Next 7 Days" },
   ]
 
-//   const [schools, setSchools] = useState<any[]>([])
+  const [schools, setSchools] = useState<any[]>([])
 
-//   useEffect(() => {
-//   async function loadSchools() {
-//     const res = await getAllSchools()
+  useEffect(() => {
+  async function loadSchools() {
+    const res = await getAllSchools()
 
-//     if (res.success) {
-//       setSchools(res.data)
-//       setSchoolCount(res.data.length)
-//     }
-//   }
+    if (res.success) {
+      setSchools(res.data)
+      setSchoolCount(res.data.length)
+    }
+  }
 
-//   loadSchools()
-// }, [])
+  loadSchools()
+}, [])
 
-  const planDistribution = [
-  { name: 'Basic', value: 45, color: '#3b82f6' },
-  { name: 'Pro', value: 30, color: '#8b5cf6' },
-  { name: 'Enterprise', value: 15, color: '#10b981' },
+ const planDistribution = [
+  {
+    name: "Basic",
+    value: schools.filter(s => s.plan === "basic").length,
+    color: "#3b82f6"
+  },
+  {
+    name: "Premium",
+    value: schools.filter(s => s.plan === "premium").length,
+    color: "#8b5cf6"
+  },
+  {
+    name: "Enterprise",
+    value: schools.filter(s => s.plan === "enterprise").length,
+    color: "#10b981"
+  }
 ]
 
   return (
