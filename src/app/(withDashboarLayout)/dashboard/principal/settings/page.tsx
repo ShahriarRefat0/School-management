@@ -1,171 +1,113 @@
 "use client";
 
-import { useState } from "react";
-import { User, Bell } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Loader2 } from "lucide-react";
+import Swal from "sweetalert2";
+import { getMyProfileData, updateMyProfileData } from "@/app/actions/principle/profile"; // update function টি ইমপোর্ট করুন
 
 export default function SettingsPage() {
-  const [notifications, setNotifications] = useState({
-    weeklyReports: true,
-    pendingApprovals: true,
-    attendanceAlerts: false,
-    financeUpdates: true,
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false); // আপডেটিং স্টেট
+  const [profile, setProfile] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    role: "",
   });
 
+  useEffect(() => {
+    const loadProfile = async () => {
+      setLoading(true);
+      const res = await getMyProfileData();
+      
+      if (res.success && res.data) {
+        setProfile({
+          fullName: res.data.name || "",
+          email: res.data.email || "",
+          phone: res.data.phone || "",
+          role: res.data.role || "",
+        });
+      }
+      setLoading(false);
+    };
+    loadProfile();
+  }, []);
+
+  // আপডেট করার ফাংশন
+  const handleUpdate = async () => {
+    setUpdating(true);
+    const res = await updateMyProfileData({
+      fullName: profile.fullName,
+      phone: profile.phone,
+    });
+    setUpdating(false);
+
+    if (res.success) {
+      Swal.fire("Success!", res.message, "success");
+    } else {
+      Swal.fire("Error!", res.error, "error");
+    }
+  };
+
+  if (loading) {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#050B18]">
+            <Loader2 className="animate-spin text-purple-600" size={40} />
+        </div>
+    );
+  }
+
   return (
-    <div
-      className="
-        min-h-screen p-6
-        bg-gray-50 text-gray-900
-        dark:bg-gradient-to-br dark:from-[#050B18] dark:to-[#020617] dark:text-white
-      "
-    >
-      {/* Profile Information */}
-      <div
-        className="
-          rounded-2xl p-6 mb-8
-          bg-white border border-gray-200
-          dark:bg-white/5 dark:border-white/10
-        "
-      >
-        <div className="flex items-center gap-2 mb-6">
-          <User className="w-5 h-5 text-gray-400" />
-          <h2 className="text-lg font-semibold">Profile Information</h2>
-        </div>
+    <div className="min-h-screen p-6 bg-gray-50 dark:bg-gradient-to-br dark:from-[#050B18] dark:to-[#020617] dark:text-white">
+        <div className="rounded-2xl p-6 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
+            <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+                <User size={20} /> My Profile Information
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input 
+                  label="Full Name" 
+                  name="fullName" 
+                  value={profile.fullName} 
+                  onChange={(e) => setProfile({...profile, fullName: e.target.value})} 
+                />
+                <Input label="Email" value={profile.email} disabled />
+                <Input 
+                  label="Phone" 
+                  name="phone" 
+                  value={profile.phone} 
+                  onChange={(e) => setProfile({...profile, phone: e.target.value})} 
+                />
+                <Input label="Role" value={profile.role} disabled />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input label="Full Name" value="Dr. Ramesh Gupta" />
-          <Input label="Email" value="principal@edumanage.in" />
-          <Input label="Phone" value="+91 98765 43210" />
-          <Input label="Role" value="Principal" disabled />
+            <button 
+                onClick={handleUpdate} 
+                disabled={updating}
+                className="mt-6 px-8 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition flex items-center gap-2 disabled:opacity-50"
+            >
+                {updating ? <Loader2 className="animate-spin" size={18} /> : null}
+                {updating ? "Updating..." : "Update Profile"}
+            </button>
         </div>
-
-        <button
-          className="
-            mt-6 px-5 py-2.5 rounded-xl font-medium transition
-            bg-purple-600 text-white hover:bg-purple-700
-          "
-        >
-          Save Changes
-        </button>
-      </div>
-
-      {/* Notification Preferences */}
-      <div
-        className="
-          rounded-2xl p-6
-          bg-white border border-gray-200
-          dark:bg-white/5 dark:border-white/10
-        "
-      >
-        <div className="flex items-center gap-2 mb-6">
-          <Bell className="w-5 h-5 text-gray-400" />
-          <h2 className="text-lg font-semibold">Notification Preferences</h2>
-        </div>
-
-        <div className="space-y-5">
-          <Toggle
-            label="Email me weekly reports"
-            enabled={notifications.weeklyReports}
-            onChange={() =>
-              setNotifications({
-                ...notifications,
-                weeklyReports: !notifications.weeklyReports,
-              })
-            }
-          />
-          <Toggle
-            label="Alert on pending approvals"
-            enabled={notifications.pendingApprovals}
-            onChange={() =>
-              setNotifications({
-                ...notifications,
-                pendingApprovals: !notifications.pendingApprovals,
-              })
-            }
-          />
-          <Toggle
-            label="Attendance anomaly alerts"
-            enabled={notifications.attendanceAlerts}
-            onChange={() =>
-              setNotifications({
-                ...notifications,
-                attendanceAlerts: !notifications.attendanceAlerts,
-              })
-            }
-          />
-          <Toggle
-            label="Finance collection updates"
-            enabled={notifications.financeUpdates}
-            onChange={() =>
-              setNotifications({
-                ...notifications,
-                financeUpdates: !notifications.financeUpdates,
-              })
-            }
-          />
-        </div>
-      </div>
     </div>
   );
 }
 
-/* ---------------- Components ---------------- */
-
-function Input({
-  label,
-  value,
-  disabled = false,
-}: {
-  label: string;
-  value: string;
-  disabled?: boolean;
-}) {
+// Input component...
+function Input({ label, value, name, disabled = false, onChange }: { label: string; value: string; name?: string; disabled?: boolean; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; }) {
   return (
     <div>
-      <label className="block text-sm mb-1 text-gray-500 dark:text-gray-400">
+      <label className="block text-[10px] uppercase font-black tracking-widest mb-2 text-gray-500 dark:text-gray-400 ml-1">
         {label}
       </label>
       <input
+        name={name}
         value={value}
+        onChange={onChange}
         disabled={disabled}
-        className="
-          w-full rounded-xl px-4 py-3 text-sm outline-none transition
-          bg-gray-100 border border-gray-200
-          dark:bg-white/10 dark:border-white/10
-          disabled:opacity-60
-        "
-        readOnly
+        className="w-full rounded-xl px-4 py-3 text-sm outline-none transition font-medium bg-gray-100 border border-gray-200 focus:border-purple-500 dark:bg-white/10 dark:border-white/10 dark:focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
       />
-    </div>
-  );
-}
-
-function Toggle({
-  label,
-  enabled,
-  onChange,
-}: {
-  label: string;
-  enabled: boolean;
-  onChange: () => void;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm">{label}</span>
-      <button
-        onClick={onChange}
-        className={`
-          w-12 h-6 rounded-full transition relative
-          ${enabled ? "bg-indigo-500" : "bg-gray-300 dark:bg-white/20"}
-        `}
-      >
-        <span
-          className={`
-            absolute top-0.5 h-5 w-5 rounded-full bg-white transition
-            ${enabled ? "right-0.5" : "left-0.5"}
-          `}
-        />
-      </button>
     </div>
   );
 }
