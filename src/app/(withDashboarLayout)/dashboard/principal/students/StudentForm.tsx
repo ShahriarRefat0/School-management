@@ -346,6 +346,10 @@ export default function StudentForm() {
                                     <Input name="fatherName" value={form.fatherName} onChange={handleChange} required className="h-14 rounded-2xl bg-bg-page/40 font-bold" />
                                 </div>
                                 <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Father's Name *</label>
+                                    <Input name="email" value={form.email} onChange={handleChange} required className="h-14 rounded-2xl bg-bg-page/40 font-bold" />
+                                </div>
+                                <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Mother's Name *</label>
                                     <Input name="motherName" value={form.motherName} onChange={handleChange} required className="h-14 rounded-2xl bg-bg-page/40 font-bold" />
                                 </div>
