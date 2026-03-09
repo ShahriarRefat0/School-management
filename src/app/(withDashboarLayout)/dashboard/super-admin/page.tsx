@@ -1,13 +1,13 @@
 "use client"
-
-import React from 'react'
-import { 
-  Building2, 
-  Users, 
-  Wallet, 
-  AlertTriangle, 
-  TrendingUp, 
-  ArrowUpRight, 
+import { getAllSchools } from "@/app/actions/school"
+import React, { useEffect, useState } from 'react'
+import {
+  Building2,
+  Users,
+  Wallet,
+  AlertTriangle,
+  TrendingUp,
+  ArrowUpRight,
   Activity,
   ArrowDownRight,
   ShieldCheck,
@@ -15,19 +15,20 @@ import {
   CreditCard,
   Wrench
 } from 'lucide-react'
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  BarChart, 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
   Bar,
   Cell
 } from 'recharts'
 import { useRoleGuard } from '@/hooks/useRoleGurad'
+
 
 // Mock Data for Graph
 const revenueData = [
@@ -39,25 +40,65 @@ const revenueData = [
   { name: 'Jun', amount: 10000 },
 ]
 
-const planDistribution = [
-  { name: 'Basic', value: 45, color: '#3b82f6' },
-  { name: 'Pro', value: 30, color: '#8b5cf6' },
-  { name: 'Enterprise', value: 15, color: '#10b981' },
-]
+
 
 export default function SuperAdminOverview() {
-  const {loading} = useRoleGuard('super_admin')
+
+  
+const [schoolCount, setSchoolCount] = useState<number>(0)
+
+useEffect(() => {
+  async function loadSchools() {
+    const res = await getAllSchools()
+
+    if (res.success) {
+      setSchoolCount(res.data.length)
+    }
+  }
+
+  loadSchools()
+}, [])
+
+  const { loading } = useRoleGuard('super_admin')
   if (loading) return <p>Super Admin Dashboard id Loading...</p>
   const stats = [
-    { title: "Total Schools", value: "128", icon: Building2, trend: "+12%", up: true, subtitle: "Registered Schools" },
+    {
+      title: "Total Schools",
+      value: schoolCount,
+      icon: Building2,
+      trend: "+12%",
+      up: true,
+      subtitle: "Registered Schools"
+    },
     { title: "Active Subscriptions", value: "115", icon: ShieldCheck, trend: "+5%", up: true, subtitle: "Current Paying Tenants" },
     { title: "Monthly Revenue", value: "৳4.50L", icon: Wallet, trend: "+18%", up: true, subtitle: "Total Earnings" },
     { title: "Expiring Soon", value: "08", icon: AlertTriangle, trend: "Requires Action", up: false, subtitle: "Next 7 Days" },
   ]
 
+//   const [schools, setSchools] = useState<any[]>([])
+
+//   useEffect(() => {
+//   async function loadSchools() {
+//     const res = await getAllSchools()
+
+//     if (res.success) {
+//       setSchools(res.data)
+//       setSchoolCount(res.data.length)
+//     }
+//   }
+
+//   loadSchools()
+// }, [])
+
+  const planDistribution = [
+  { name: 'Basic', value: 45, color: '#3b82f6' },
+  { name: 'Pro', value: 30, color: '#8b5cf6' },
+  { name: 'Enterprise', value: 15, color: '#10b981' },
+]
+
   return (
     <div className="space-y-8 animate-fade-in-up">
-      
+
       {/* ১. হেডার সেকশন */}
       <div className="flex  flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -82,7 +123,7 @@ export default function SuperAdminOverview() {
                 <stat.icon className="h-6 w-6 text-[var(--color-primary)]" />
               </div>
               <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full ${stat.up ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                {stat.up ? <ArrowUpRight size={12}/> : <ArrowDownRight size={12}/>}
+                {stat.up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                 {stat.trend}
               </div>
             </div>
@@ -95,7 +136,7 @@ export default function SuperAdminOverview() {
 
       {/* ৩. গ্রাফ সেকশন */}
       <div className="grid  grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* রেভিনিউ চার্ট */}
         <div className="lg:col-span-2 bg-[var(--color-bg-card)] p-6 rounded-2xl border border-[var(--color-border-light)] shadow-sm">
           <div className="flex justify-between items-center mb-6">
@@ -112,14 +153,14 @@ export default function SuperAdminOverview() {
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" vertical={false} />
                 <XAxis dataKey="name" stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border-light)', borderRadius: '12px' }}
                   itemStyle={{ color: 'var(--color-text-primary)', fontWeight: 'bold' }}
                 />
@@ -136,9 +177,9 @@ export default function SuperAdminOverview() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={planDistribution}>
                 <XAxis dataKey="name" stroke="var(--color-text-muted)" fontSize={12} axisLine={false} tickLine={false} />
-                <Tooltip 
-                   cursor={{fill: 'transparent'}}
-                   contentStyle={{ backgroundColor: 'var(--color-bg-card)', borderRadius: '12px' }}
+                <Tooltip
+                  cursor={{ fill: 'transparent' }}
+                  contentStyle={{ backgroundColor: 'var(--color-bg-card)', borderRadius: '12px' }}
                 />
                 <Bar dataKey="value" radius={[10, 10, 0, 0]}>
                   {planDistribution.map((entry, index) => (
@@ -152,7 +193,7 @@ export default function SuperAdminOverview() {
             {planDistribution.map((plan, i) => (
               <div key={i} className="flex justify-between items-center text-xs font-bold">
                 <span className="flex items-center gap-2 text-[var(--color-text-muted)]">
-                  <div className="w-2 h-2 rounded-full" style={{backgroundColor: plan.color}} /> {plan.name}
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: plan.color }} /> {plan.name}
                 </span>
                 <span className="text-[var(--color-text-primary)]">{plan.value}%</span>
               </div>
