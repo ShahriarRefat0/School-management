@@ -153,14 +153,14 @@ model Teacher {
 model User {
   id             String          @id @default(uuid())
   authUserId     String          @unique
-  schoolId       String
+  schoolId       String?
   role           Role
   status         UserStatus      @default(active)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   email          String          @unique
   name           String
-  school         School          @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
+  school         School?     @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
   student        Student?        @relation("UserStudent")
   teacher        Teacher?        @relation("UserTeacher")
   announcements  Announcement[]  @relation("AuthorAnnouncements")
@@ -295,6 +295,8 @@ model Payment {
   @@index([schoolId])
   @@index([studentId])
 }
+
+
 enum AttendanceStatus {
   PRESENT
   ABSENT
