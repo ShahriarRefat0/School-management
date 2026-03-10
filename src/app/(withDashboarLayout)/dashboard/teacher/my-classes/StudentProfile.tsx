@@ -9,8 +9,10 @@ import {
     XCircle,
     Clock,
     TrendingUp,
-    ArrowLeft
+    ArrowLeft,
+    Loader2
 } from 'lucide-react';
+import { getStudentDetail } from '@/app/actions/teacher/classes';
 
 interface StudentProfileProps {
     student: {
@@ -25,24 +27,46 @@ interface StudentProfileProps {
 }
 
 export default function StudentProfile({ student, onBack }: StudentProfileProps) {
-    const attendanceHistory = [
-        { date: "Feb 23, 2026", status: "present" },
-        { date: "Feb 22, 2026", status: "present" },
-        { date: "Feb 21, 2026", status: "late" },
-        { date: "Feb 20, 2026", status: "absent" },
-        { date: "Feb 19, 2026", status: "present" },
-    ];
+    const [fullData, setFullData] = React.useState<any>(null);
+    const [isLoading, setIsLoading] = React.useState(true);
 
-    const examResults = [
-        { exam: "Class Test 2", subject: "Math", marks: "92/100", grade: "A+" },
-        { exam: "Class Test 1", subject: "Math", marks: "88/100", grade: "A" },
-        { exam: "Monthly Assesment", subject: "Math", marks: "45/50", grade: "A+" },
-    ];
+    React.useEffect(() => {
+        const fetchDetails = async () => {
+            setIsLoading(true);
+            const res = await getStudentDetail(student.id);
+            if (res.success) {
+                setFullData(res.data);
+            }
+            setIsLoading(false);
+        };
+        fetchDetails();
+    }, [student.id]);
 
-    const feedbacks = [
-        { date: "Feb 15, 2026", note: "Shows great improvement in calculus.", teacher: "Abu Raihan" },
-        { date: "Jan 10, 2026", note: "Very active in class discussions.", teacher: "Abu Raihan" },
-    ];
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+        );
+    }
+
+    const attendanceHistory = fullData?.attendance?.map((a: any) => ({
+        date: new Date(a.date).toLocaleDateString(),
+        status: a.status.toLowerCase()
+    })) || [];
+
+    const examResults = fullData?.results?.map((r: any) => ({
+        exam: r.exam?.name || "Assessment",
+        subject: r.subjectRef?.name || "General",
+        marks: `${r.marks}/100`,
+        grade: r.marks >= 80 ? "A+" : r.marks >= 70 ? "A" : "B"
+    })) || [];
+
+    const feedbacks = fullData?.feedbacks?.map((f: any) => ({
+        date: new Date(f.createdAt).toLocaleDateString(),
+        note: f.comment,
+        teacher: "Teacher" // We could fetch teacher name if info available
+    })) || [];
 
     return (
         <div className="space-y-6 animate-fadeIn">

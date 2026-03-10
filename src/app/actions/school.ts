@@ -221,3 +221,15 @@ export async function deleteSchool(id: string) {
     };
   }
 }
+
+// plan chart 
+export async function getPlanStats() {
+  const plans = await prisma.school.groupBy({
+    by: ["plan"],
+    _count: {
+      plan: true
+    }
+  })
+
+  return plans
+}

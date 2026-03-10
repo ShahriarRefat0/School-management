@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { TeacherHeader } from "../../TeacherHeader";
 import StudentProfile from "../StudentProfile";
+import { getClassStudents } from '@/app/actions/teacher/classes';
+import { Loader2 } from 'lucide-react';
 
 interface Student {
     id: string;
@@ -31,25 +33,45 @@ export default function ClassDetailPage() {
     const classId = params.classId as string;
 
     const [activeTab, setActiveTab] = useState<'students' | 'attendance' | 'results' | 'assignments'>('students');
-    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+    const [selectedStudent, setSelectedStudent] = useState<any>(null);
+    const [data, setData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Mock Data
-    const classes = {
-        "C1": { name: "Class X - Section A", subject: "Higher Mathematics" },
-        "C2": { name: "Class IX - Section B", subject: "General Science" },
-        "C3": { name: "Class X - Section C", subject: "Higher Mathematics" },
-        "C4": { name: "Class VIII - Section A", subject: "ICT" },
+    React.useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            const res = await getClassStudents(classId);
+            if (res.success) {
+                setData(res.data);
+            }
+            setIsLoading(false);
+        };
+        fetchData();
+    }, [classId]);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+        );
+    }
+
+    const classInfo = {
+        name: data?.name || "Unknown Class",
+        subject: data?.subjects?.[0]?.name || "General"
     };
 
-    const classInfo = classes[classId as keyof typeof classes] || { name: "Unknown Class", subject: "N/A" };
-
-    const students: Student[] = [
-        { id: "S101", name: "Rahim Ahmed", roll: "101", attendance: "98%", performance: "Excellent", grade: "A+" },
-        { id: "S102", name: "Fatima Noor", roll: "102", attendance: "95%", performance: "Very Good", grade: "A" },
-        { id: "S103", name: "Arif Hossein", roll: "103", attendance: "85%", performance: "Good", grade: "A-" },
-        { id: "S104", name: "Sumaiya Akhter", roll: "104", attendance: "92%", performance: "Good", grade: "B+" },
-        { id: "S105", name: "Karim Ullah", roll: "105", attendance: "78%", performance: "Needs Improvement", grade: "C" },
-    ];
+    const studentList = data?.students?.map((s: any) => ({
+        id: s.id,
+        name: `${s.firstName} ${s.lastName}`,
+        roll: s.rollNo?.toString() || "N/A",
+        attendance: s.attendance?.length > 0
+            ? `${Math.round((s.attendance.filter((a: any) => a.status === 'PRESENT').length / s.attendance.length) * 100)}%`
+            : "0%",
+        performance: "Good", // Derived from results if available
+        grade: s.results?.[0]?.marks ? (s.results[0].marks >= 80 ? "A+" : "A") : "N/A"
+    })) || [];
 
     if (selectedStudent) {
         return <StudentProfile student={selectedStudent} onBack={() => setSelectedStudent(null)} />;
@@ -105,7 +127,7 @@ export default function ClassDetailPage() {
                     <div className="p-6 md:p-8 border-b border-border-light flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <h2 className="text-xl font-bold text-text-primary">Student Directory</h2>
-                            <p className="text-xs font-medium text-text-muted mt-1 uppercase tracking-wider">Total {students.length} Students Enrolled</p>
+                            <p className="text-xs font-medium text-text-muted mt-1 uppercase tracking-wider">Total {studentList.length} Students Enrolled</p>
                         </div>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
@@ -129,7 +151,7 @@ export default function ClassDetailPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-light/50">
-                                {students.map((student) => (
+                                {studentList.map((student: any) => (
                                     <tr key={student.id} className="group hover:bg-bg-page/40 transition-all duration-200">
                                         <td className="py-6 px-8">
                                             <span className="text-sm font-black text-text-muted tabular-nums">{student.roll}</span>
@@ -137,7 +159,7 @@ export default function ClassDetailPage() {
                                         <td className="py-6 px-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold text-xs">
-                                                    {student.name.split(' ').map(n => n[0]).join('')}
+                                                    {student.name.split(' ').map((n: string) => n[0]).join('')}
                                                 </div>
                                                 <span className="font-bold text-text-primary group-hover:text-primary transition-colors">{student.name}</span>
                                             </div>
