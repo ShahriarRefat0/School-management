@@ -27,9 +27,9 @@ export default function MyClassesPage() {
         fetchData();
     }, []);
 
-    const classes = data?.assignedClasses?.map((cls: string, idx: number) => ({
-        id: `C${idx}`,
-        name: cls,
+    const classes = data?.assignedClasses?.map((cls: any) => ({
+        id: cls.id,
+        name: cls.name,
         subject: "General",
         studentsCount: data?.stats?.totalStudents || 0,
         room: "N/A",
@@ -81,7 +81,9 @@ export default function MyClassesPage() {
                                             <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                                                 <BookOpen size={20} />
                                             </div>
-                                            <span className="font-bold text-text-primary group-hover:text-primary transition-colors">{cls.name.split(' - ')[0]}</span>
+                                            <Link href={`/dashboard/teacher/my-classes/${cls.id}`} className="font-bold text-text-primary group-hover:text-primary transition-colors">
+                                                {cls.name.split(' - ')[0]}
+                                            </Link>
                                         </div>
                                     </td>
                                     <td className="py-6 px-4">
@@ -98,12 +100,18 @@ export default function MyClassesPage() {
                                             <span className="text-sm font-bold text-text-primary tabular-nums">Many</span>
                                         </div>
                                     </td>
-                                    <td className="py-6 px-8 text-right">
+                                    <td className="py-6 px-8 text-right flex items-center justify-end gap-3">
+                                        <Link
+                                            href={`/dashboard/teacher/my-classes/${cls.id}`}
+                                            className="px-4 py-2 bg-text-primary/5 text-text-primary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-text-primary hover:text-white transition-all active:scale-95"
+                                        >
+                                            View Details
+                                        </Link>
                                         <Link
                                             href={`/dashboard/teacher/attendance`}
                                             className="px-5 py-2.5 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all active:scale-95 inline-flex items-center gap-2"
                                         >
-                                            View Attendance <ChevronRight size={14} />
+                                            Attendance <ChevronRight size={14} />
                                         </Link>
                                     </td>
                                 </tr>
@@ -111,12 +119,11 @@ export default function MyClassesPage() {
                         </tbody>
                     </table>
 
-                    {/* Mobile View */}
                     <div className="md:hidden p-4 space-y-4">
                         {classes.map((cls: any) => (
                             <Link
                                 key={cls.id}
-                                href={`/dashboard/teacher/attendance`}
+                                href={`/dashboard/teacher/my-classes/${cls.id}`}
                                 className="block bg-bg-page/40 p-4 rounded-2xl border border-border-light/50 space-y-4 active:scale-[0.98] transition-all"
                             >
                                 <div className="flex items-center justify-between">

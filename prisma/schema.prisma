@@ -29,6 +29,7 @@ model School {
   exams            Exam[]
   fees             Fee[]
   payments         Payment[]
+  feedbacks        Feedback[]
   results          Result[]
   studyMaterials   StudyMaterial[]
   subjects         Subject[]
@@ -90,6 +91,7 @@ model Student {
   userId           String       @unique
   attendance       Attendance[]
   parents          Parent[]
+  feedbacks        Feedback[]
   payments         Payment[]
   results          Result[]
   school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
@@ -151,6 +153,7 @@ model Teacher {
   assignedClasses  String[]
   attendances      Attendance[]
   schedules        ClassSchedule[]
+  feedbacks        Feedback[]
   results          Result[]
   studyMaterials   StudyMaterial[]
   subjects         TeacherSubject[]
@@ -426,4 +429,24 @@ enum Role {
 enum UserStatus {
   active
   blocked
+}
+
+model Feedback {
+  id            String   @id @default(cuid())
+  academic      Int      @default(0)
+  behavior      Int      @default(0)
+  participation Int      @default(0)
+  comment       String?
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacherId     String
+  teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([teacherId])
+  @@index([schoolId])
 }
