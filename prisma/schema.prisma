@@ -166,7 +166,7 @@ model Teacher {
 model User {
   id             String          @id @default(uuid())
   authUserId     String          @unique
-  schoolId       String
+  schoolId       String?
   role           Role
   status         UserStatus      @default(active)
   createdAt      DateTime        @default(now())
