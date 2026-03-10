@@ -37,6 +37,7 @@ model School {
   exams            Exam[]
   fees             Fee[]
   payments         Payment[]
+  expenses         Expense[]
 }
 
 model Announcement {
@@ -400,6 +401,24 @@ model Parent {
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+}
+
+model Expense {
+  id            String   @id @default(cuid())
+  title         String
+  category      String
+  amount        Float
+  transactionAt DateTime
+  note          String?
+  status        String   @default("Paid")
+  attachmentUrl String?
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdById   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([schoolId, transactionAt])
 }
 
 enum AttendanceStatus {
