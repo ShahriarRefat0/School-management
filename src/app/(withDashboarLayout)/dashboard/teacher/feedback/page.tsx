@@ -15,15 +15,23 @@ import {
 } from 'lucide-react';
 import { getTeacherDashboardData } from '@/app/actions/teacher/dashboard';
 import { getStudentsByClass } from '@/app/actions/teacher/results';
+import { addFeedback } from '@/app/actions/teacher/feedback';
 import toast from 'react-hot-toast';
 
 export default function FeedbackPage() {
     const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
-    const [assignedClasses, setAssignedClasses] = useState<string[]>([]);
+    const [assignedClasses, setAssignedClasses] = useState<any[]>([]);
     const [selectedClass, setSelectedClass] = useState<string>("");
     const [students, setStudents] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isFetchingStudents, setIsFetchingStudents] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Feedback states
+    const [academicRating, setAcademicRating] = useState(0);
+    const [behaviorRating, setBehaviorRating] = useState(0);
+    const [participationRating, setParticipationRating] = useState(0);
+    const [comment, setComment] = useState("");
 
     useEffect(() => {
         const fetchClasses = async () => {
@@ -32,7 +40,7 @@ export default function FeedbackPage() {
             if (res.success) {
                 setAssignedClasses(res.data.assignedClasses || []);
                 if (res.data.assignedClasses?.length > 0) {
-                    setSelectedClass(res.data.assignedClasses[0]);
+                    setSelectedClass(res.data.assignedClasses[0].id);
                 }
             }
             setIsLoading(false);
@@ -46,9 +54,9 @@ export default function FeedbackPage() {
         }
     }, [selectedClass]);
 
-    const fetchStudents = async (className: string) => {
+    const fetchStudents = async (classId: string) => {
         setIsFetchingStudents(true);
-        const res = await getStudentsByClass(className);
+        const res = await getStudentsByClass(classId);
         if (res.success) {
             setStudents(res.data || []);
         } else {
@@ -58,6 +66,35 @@ export default function FeedbackPage() {
     };
 
     const currentStudent = students.find(s => s.id === selectedStudent);
+
+    const handleSubmit = async () => {
+        if (!selectedStudent) return;
+        if (academicRating === 0 || behaviorRating === 0 || participationRating === 0) {
+            toast.error("Please provide ratings for all categories.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        const res = await addFeedback({
+            studentId: selectedStudent,
+            academic: academicRating,
+            behavior: behaviorRating,
+            participation: participationRating,
+            comment: comment
+        });
+
+        if (res.success) {
+            toast.success("Feedback submitted successfully!");
+            // Reset form
+            setAcademicRating(0);
+            setBehaviorRating(0);
+            setParticipationRating(0);
+            setComment("");
+        } else {
+            toast.error(res.error || "Failed to submit feedback");
+        }
+        setIsSubmitting(false);
+    };
 
     if (isLoading) {
         return (
@@ -81,7 +118,7 @@ export default function FeedbackPage() {
                         className="px-4 py-2 bg-bg-card border border-border-light rounded-xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer text-text-secondary"
                     >
                         {assignedClasses.map((cls, idx) => (
-                            <option key={idx} value={cls}>{cls}</option>
+                            <option key={idx} value={cls.id}>{cls.name}</option>
                         ))}
                     </select>
                 }
@@ -138,7 +175,7 @@ export default function FeedbackPage() {
                                         <span className="px-2 py-0.5 bg-primary/5 text-primary rounded-md text-[10px] font-black uppercase tracking-widest">
                                             Roll: {currentStudent.rollNo}
                                         </span>
-                                        <span className="text-xs text-text-muted font-medium">Providing feedback as Senior Teacher</span>
+                                        <span className="text-xs text-text-muted font-medium">Providing feedback for performance evaluation</span>
                                     </div>
                                 </div>
                             </div>
@@ -150,8 +187,11 @@ export default function FeedbackPage() {
                                     </label>
                                     <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <button key={s} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-text-muted hover:bg-bg-card">
-                                                <Star size={18} />
+                                            <button
+                                                key={s}
+                                                onClick={() => setAcademicRating(s)}
+                                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${academicRating >= s ? 'text-amber-500 scale-110' : 'text-text-muted hover:bg-bg-card'}`}>
+                                                <Star size={18} fill={academicRating >= s ? "currentColor" : "none"} />
                                             </button>
                                         ))}
                                     </div>
@@ -163,8 +203,11 @@ export default function FeedbackPage() {
                                     </label>
                                     <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <button key={s} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-text-muted hover:bg-bg-card">
-                                                <Star size={18} />
+                                            <button
+                                                key={s}
+                                                onClick={() => setBehaviorRating(s)}
+                                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${behaviorRating >= s ? 'text-emerald-500 scale-110' : 'text-text-muted hover:bg-bg-card'}`}>
+                                                <Star size={18} fill={behaviorRating >= s ? "currentColor" : "none"} />
                                             </button>
                                         ))}
                                     </div>
@@ -176,8 +219,11 @@ export default function FeedbackPage() {
                                     </label>
                                     <div className="flex bg-bg-page border border-border-light p-2 rounded-2xl justify-between">
                                         {[1, 2, 3, 4, 5].map((s) => (
-                                            <button key={s} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all text-text-muted hover:bg-bg-card">
-                                                <Star size={18} />
+                                            <button
+                                                key={s}
+                                                onClick={() => setParticipationRating(s)}
+                                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${participationRating >= s ? 'text-indigo-500 scale-110' : 'text-text-muted hover:bg-bg-card'}`}>
+                                                <Star size={18} fill={participationRating >= s ? "currentColor" : "none"} />
                                             </button>
                                         ))}
                                     </div>
@@ -191,6 +237,8 @@ export default function FeedbackPage() {
                                 <textarea
                                     className="w-full bg-bg-page border-2 border-border-light rounded-[2rem] p-6 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary min-h-[180px] resize-none shadow-inner transition-all"
                                     placeholder="Provide detailed feedback for the student and parents..."
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
                                 ></textarea>
                             </div>
 
@@ -200,9 +248,12 @@ export default function FeedbackPage() {
                                     Transparency: Visible to Parents
                                 </div>
                                 <button
-                                    className="w-full sm:w-auto bg-primary text-white px-10 py-4.5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-primary/30 hover:bg-primary-dark hover:scale-105 transition-all active:scale-95 flex items-center justify-center gap-3"
+                                    onClick={handleSubmit}
+                                    disabled={isSubmitting}
+                                    className="w-full sm:w-auto bg-primary text-white px-10 py-4.5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-primary/30 hover:bg-primary-dark hover:scale-105 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:scale-100"
                                 >
-                                    <Send size={18} /> Submit Evaluation
+                                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                                    {isSubmitting ? 'Submitting...' : 'Submit Evaluation'}
                                 </button>
                             </div>
                         </div>
