@@ -44,23 +44,29 @@ export default function NoticesPage() {
     // Data states
     const [notices, setNotices] = React.useState<any[]>([]);
     const [isLoadingNotices, setIsLoadingNotices] = React.useState(true);
+    const [assignedClasses, setAssignedClasses] = React.useState<any[]>([]);
 
-    const fetchNotices = async () => {
+    const fetchInitialData = async () => {
         setIsLoadingNotices(true);
         try {
-            const result = await getTeacherNotices(schoolId || undefined);
-            if (result.success) {
-                setNotices(result.data || []);
+            const noticesRes = await getTeacherNotices(schoolId || undefined);
+            const classesRes = await import('@/app/actions/teacher/results').then(m => m.getClasses());
+
+            if (noticesRes.success) {
+                setNotices(noticesRes.data || []);
+            }
+            if (classesRes.success) {
+                setAssignedClasses(classesRes.data || []);
             }
         } catch (error) {
-            console.error("Failed to load notices", error);
+            console.error("Failed to load data", error);
         } finally {
             setIsLoadingNotices(false);
         }
     };
 
     React.useEffect(() => {
-        fetchNotices();
+        fetchInitialData();
     }, [schoolId]);
 
     const openEditModal = (notice: any) => {
@@ -144,7 +150,7 @@ export default function NoticesPage() {
                 setAudience("All Faculty & Students");
                 setCategory("Academic");
                 // Reload notices after successful post
-                fetchNotices();
+                fetchInitialData();
             } else {
                 toast.error(result.error || "Failed to publish notice");
             }
@@ -222,7 +228,7 @@ export default function NoticesPage() {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex bg-bg-card p-1.5 rounded-2xl border border-border-light overflow-x-auto scrollbar-hide">
-                    {["all", "General", "Administration", "Class X-A", "Class IX-B"].map((filter) => (
+                    {["all", "General", "Administration", ...assignedClasses.map(c => c.name)].map((filter) => (
                         <button
                             key={filter}
                             onClick={() => setActiveFilter(filter)}
@@ -380,9 +386,9 @@ export default function NoticesPage() {
                                         className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary"
                                     >
                                         <option value="All Faculty & Students">All Faculty & Students</option>
-                                        <option value="Class X - A">Class X - A</option>
-                                        <option value="Class IX - B">Class X - B</option>
-                                        <option value="Class X - C">Class X - C</option>
+                                        {assignedClasses.map((cls) => (
+                                            <option key={cls.id} value={cls.name}>{cls.name}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className="space-y-3">

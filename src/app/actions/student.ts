@@ -1,4 +1,4 @@
-"use server"
+﻿"use server"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/getCurrentUser"
@@ -155,29 +155,38 @@ export async function addStudent(formData: {
 }
 
 export async function getStudents() {
+    const currentUser = await getCurrentUser()
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
     try {
         if (!prisma.student) return { success: false, error: "Database error." };
         const students = await prisma.student.findMany({
+            where: { schoolId: currentUser.schoolId },
             orderBy: { createdAt: 'desc' }
         })
         return { success: true, data: students }
     } catch (error: any) {
-        console.error("❌ Get Students Error:", error.message)
-        return { success: false, error: "ছাত্র-ছাত্রীদের তথ্য লোড করতে সমস্যা হয়েছে।" }
+        console.error("âŒ Get Students Error:", error.message)
+        return { success: false, error: "à¦›à¦¾à¦¤à§à¦°-à¦›à¦¾à¦¤à§à¦°à§€à¦¦à§‡à¦° à¦¤à¦¥à§à¦¯ à¦²à§‹à¦¡ à¦•à¦°à¦¤à§‡ à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤" }
     }
 }
 
 export async function updateStudent(id: string, formData: any) {
+    const currentUser = await getCurrentUser()
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
     try {
         const birthDate = formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined;
 
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id }
+            where: { registrationNo: id, schoolId: currentUser.schoolId }
         });
 
         if (!student && id.length > 20) {
-            student = await prisma.student.findUnique({
-                where: { id }
+            student = await prisma.student.findFirst({
+                where: { id, schoolId: currentUser.schoolId }
             });
         }
 
@@ -215,14 +224,18 @@ export async function updateStudent(id: string, formData: any) {
 }
 
 export async function deleteStudent(id: string) {
+    const currentUser = await getCurrentUser()
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
     try {
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id }
+            where: { registrationNo: id, schoolId: currentUser.schoolId }
         });
 
         if (!student && id.length > 20) {
-            student = await prisma.student.findUnique({
-                where: { id }
+            student = await prisma.student.findFirst({
+                where: { id, schoolId: currentUser.schoolId }
             });
         }
 
@@ -249,16 +262,20 @@ export async function deleteStudent(id: string) {
 
 export async function getStudent(id: string) {
     console.log("🔍 Fetching student with ID:", id);
+    const currentUser = await getCurrentUser()
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
     try {
-        // Try finding by registration No first
+        // Try finding by registration No first (scoped to school)
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id }
+            where: { registrationNo: id, schoolId: currentUser.schoolId }
         });
 
-        // If not found, try finding by UUID
+        // If not found, try finding by UUID (scoped to school)
         if (!student && id.length > 20) {
-            student = await prisma.student.findUnique({
-                where: { id: id }
+            student = await prisma.student.findFirst({
+                where: { id: id, schoolId: currentUser.schoolId }
             });
         }
 

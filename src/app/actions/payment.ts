@@ -33,6 +33,11 @@ export async function initiatePayment(data: {
         // 2. Transaction Setup
         const transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
+        // 0. Fetch Student Details for Address
+        const student = await prisma.student.findUnique({
+            where: { id: studentId }
+        });
+
         // 3. Prepare SSLCommerz API Parameters
         const params = new URLSearchParams();
         params.append('store_id', process.env.SSL_STORE_ID || '');
@@ -50,11 +55,11 @@ export async function initiatePayment(data: {
         params.append('product_profile', 'general');
         params.append('cus_name', customerName || 'Default Student');
         params.append('cus_email', customerEmail || 'student@school.com');
-        params.append('cus_add1', 'Dhaka');
+        params.append('cus_add1', student?.presentAddress || 'Dhaka');
         params.append('cus_city', 'Dhaka');
         params.append('cus_postcode', '1000');
         params.append('cus_country', 'Bangladesh');
-        params.append('cus_phone', customerPhone || '01XXXXXXXXX');
+        params.append('cus_phone', customerPhone || student?.guardianPhone || '01XXXXXXXXX');
         params.append('ship_name', 'N/A');
         params.append('ship_add1', 'N/A');
         params.append('ship_city', 'N/A');

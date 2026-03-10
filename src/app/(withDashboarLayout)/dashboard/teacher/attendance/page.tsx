@@ -35,8 +35,9 @@ export default function AttendancePage() {
             setIsLoading(true);
             const res = await getClasses();
             if (res.success) {
-                setClasses(res.data);
-            } else {
+                setClasses(res.data || []);
+            }
+            else {
                 toast.error(res.error || "Failed to load classes");
             }
             setIsLoading(false);
@@ -60,7 +61,7 @@ export default function AttendancePage() {
 
                 // Map existing attendance
                 const attendanceMap: Record<string, AttendanceStatusType> = {};
-                if (attendanceRes.success) {
+                if (attendanceRes.success && attendanceRes.data) {
                     attendanceRes.data.forEach((rec: any) => {
                         attendanceMap[rec.studentId] = rec.status;
                     });
@@ -83,6 +84,14 @@ export default function AttendancePage() {
     const markAllAsPresent = () => {
         const allPresent = students.reduce((acc, student) => ({ ...acc, [student.id]: 'PRESENT' }), {});
         setAttendance(allPresent);
+    };
+
+    const isDatePast = (dateStr: string) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dateStr);
+        selectedDate.setHours(0, 0, 0, 0);
+        return selectedDate < today;
     };
 
     const handleSave = async () => {
@@ -204,17 +213,18 @@ export default function AttendancePage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={markAllAsPresent}
-                                className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20"
+                                disabled={isDatePast(selectedDate)}
+                                className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Mark All Present
                             </button>
                             <button
                                 onClick={handleSave}
-                                disabled={isSaving}
-                                className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center gap-2"
+                                disabled={isSaving || isDatePast(selectedDate)}
+                                className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 {isSaving ? <Loader2 className="animate-spin" size={14} /> : null}
-                                {isSaving ? "Saving..." : "Save Attendance"}
+                                {isSaving ? "Saving..." : isDatePast(selectedDate) ? "Read Only" : "Save Attendance"}
                             </button>
                         </div>
                     </div>
@@ -283,31 +293,34 @@ export default function AttendancePage() {
 
                                     <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
                                         <button
+                                            disabled={isDatePast(selectedDate)}
                                             onClick={() => handleStatusChange(student.id, 'PRESENT')}
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'PRESENT'
                                                 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
                                                 : 'bg-bg-card text-emerald-600 border border-emerald-100 hover:bg-emerald-50'
-                                                }`}
+                                                } ${isDatePast(selectedDate) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             <CheckCircle2 size={16} />
                                             Present
                                         </button>
                                         <button
+                                            disabled={isDatePast(selectedDate)}
                                             onClick={() => handleStatusChange(student.id, 'LATE')}
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'LATE'
                                                 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
                                                 : 'bg-bg-card text-amber-600 border border-amber-100 hover:bg-amber-50'
-                                                }`}
+                                                } ${isDatePast(selectedDate) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             <Clock size={16} />
                                             Late
                                         </button>
                                         <button
+                                            disabled={isDatePast(selectedDate)}
                                             onClick={() => handleStatusChange(student.id, 'ABSENT')}
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${attendance[student.id] === 'ABSENT'
                                                 ? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
                                                 : 'bg-bg-card text-red-600 border border-red-100 hover:bg-red-50'
-                                                }`}
+                                                } ${isDatePast(selectedDate) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             <XCircle size={16} />
                                             Absent

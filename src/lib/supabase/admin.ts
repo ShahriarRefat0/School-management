@@ -9,7 +9,8 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 // This client bypasses RLS and is used for server-side management/onboarding
 export const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || "", // Fallback to avoid immediate crash // This MUST be in your .env
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-key-to-prevent-crash", // Fallback to avoid immediate crash
+
     {
         auth: {
             autoRefreshToken: false,
