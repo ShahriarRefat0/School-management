@@ -1,57 +1,66 @@
 "use client"
-import React, { useState } from 'react'
-import { Megaphone, Users, Calendar, AlertCircle, Layers, FileText, Send } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Megaphone, Users, Calendar, AlertCircle, Layers, FileText, Send, ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { createAnnouncement } from '@/app/actions/announcement'
 import Swal from 'sweetalert2'
+import { getCurrentSchoolId } from '@/app/actions/user'
 
-export default function NewAnnouncement({ schoolId }: { schoolId: string }) {
+export default function NewAnnouncement() {
+  const router = useRouter()
+  const [schoolId, setSchoolId] = useState("")
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    audience: 'all', // Default: All
-    targetClass: 'all', // Default: All Classes
+    audience: 'all',
+    targetClass: 'all',
     category: 'academic',
     priority: 'normal',
     expiryDate: '',
-    schoolId: schoolId
+    schoolId: ''
   })
+
+  useEffect(() => {
+    getCurrentSchoolId().then(id => {
+      if (id) {
+        setSchoolId(id)
+        setFormData(prev => ({ ...prev, schoolId: id }))
+      }
+    })
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-  const result = await createAnnouncement(formData);
+    const result = await createAnnouncement(formData);
 
-  if (result.success) {
-    Swal.fire({
-      icon: "success",
-      title: "Success!",
-      text: "🎉 Announcement Published Successfully!",
-      confirmButtonColor: "#3085d6",
-    });
+    if (result.success) {
+      await Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "🎉 Announcement Published Successfully!",
+        confirmButtonColor: "#3085d6",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      router.push('/dashboard/principal/announcements');
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: result.error || "Something went wrong",
+        confirmButtonColor: "#d33",
+      });
+    }
 
-    setFormData({
-      ...formData,
-      title: "",
-      content: "",
-      expiryDate: "",
-    });
-  } else {
-    Swal.fire({
-      icon: "error",
-      title: "Error!",
-      text: result.error || "Something went wrong",
-      confirmButtonColor: "#d33",
-    });
-  }
-
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-fade-in-up pb-12">
@@ -65,13 +74,13 @@ const handleSubmit = async (e: React.FormEvent) => {
 
       <div className="bg-[var(--color-bg-card)] p-8 rounded-3xl border border-[var(--color-border-light)] shadow-xl">
         <form onSubmit={handleSubmit} className="space-y-6">
-          
+
           {/* Title Field */}
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Notice Title</label>
             <div className="relative">
               <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
-              <input required type="text" name="title" value={formData.title} placeholder="e.g. Winter Vacation Notice" 
+              <input required type="text" name="title" value={formData.title} placeholder="e.g. Winter Vacation Notice"
                 className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                 onChange={handleChange} />
             </div>
@@ -152,8 +161,8 @@ const handleSubmit = async (e: React.FormEvent) => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full bg-[var(--color-primary)] text-white font-black py-4 rounded-2xl shadow-lg hover:scale-[1.01] transition-all text-lg uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50"
           >

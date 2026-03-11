@@ -2,10 +2,42 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/getCurrentUser";
+
+export async function uploadMaterialToImgBB(formData: FormData) {
+    try {
+        const apiKey = process.env.IMGBB_API_KEY;
+        if (!apiKey) {
+            console.error("IMGBB_API_KEY is missing in server environment");
+            return { success: false, error: "Server Configuration Error: IMGBB_API_KEY is missing." };
+        }
+
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            return { success: true, url: data.data.url };
+        } else {
+            return { success: false, error: data.error?.message || "Upload failed" };
+        }
+    } catch (error: any) {
+        console.error("ImgBB Upload Error:", error);
+        return { success: false, error: error.message || "Failed to upload to ImgBB" };
+    }
+}
 
 export async function getStudyMaterials(schoolId?: string) {
     try {
-        const whereClause = schoolId ? { schoolId } : {};
+        let finalSchoolId = schoolId;
+        if (!finalSchoolId) {
+            const currentUser = await getCurrentUser();
+            finalSchoolId = currentUser?.schoolId || "";
+        }
+
+        const whereClause = finalSchoolId ? { schoolId: finalSchoolId } : {};
         const materials = await prisma.studyMaterial.findMany({
             where: whereClause,
             orderBy: { createdAt: 'desc' }
@@ -29,11 +61,27 @@ export async function createStudyMaterial(formData: {
     teacherId: string;
 }) {
     try {
-        const targetSchoolId = formData.schoolId || "default-school-id";
+        const currentUser = await getCurrentUser();
+        const schoolId = currentUser?.schoolId || formData.schoolId;
+
+        if (!schoolId || !currentUser) {
+            return { success: false, error: "Authentication Error: School ID or User session missing." };
+        }
+
+        // Find the teacher ID linked to this user
+        const teacher = await prisma.teacher.findUnique({
+            where: { userId: currentUser.id }
+        });
+
+        if (!teacher) {
+            return { success: false, error: "Teacher Profile Error: Your teacher profile was not found in the database. Please contact your administrator." };
+        }
+
         const material = await prisma.studyMaterial.create({
             data: {
                 ...formData,
-                schoolId: targetSchoolId
+                schoolId: schoolId,
+                teacherId: teacher.id // Securely from database
             }
         });
         revalidatePath("/dashboard/teacher/study-materials");

@@ -4,22 +4,24 @@ import React, { useState, useEffect } from "react";
 import { Plus, Eye, Send, Megaphone, Search, Filter, Users, Calendar } from "lucide-react";
 import Link from "next/link";
 import { getAnnouncements } from "@/app/actions/announcement";
+import { getCurrentSchoolId } from "@/app/actions/user";
 
-export default function AnnouncementsPage({ schoolId }: { schoolId: string }) {
+export default function AnnouncementsPage() {
   const [loading, setLoading] = useState(true);
   const [notices, setNotices] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [audienceFilter, setAudienceFilter] = useState("all_roles");
 
-  // ডাটা লোড করা
   useEffect(() => {
     async function loadNotices() {
+      const schoolId = await getCurrentSchoolId();
+      if (!schoolId) { setLoading(false); return; }
       const res = await getAnnouncements(schoolId);
       if (res.success) setNotices(res.data || []);
       setLoading(false);
     }
     loadNotices();
-  }, [schoolId]);
+  }, []);
 
   // ফিল্টার লজিক
   const filteredNotices = notices.filter((item) => {
@@ -33,7 +35,7 @@ export default function AnnouncementsPage({ schoolId }: { schoolId: string }) {
 
   return (
     <div className="min-h-screen p-6 transition-colors bg-gray-50 dark:bg-transparent text-gray-900 dark:text-white">
-      
+
       {/* Top Header & Stats */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
@@ -43,7 +45,7 @@ export default function AnnouncementsPage({ schoolId }: { schoolId: string }) {
           </p>
         </div>
 
-        <Link  href={`/dashboard/principal/announcements/new?schoolId=${schoolId}`} className="
+        <Link href={`/dashboard/principal/announcements/new`} className="
           flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition
           bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-600/20
         ">
@@ -56,8 +58,8 @@ export default function AnnouncementsPage({ schoolId }: { schoolId: string }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-white dark:bg-white/5 p-4 rounded-2xl border border-gray-200 dark:border-white/10 shadow-sm">
         <div className="md:col-span-2 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Search by title or content..."
             className="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-white/5 border-none rounded-xl outline-none text-sm font-medium focus:ring-2 focus:ring-purple-500"
             value={searchTerm}
@@ -66,7 +68,7 @@ export default function AnnouncementsPage({ schoolId }: { schoolId: string }) {
         </div>
         <div className="relative">
           <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <select 
+          <select
             className="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-white/5 border-none rounded-xl outline-none text-sm font-bold appearance-none cursor-pointer"
             onChange={(e) => setAudienceFilter(e.target.value)}
           >
@@ -94,19 +96,18 @@ export default function AnnouncementsPage({ schoolId }: { schoolId: string }) {
             >
               {/* Left Info */}
               <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${
-                  item.priority === 'urgent' ? 'bg-red-500/10 text-red-500' : 'bg-purple-500/10 text-purple-500'
-                }`}>
+                <div className={`p-3 rounded-xl ${item.priority === 'urgent' ? 'bg-red-500/10 text-red-500' : 'bg-purple-500/10 text-purple-500'
+                  }`}>
                   <Megaphone className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-bold text-[var(--color-text-primary)] leading-tight">{item.title}</h3>
                   <div className="flex flex-wrap items-center gap-3 mt-2">
                     <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-white/10 px-2 py-1 rounded">
-                       <Users size={10} /> {item.audience} {item.targetClass ? `(${item.targetClass})` : ''}
+                      <Users size={10} /> {item.audience} {item.targetClass ? `(${item.targetClass})` : ''}
                     </span>
                     <span className="flex items-center gap-1 text-[10px] font-bold text-gray-400">
-                       <Calendar size={10} /> {new Date(item.createdAt).toLocaleDateString()}
+                      <Calendar size={10} /> {new Date(item.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -115,11 +116,10 @@ export default function AnnouncementsPage({ schoolId }: { schoolId: string }) {
               {/* Right Actions */}
               <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end border-t md:border-none pt-4 md:pt-0">
                 <span
-                  className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
-                    item.status === "published"
-                      ? "bg-green-500/10 text-green-500"
-                      : "bg-yellow-500/10 text-yellow-500"
-                  }`}
+                  className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${item.status === "published"
+                    ? "bg-green-500/10 text-green-500"
+                    : "bg-yellow-500/10 text-yellow-500"
+                    }`}
                 >
                   {item.status}
                 </span>

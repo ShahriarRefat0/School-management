@@ -1,12 +1,48 @@
 "use server"
 
-import { prisma } from "@/lib/prisma"; 
-import { revalidatePath } from "next/cache"; // এটি খুবই জরুরি ডাটা সাথে সাথে দেখানোর জন্য
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/getCurrentUser";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function createSchool(formData: any) {
+  console.log("📥 Creating new school and principal:", formData.schoolName);
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser || (currentUser.role as string) !== 'super_admin') {
+    console.error("❌ Unauthorized access attempt by:", currentUser?.email || "Unknown");
+    return { success: false, error: "Unauthorized: Super Admin access required." };
+  }
+
+  let authUserId: string | null = null;
+
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      // 1️⃣ Create School
+    // 🛡️ CRITICAL KEY CHECK
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return { success: false, error: "Server Configuration Error: Admin key is missing." };
+    }
+
+    // 1️⃣ Create the Principal in Supabase Auth via Admin Client
+    // This avoids client-side 422 errors and prevents session collisions
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: formData.adminEmail,
+      password: formData.adminPassword || "School@1234", // Default password
+      email_confirm: true,
+      user_metadata: { role: 'admin' }
+    });
+
+    if (authError) {
+      console.error("❌ Supabase Admin Auth Error:", authError.message);
+      if (authError.message.includes("already registered")) {
+        return { success: false, error: "This admin email is already registered." };
+      }
+      return { success: false, error: "Auth Error: " + authError.message };
+    }
+
+    authUserId = authData.user.id;
+
+    const result = await prisma.$transaction(async (tx: any) => {
+      // 2️⃣ Create School
       const newSchool = await tx.school.create({
         data: {
           schoolName: formData.schoolName,
@@ -17,9 +53,7 @@ export async function createSchool(formData: any) {
           plan: formData.plan || "basic",
           duration: formData.duration || "12",
           schoolCategory: formData.schoolCategory,
-          expectedStudents: formData.expectedStudents
-            ? Number(formData.expectedStudents)
-            : null,
+          expectedStudents: formData.expectedStudents ? Number(formData.expectedStudents) : null,
           registrationId: formData.registrationId,
           facebookUrl: formData.facebookUrl || null,
           websiteUrl: formData.websiteUrl || null,
@@ -27,10 +61,18 @@ export async function createSchool(formData: any) {
         },
       });
 
-      // 2️⃣ Create Admin User
-      await tx.user.create({
-        data: {
-          authUserId: formData.adminId, // Supabase থেকে আসা ID
+      // 3️⃣ Update or Create Admin User record
+      await tx.user.upsert({
+        where: { authUserId: authUserId as string },
+        update: {
+          name: formData.adminName,
+          email: formData.adminEmail,
+          role: "admin",
+          schoolId: newSchool.id,
+          status: "active"
+        },
+        create: {
+          authUserId: authUserId as string,
           name: formData.adminName,
           email: formData.adminEmail,
           role: "admin",
@@ -42,14 +84,22 @@ export async function createSchool(formData: any) {
       return newSchool;
     });
 
-    // যাতে ইউজার নতুন ডাটা দেখতে পায়
-    revalidatePath("/schools"); 
-    revalidatePath("/"); 
+    // Revalidate paths for Super Admin and public views
+    revalidatePath("/dashboard/super-admin/schools");
+    revalidatePath("/schools");
+    revalidatePath("/");
 
     return { success: true, data: result };
 
   } catch (error: any) {
-    console.error("❌ Prisma Error:", error);
+    console.error("❌ createSchool CRITICAL ERROR:", error);
+
+    // Rollback Auth User if Prisma fails
+    if (authUserId) {
+      await supabaseAdmin.auth.admin.deleteUser(authUserId).catch(err =>
+        console.error("Failed to rollback auth string:", err)
+      );
+    }
 
     // ইউনিক কনস্ট্রেইন্ট এরর চেক (ইমেইল বা স্ল্যাগ মিলে গেলে)
     if (error.code === "P2002") {
@@ -121,7 +171,7 @@ export async function updateSchool(id: string, formData: any) {
 
     revalidatePath("/schools"); // যেখানে লিস্ট দেখান সেই পাথ
     revalidatePath(`/schools/${id}`); // স্পেসিফিক পেজ থাকলে
-    
+
     return { success: true, data: updated };
   } catch (error: any) {
     console.error("❌ Update Error:", error.message);
@@ -146,8 +196,8 @@ export async function getSchoolById(id: string) {
 export async function deleteSchool(id: string) {
   try {
     // transaction ব্যবহার করছি যাতে ইউজার এবং স্কুল দুটাই ডিলিট হয়
-    await prisma.$transaction(async (tx) => {
-      
+    await prisma.$transaction(async (tx: any) => {
+
       // ১. প্রথমে এই স্কুলের সাথে যুক্ত সব ইউজার ডিলিট করতে হবে
       await tx.user.deleteMany({
         where: { schoolId: id },
@@ -160,14 +210,26 @@ export async function deleteSchool(id: string) {
     });
 
     // আপনার লিস্ট পেজের পাথটি রিভ্যালিডেট করুন
-    revalidatePath("/dashboard/super-admin/schools"); 
-    
+    revalidatePath("/dashboard/super-admin/schools");
+
     return { success: true, message: "School and its users deleted successfully" };
   } catch (error: any) {
     console.error("❌ Delete Error:", error.message);
-    return { 
-      success: false, 
-      error: "এই স্কুলের অধীনে ডাটা (User/Student) থাকায় ডিলিট করা যাচ্ছে না।" 
+    return {
+      success: false,
+      error: "এই স্কুলের অধীনে ডাটা (User/Student) থাকায় ডিলিট করা যাচ্ছে না।"
     };
   }
+}
+
+// plan chart 
+export async function getPlanStats() {
+  const plans = await prisma.school.groupBy({
+    by: ["plan"],
+    _count: {
+      plan: true
+    }
+  })
+
+  return plans
 }

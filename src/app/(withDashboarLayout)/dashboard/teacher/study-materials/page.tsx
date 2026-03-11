@@ -14,7 +14,7 @@ import {
     Loader2,
     Edit
 } from 'lucide-react';
-import { getStudyMaterials, createStudyMaterial, deleteStudyMaterial, updateStudyMaterial } from '@/app/actions/teacher/studyMaterials';
+import { getStudyMaterials, createStudyMaterial, deleteStudyMaterial, updateStudyMaterial, uploadMaterialToImgBB } from '@/app/actions/teacher/studyMaterials';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import Swal from 'sweetalert2';
@@ -24,7 +24,12 @@ export default function StudyMaterialsPage() {
     const [materials, setMaterials] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedClass, setSelectedClass] = useState("All Classes");
+    const [selectedSubject, setSelectedSubject] = useState("All Subjects");
 
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
     const [editMaterial, setEditMaterial] = useState<any | null>(null);
 
     const { user } = useAuth();
@@ -38,23 +43,34 @@ export default function StudyMaterialsPage() {
         subject: 'Mathematics',
         description: '',
         type: 'PDF',
-        attachmentUrl: 'https://example.com/demo-file.pdf', // Placeholder for now
+        attachmentUrl: '', // Reset to empty
         size: '2.4 MB'
     });
 
+    const [assignedClasses, setAssignedClasses] = useState<any[]>([]);
+
     useEffect(() => {
-        if (schoolId) {
-            fetchMaterials();
-        }
+        fetchInitialData();
     }, [schoolId]);
 
-    const fetchMaterials = async () => {
+    const fetchInitialData = async () => {
         setLoading(true);
-        const response = await getStudyMaterials(schoolId || undefined);
-        if (response.success) {
-            setMaterials(response.data || []);
+        const [materialsRes, classesRes] = await Promise.all([
+            getStudyMaterials(schoolId || undefined),
+            import('@/app/actions/teacher/results').then(m => m.getClasses())
+        ]);
+
+        if (materialsRes.success) {
+            setMaterials(materialsRes.data || []);
         } else {
-            toast.error(response.error || "Failed to fetch materials");
+            toast.error(materialsRes.error || "Failed to fetch materials");
+        }
+
+        if (classesRes.success && classesRes.data) {
+            setAssignedClasses(classesRes.data);
+            if (classesRes.data.length > 0 && !formData.class) {
+                setFormData(prev => ({ ...prev, class: classesRes.data[0].name }));
+            }
         }
         setLoading(false);
     };
@@ -75,10 +91,40 @@ export default function StudyMaterialsPage() {
 
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!formData.attachmentUrl && !selectedFile) {
+            toast.error("Please provide a file URL or select a file to upload.");
+            return;
+        }
+
         setIsSubmitting(true);
+        let finalUrl = formData.attachmentUrl;
+        let finalSize = formData.size;
+
+        // Handle File Upload if a file is selected
+        if (selectedFile) {
+            setUploading(true);
+            const formDataUpload = new FormData();
+            formDataUpload.append('image', selectedFile);
+
+            const uploadRes = await uploadMaterialToImgBB(formDataUpload);
+
+            if (uploadRes.success && uploadRes.url) {
+                finalUrl = uploadRes.url;
+                finalSize = `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`;
+            } else {
+                toast.error("File upload failed: " + (uploadRes.error || "Unknown error"));
+                setIsSubmitting(false);
+                setUploading(false);
+                return;
+            }
+            setUploading(false);
+        }
 
         const submissionData = {
             ...formData,
+            attachmentUrl: finalUrl,
+            size: finalSize,
             schoolId,
             teacherId
         };
@@ -99,7 +145,8 @@ export default function StudyMaterialsPage() {
             });
             setShowUploadModal(false);
             setEditMaterial(null);
-            fetchMaterials();
+            fetchInitialData();
+            setSelectedFile(null);
             // Reset form
             setFormData({
                 title: '',
@@ -107,7 +154,7 @@ export default function StudyMaterialsPage() {
                 subject: 'Mathematics',
                 description: '',
                 type: 'PDF',
-                attachmentUrl: 'https://example.com/demo-file.pdf',
+                attachmentUrl: '',
                 size: '2.4 MB'
             });
         } else {
@@ -148,6 +195,13 @@ export default function StudyMaterialsPage() {
         }
     };
 
+    const filteredMaterials = materials.filter(material => {
+        const matchesSearch = (material.title || "").toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesClass = selectedClass === "All Classes" || material.class === selectedClass;
+        const matchesSubject = selectedSubject === "All Subjects" || material.subject === selectedSubject;
+        return matchesSearch && matchesClass && matchesSubject;
+    });
+
     return (
         <div className="space-y-8 animate-fadeIn">
             <TeacherHeader
@@ -166,14 +220,38 @@ export default function StudyMaterialsPage() {
             />
 
             <div className="bg-bg-card rounded-3xl border border-border-light shadow-sm p-6 overflow-hidden">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <h2 className="text-xl font-bold text-text-primary">Shared Resources</h2>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <select
+                            value={selectedClass}
+                            onChange={(e) => setSelectedClass(e.target.value)}
+                            className="px-4 py-2 bg-bg-page border border-border-light rounded-xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer text-text-secondary"
+                        >
+                            <option>All Classes</option>
+                            {assignedClasses.map((cls) => (
+                                <option key={cls.id} value={cls.name}>{cls.name}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={selectedSubject}
+                            onChange={(e) => setSelectedSubject(e.target.value)}
+                            className="px-4 py-2 bg-bg-page border border-border-light rounded-xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer text-text-secondary"
+                        >
+                            <option>All Subjects</option>
+                            <option>Mathematics</option>
+                            <option>Chemistry</option>
+                            <option>Physics</option>
+                        </select>
+                    </div>
+
+                    <div className="relative w-full lg:w-80 group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted transition-colors group-focus-within:text-primary" size={18} />
                         <input
                             type="text"
                             placeholder="Search materials..."
-                            className="pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full md:w-64"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 bg-bg-page border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-text-secondary"
                         />
                     </div>
                 </div>
@@ -184,13 +262,13 @@ export default function StudyMaterialsPage() {
                             <Loader2 className="animate-spin mb-4" size={32} />
                             <p>Loading materials...</p>
                         </div>
-                    ) : materials.length === 0 ? (
+                    ) : filteredMaterials.length === 0 ? (
                         <div className="text-center py-20 bg-bg-page/20 rounded-2xl border border-dashed border-border-light">
                             <BookOpen className="mx-auto text-text-muted mb-4" size={48} />
                             <p className="text-text-secondary font-medium">No materials found. Start by uploading one!</p>
                         </div>
                     ) : (
-                        materials.map((material) => (
+                        filteredMaterials.map((material) => (
                             <div
                                 key={material.id}
                                 className="group bg-bg-page/40 p-4 rounded-2xl border border-border-light/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/20 transition-all duration-300"
@@ -248,8 +326,8 @@ export default function StudyMaterialsPage() {
             {/* Upload Modal */}
             {showUploadModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isSubmitting && { setShowUploadModal: (val: boolean) => { setShowUploadModal(val); if (!val) setEditMaterial(null); } }}></div>
-                    <form onSubmit={handleUpload} className="bg-bg-card w-full max-w-md rounded-3xl p-8 relative z-10 shadow-2xl animate-slideInBottom border border-border-light">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isSubmitting && (setShowUploadModal(false), setEditMaterial(null))}></div>
+                    <form onSubmit={handleUpload} className="bg-bg-card w-full max-w-md rounded-3xl p-8 relative z-10 shadow-2xl animate-slideInBottom border border-border-light max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <h3 className="text-2xl font-bold text-text-primary mb-6">{editMaterial ? 'Update Material' : 'Upload Material'}</h3>
                         <div className="space-y-4">
                             <div>
@@ -271,9 +349,10 @@ export default function StudyMaterialsPage() {
                                         onChange={(e) => setFormData({ ...formData, class: e.target.value })}
                                         className="w-full px-4 py-3 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     >
-                                        <option>Class X - A</option>
-                                        <option>Class IX - B</option>
-                                        <option>Class X - C</option>
+                                        {assignedClasses.map((cls) => (
+                                            <option key={cls.id} value={cls.name}>{cls.name}</option>
+                                        ))}
+                                        {assignedClasses.length === 0 && <option>No Classes Assigned</option>}
                                     </select>
                                 </div>
                                 <div>
@@ -298,10 +377,57 @@ export default function StudyMaterialsPage() {
                                     placeholder="Provide a brief overview of the material..."
                                 ></textarea>
                             </div>
-                            <div className="border-2 border-dashed border-border-light rounded-2xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer group bg-bg-page/30">
-                                <Upload size={32} className="mx-auto text-text-muted group-hover:text-primary transition-colors mb-2" />
-                                <p className="text-sm font-bold text-text-secondary">Click or drag file here</p>
-                                <p className="text-xs text-text-muted mt-1 uppercase font-black tracking-widest text-[8px]">PDF, DOC, PPT, MP4 (MAX 50MB)</p>
+                            <div
+                                onClick={() => document.getElementById('file-upload')?.click()}
+                                className={`border-2 border-dashed ${selectedFile ? 'border-primary bg-primary/5' : 'border-border-light bg-bg-page/30'} rounded-2xl p-8 text-center hover:border-primary/5 transition-all cursor-pointer group`}
+                            >
+                                <input
+                                    type="file"
+                                    id="file-upload"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            setSelectedFile(file);
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                title: prev.title || file.name.split('.')[0],
+                                                type: file.type.includes('pdf') ? 'PDF' : 'LINK'
+                                            }));
+                                        }
+                                    }}
+                                />
+                                {uploading ? (
+                                    <Loader2 className="animate-spin mx-auto text-primary mb-2" size={32} />
+                                ) : (
+                                    <Upload size={32} className={`mx-auto ${selectedFile ? 'text-primary' : 'text-text-muted'} group-hover:text-primary transition-colors mb-2`} />
+                                )}
+                                <p className="text-sm font-bold text-text-secondary">
+                                    {selectedFile ? selectedFile.name : 'Click to upload or drag file here'}
+                                </p>
+                                <p className="text-xs text-text-muted mt-1 uppercase font-black tracking-widest text-[8px]">
+                                    {selectedFile ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB` : 'PDF, DOC, PPT, MP4 (MAX 50MB)'}
+                                </p>
+                            </div>
+
+                            <div className="relative flex items-center gap-4 py-2">
+                                <div className="h-px bg-border-light flex-1"></div>
+                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Or Provide Link</span>
+                                <div className="h-px bg-border-light flex-1"></div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-text-secondary mb-2 uppercase tracking-wider">External Link/URL</label>
+                                <div className="relative group">
+                                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors" size={18} />
+                                    <input
+                                        type="url"
+                                        value={formData.attachmentUrl}
+                                        onChange={(e) => setFormData({ ...formData, attachmentUrl: e.target.value })}
+                                        className="w-full pl-12 pr-4 py-3 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        placeholder="https://example.com/shared-doc"
+                                    />
+                                </div>
                             </div>
                             <div className="flex gap-3 pt-4">
                                 <button

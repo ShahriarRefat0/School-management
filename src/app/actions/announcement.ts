@@ -2,11 +2,15 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 
 export async function createAnnouncement(formData: any) {
   try {
     // নিশ্চিত করুন schoolId আসছে
     if (!formData.schoolId) return { success: false, error: "School ID is missing!" };
+
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return { success: false, error: "Authentication required" };
 
     const newNotice = await prisma.announcement.create({
       data: {
@@ -16,14 +20,16 @@ export async function createAnnouncement(formData: any) {
         targetClass: formData.audience === "students" ? formData.targetClass : null,
         category: formData.category,
         priority: formData.priority,
-        schoolId: formData.schoolId,
+        schoolId: currentUser.schoolId || formData.schoolId,
+        authorId: currentUser.id,
+        authorName: currentUser.name,
         status: "published",
         expiryDate: formData.expiryDate ? new Date(formData.expiryDate) : null,
       },
     });
 
     // সঠিক পাথ দিন
-    revalidatePath("/dashboard/principal/announcements"); 
+    revalidatePath("/dashboard/principal/announcements");
     return { success: true, data: newNotice };
 
   } catch (error: any) {
@@ -42,5 +48,21 @@ export async function getAnnouncements(schoolId: string) {
     return { success: true, data };
   } catch (error) {
     return { success: false, error: "Failed to fetch announcements" };
+  }
+}
+
+
+// get anousment by id 
+
+export async function getAnnouncementById(id: string) {
+  if (!id) return { success: false, error: "No Notice ID provided" };
+  try {
+    const data = await prisma.announcement.findUnique({
+      where: { id: id },
+    });
+    if (!data) return { success: false, error: "Notice not found" };
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: "Failed to fetch announcement details" };
   }
 }

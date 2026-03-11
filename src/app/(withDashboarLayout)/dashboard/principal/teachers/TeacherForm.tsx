@@ -49,6 +49,7 @@ export default function TeacherForm() {
         designation: "",
         department: "",
         qualification: "",
+        assignedClasses: [] as string[],
         presentAddress: "",
         permanentAddress: "",
     });
@@ -82,6 +83,7 @@ export default function TeacherForm() {
                             designation: d.designation,
                             department: d.department,
                             qualification: d.qualification,
+                            assignedClasses: Array.isArray(d.assignedClasses) ? d.assignedClasses : [],
                             presentAddress: d.presentAddress,
                             permanentAddress: d.permanentAddress || "",
                         });
@@ -110,27 +112,23 @@ export default function TeacherForm() {
         if (error) setError("");
     };
 
+    const handleClassToggle = (cls: string) => {
+        const current = form.assignedClasses;
+        const updated = current.includes(cls)
+            ? current.filter((c) => c !== cls)
+            : [...current, cls];
+        setForm({ ...form, assignedClasses: updated });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setError("");
-
         try {
+            // Call the consolidated server action
+            // This now handles both Supabase Auth and Prisma DB records
             const result = isEdit
                 ? await updateTeacher(teacherIdFromUrl!, form)
                 : await addTeacher(form);
-
-            //register teacher 
-            const { data, error } = await signUp(
-                form.email,
-                '123456', //default pass use kora holo
-                'teacher'
-            )
-
-            if (error || !data.user) {
-                alert(error?.message || "Teacher account creation failed")
-                return
-            }
 
             if (result.success) {
                 setSuccess(true);
@@ -141,7 +139,8 @@ export default function TeacherForm() {
                 setError(result.error || `Failed to ${isEdit ? 'update' : 'register'} teacher.`);
             }
         } catch (err: any) {
-            setError("Server communication failure.");
+            console.error("Submission error:", err);
+            setError(err.message || "Server communication failure. Please check your internet connection.");
         } finally {
             setIsSubmitting(false);
         }
@@ -305,7 +304,36 @@ export default function TeacherForm() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Department *</label>
                                     <Input name="department" value={form.department} onChange={handleChange} required className="h-16 rounded-2xl bg-bg-page/40 font-bold" />
                                 </div>
-                                <div className="md:col-span-2 space-y-2">
+                                <div className="space-y-3 md:col-span-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                        Assigned Classes
+                                        {form.assignedClasses.length > 0 && (
+                                            <span className="ml-3 text-primary font-black normal-case text-[10px]">
+                                                ({form.assignedClasses.length} selected: {form.assignedClasses.join(", ")})
+                                            </span>
+                                        )}
+                                    </label>
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 p-5 rounded-2xl border-2 border-border-light bg-bg-page/40">
+                                        {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => {
+                                            const cls = `Class ${n}`;
+                                            const checked = form.assignedClasses.includes(cls);
+                                            return (
+                                                <button
+                                                    key={n}
+                                                    type="button"
+                                                    onClick={() => handleClassToggle(cls)}
+                                                    className={`h-12 rounded-xl text-xs font-black uppercase tracking-widest transition-all border-2 ${checked
+                                                            ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30 scale-105'
+                                                            : 'bg-bg-card text-text-muted border-border-light hover:border-primary/40 hover:text-primary'
+                                                        }`}
+                                                >
+                                                    {n}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Main Qualification *</label>
                                     <Input name="qualification" value={form.qualification} onChange={handleChange} required className="h-16 rounded-2xl bg-bg-page/40 font-bold" />
                                 </div>

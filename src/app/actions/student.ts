@@ -1,7 +1,8 @@
-"use server"
+﻿"use server"
 
 import { prisma } from "@/lib/prisma"
-
+import { getCurrentUser } from "@/lib/getCurrentUser"
+import { supabaseAdmin } from "@/lib/supabase/admin"
 
 export async function addStudent(formData: {
     registrationNo: string
@@ -22,13 +23,27 @@ export async function addStudent(formData: {
     email?: string
     presentAddress: string
     permanentAddress?: string
+    password?: string
 }) {
     console.log("📥 Receiving student request:", formData.registrationNo);
 
+    const currentUser = await getCurrentUser()
+    console.log("🛠️ [addStudent] Current User status:", !!currentUser, "Role:", currentUser?.role)
+
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
+
+    let authUserId: string | null = null;
     try {
         if (!prisma.student) {
             console.error("❌ Prisma student model is UNDEFINED!");
             return { success: false, error: "Database error: Student model missing." };
+        }
+
+        // 🛡️ CRITICAL KEY CHECK
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            return { success: false, error: "Server Configuration Error: Admin key is missing." };
         }
 
         // Date parsing with validation
@@ -37,38 +52,54 @@ export async function addStudent(formData: {
             return { success: false, error: "জন্ম তারিখ ভুল ফরম্যাটে আছে!" };
         }
 
+        // Sanitize registration number for safe email (no spaces/special chars)
+        const sanitizedReg = formData.registrationNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        const safeEmail = formData.email?.trim() || `st.${sanitizedReg}@school.site`;
+
+        // 1. Create Student Auth Account via Admin Client
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+            email: safeEmail,
+            password: formData.password || "Student@1234",
+            email_confirm: true,
+            user_metadata: { role: 'student' }
+        });
+
+        if (authError) {
+            console.error("❌ Student Auth Creation Error:", authError.message);
+            if (authError.message.includes("already registered")) {
+                return { success: false, error: "এই ইমেইলটি আগে থেকেই নিবন্ধিত আছে।" };
+            }
+            return { success: false, error: "Auth Error: " + authError.message };
+        }
+
+        authUserId = authData.user.id;
         let createdStudent: any;
 
-        await prisma.$transaction(async (tx) => {
-            let schoolId = "default-school-id";
-            const firstSchool = await tx.school.findFirst();
-            if (firstSchool) {
-                schoolId = firstSchool.id;
-            }
+        await prisma.$transaction(async (tx: any) => {
+            const schoolId = currentUser.schoolId; // Always use principal's school
+            if (!schoolId) throw new Error("Unauthorized: School ID not found for this user.");
 
-            const authUserId = `auth-${formData.registrationNo}-${Date.now()}`;
-            const safeEmail = formData.email?.trim() || `student_${formData.registrationNo}@school.local`;
-
-            // Ensure email uniqueness before user creation
-            const existingUserWithEmail = await tx.user.findUnique({
-                where: { email: safeEmail }
-            });
-
-            const finalEmail = existingUserWithEmail ? `student_${formData.registrationNo}_${Date.now()}@school.local` : safeEmail;
-
-            // 1. Create the user
-            const newUser = await tx.user.create({
-                data: {
-                    authUserId: authUserId,
+            // 2. Update or create the user record
+            const newUser = await tx.user.upsert({
+                where: { authUserId: authUserId as string },
+                update: {
                     name: `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'Unknown Student',
-                    email: finalEmail,
+                    email: safeEmail,
+                    schoolId: schoolId,
+                    role: 'student',
+                    status: 'active'
+                },
+                create: {
+                    authUserId: authUserId as string,
+                    name: `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'Unknown Student',
+                    email: safeEmail,
                     schoolId: schoolId,
                     role: 'student',
                     status: 'active'
                 }
             });
 
-            // 2. Create the student linked to user
+            // 3. Create the student linked to user
             createdStudent = await tx.student.create({
                 data: {
                     registrationNo: formData.registrationNo,
@@ -79,16 +110,17 @@ export async function addStudent(formData: {
                     bloodGroup: formData.bloodGroup?.trim() || null,
                     religion: formData.religion?.trim() || null,
                     currentClass: formData.currentClass,
-                    section: formData.section,
+                    sectionName: formData.section,
                     rollNo: Number(formData.rollNo),
                     session: formData.session,
                     fatherName: formData.fatherName,
                     motherName: formData.motherName,
                     guardianPhone: formData.guardianPhone,
                     emergencyContact: formData.emergencyContact?.trim() || null,
-                    email: formData.email?.trim() || null,
+                    email: safeEmail,
                     presentAddress: formData.presentAddress,
                     permanentAddress: formData.permanentAddress?.trim() || null,
+                    schoolId: schoolId,
                     userId: newUser.id
                 },
             });
@@ -99,6 +131,13 @@ export async function addStudent(formData: {
 
     } catch (error: any) {
         console.error("❌ Student Create Database Error:", error);
+
+        // Rollback Auth User if Prisma fails
+        if (authUserId) {
+            await supabaseAdmin.auth.admin.deleteUser(authUserId).catch(err =>
+                console.error("Failed to rollback auth account:", err)
+            );
+        }
 
         if (error.code === 'P2002') {
             const fields = error.meta?.target || [];
@@ -116,29 +155,47 @@ export async function addStudent(formData: {
 }
 
 export async function getStudents() {
+    const currentUser = await getCurrentUser()
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
+    if (!currentUser.schoolId) {
+        return { success: false, error: "Your account is not linked to a school." }
+    }
+    const schoolId = currentUser.schoolId as string;
     try {
         if (!prisma.student) return { success: false, error: "Database error." };
         const students = await prisma.student.findMany({
+            where: { schoolId },
             orderBy: { createdAt: 'desc' }
         })
         return { success: true, data: students }
     } catch (error: any) {
-        console.error("❌ Get Students Error:", error.message)
-        return { success: false, error: "ছাত্র-ছাত্রীদের তথ্য লোড করতে সমস্যা হয়েছে।" }
+        console.error("âŒ Get Students Error:", error.message)
+        return { success: false, error: "à¦›à¦¾à¦¤à§à¦°-à¦›à¦¾à¦¤à§à¦°à§€à¦¦à§‡à¦° à¦¤à¦¥à§à¦¯ à¦²à§‹à¦¡ à¦•à¦°à¦¤à§‡ à¦¸à¦®à¦¸à§à¦¯à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤" }
     }
 }
 
 export async function updateStudent(id: string, formData: any) {
+    const currentUser = await getCurrentUser()
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
+    if (!currentUser.schoolId) {
+        return { success: false, error: "Your account is not linked to a school." }
+    }
+    const schoolId = currentUser.schoolId as string;
+
     try {
         const birthDate = formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined;
 
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id }
+            where: { registrationNo: id, schoolId }
         });
 
         if (!student && id.length > 20) {
-            student = await prisma.student.findUnique({
-                where: { id }
+            student = await prisma.student.findFirst({
+                where: { id, schoolId }
             });
         }
 
@@ -149,8 +206,22 @@ export async function updateStudent(id: string, formData: any) {
         const updated = await prisma.student.update({
             where: { id: student.id },
             data: {
-                ...formData,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                gender: formData.gender,
+                bloodGroup: formData.bloodGroup || null,
+                religion: formData.religion || null,
+                currentClass: formData.currentClass,
+                sectionName: formData.section, // Map frontend 'section' to DB 'sectionName'
                 rollNo: formData.rollNo ? Number(formData.rollNo) : undefined,
+                session: formData.session,
+                fatherName: formData.fatherName,
+                motherName: formData.motherName,
+                guardianPhone: formData.guardianPhone,
+                emergencyContact: formData.emergencyContact || null,
+                email: formData.email,
+                presentAddress: formData.presentAddress,
+                permanentAddress: formData.permanentAddress || null,
                 dateOfBirth: birthDate,
             }
         });
@@ -162,14 +233,23 @@ export async function updateStudent(id: string, formData: any) {
 }
 
 export async function deleteStudent(id: string) {
+    const currentUser = await getCurrentUser()
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
     try {
+        if (!currentUser.schoolId) {
+            return { success: false, error: "Your account is not linked to a school." };
+        }
+        const schoolId = currentUser.schoolId as string;
+
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id }
+            where: { registrationNo: id, schoolId }
         });
 
         if (!student && id.length > 20) {
-            student = await prisma.student.findUnique({
-                where: { id }
+            student = await prisma.student.findFirst({
+                where: { id, schoolId }
             });
         }
 
@@ -196,16 +276,24 @@ export async function deleteStudent(id: string) {
 
 export async function getStudent(id: string) {
     console.log("🔍 Fetching student with ID:", id);
+    const currentUser = await getCurrentUser()
+    if (!currentUser || (currentUser.role as string) !== 'admin') {
+        return { success: false, error: "Unauthorized: Principal access required." }
+    }
+    if (!currentUser.schoolId) {
+        return { success: false, error: "Your account is not linked to a school." }
+    }
+    const schoolId = currentUser.schoolId as string;
     try {
-        // Try finding by registration No first
+        // Try finding by registration No first (scoped to school)
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id }
+            where: { registrationNo: id, schoolId }
         });
 
-        // If not found, try finding by UUID
+        // If not found, try finding by UUID (scoped to school)
         if (!student && id.length > 20) {
-            student = await prisma.student.findUnique({
-                where: { id: id }
+            student = await prisma.student.findFirst({
+                where: { id: id, schoolId }
             });
         }
 
@@ -253,10 +341,11 @@ export async function addMultipleStudents(studentsData: any[]) {
         let createdCount = 0;
 
         await prisma.$transaction(async (tx) => {
-            let schoolId = "default-school-id";
-            const firstSchool = await tx.school.findFirst();
-            if (firstSchool) {
-                schoolId = firstSchool.id;
+            const currentUser = await getCurrentUser();
+            const schoolId = currentUser?.schoolId;
+
+            if (!schoolId) {
+                return { success: false, error: "System Error: Authorized school ID not found." };
             }
 
             for (const data of newStudentsData) {
@@ -294,7 +383,7 @@ export async function addMultipleStudents(studentsData: any[]) {
                         bloodGroup: data.bloodGroup?.trim() || null,
                         religion: data.religion?.trim() || null,
                         currentClass: data.currentClass || '',
-                        section: data.section || '',
+                        sectionName: data.section || '',
                         rollNo: Number(data.rollNo) || 0,
                         session: data.session || '',
                         fatherName: data.fatherName || '',
@@ -304,6 +393,7 @@ export async function addMultipleStudents(studentsData: any[]) {
                         email: data.email?.trim() || null,
                         presentAddress: data.presentAddress || '',
                         permanentAddress: data.permanentAddress?.trim() || null,
+                        schoolId: schoolId,
                         userId: newUser.id
                     }
                 });

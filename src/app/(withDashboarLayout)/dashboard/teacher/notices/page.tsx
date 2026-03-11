@@ -27,6 +27,7 @@ export default function NoticesPage() {
     const [selectedNotice, setSelectedNotice] = React.useState<any | null>(null);
     const [activeFilter, setActiveFilter] = React.useState("all");
     const [editNotice, setEditNotice] = React.useState<any | null>(null);
+    const [searchQuery, setSearchQuery] = React.useState("");
 
     // Form states
     const { user } = useAuth();
@@ -43,23 +44,29 @@ export default function NoticesPage() {
     // Data states
     const [notices, setNotices] = React.useState<any[]>([]);
     const [isLoadingNotices, setIsLoadingNotices] = React.useState(true);
+    const [assignedClasses, setAssignedClasses] = React.useState<any[]>([]);
 
-    const fetchNotices = async () => {
+    const fetchInitialData = async () => {
         setIsLoadingNotices(true);
         try {
-            const result = await getTeacherNotices(schoolId || undefined);
-            if (result.success) {
-                setNotices(result.data || []);
+            const noticesRes = await getTeacherNotices(schoolId || undefined);
+            const classesRes = await import('@/app/actions/teacher/results').then(m => m.getClasses());
+
+            if (noticesRes.success) {
+                setNotices(noticesRes.data || []);
+            }
+            if (classesRes.success) {
+                setAssignedClasses(classesRes.data || []);
             }
         } catch (error) {
-            console.error("Failed to load notices", error);
+            console.error("Failed to load data", error);
         } finally {
             setIsLoadingNotices(false);
         }
     };
 
     React.useEffect(() => {
-        fetchNotices();
+        fetchInitialData();
     }, [schoolId]);
 
     const openEditModal = (notice: any) => {
@@ -96,7 +103,7 @@ export default function NoticesPage() {
                     background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
                     color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a'
                 });
-                fetchNotices();
+                fetchInitialData();
             } else {
                 toast.error(deleteResult.error || "Failed to delete notice");
             }
@@ -143,7 +150,7 @@ export default function NoticesPage() {
                 setAudience("All Faculty & Students");
                 setCategory("Academic");
                 // Reload notices after successful post
-                fetchNotices();
+                fetchInitialData();
             } else {
                 toast.error(result.error || "Failed to publish notice");
             }
@@ -186,10 +193,20 @@ export default function NoticesPage() {
     };
 
     const filteredNotices = notices.filter(notice => {
-        if (activeFilter === "all") return true;
-        if (activeFilter === "General") return notice.category === "General";
-        if (activeFilter === "Administration") return notice.category === "Urgent";
-        return notice.audience === activeFilter || notice.targetClass === activeFilter;
+        // 1. Filter by category
+        let matchesFilter = true;
+        if (activeFilter === "General") matchesFilter = notice.category === "General";
+        else if (activeFilter === "Administration") matchesFilter = notice.category === "Urgent";
+        else if (activeFilter !== "all") {
+            matchesFilter = notice.audience === activeFilter || notice.targetClass === activeFilter;
+        }
+
+        // 2. Filter by search query
+        const matchesSearch =
+            notice.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            notice.content.toLowerCase().includes(searchQuery.toLowerCase());
+
+        return matchesFilter && matchesSearch;
     });
 
     return (
@@ -211,7 +228,7 @@ export default function NoticesPage() {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex bg-bg-card p-1.5 rounded-2xl border border-border-light overflow-x-auto scrollbar-hide">
-                    {["all", "General", "Administration", "Class X-A", "Class IX-B"].map((filter) => (
+                    {["all", "General", "Administration", ...assignedClasses.map(c => c.name)].map((filter) => (
                         <button
                             key={filter}
                             onClick={() => setActiveFilter(filter)}
@@ -226,7 +243,9 @@ export default function NoticesPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted transition-colors group-focus-within:text-primary" size={18} />
                     <input
                         type="text"
-                        placeholder="Filter announcements..."
+                        placeholder="Search announcements..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-12 pr-4 py-4 md:py-3.5 bg-bg-card border border-border-light rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-text-secondary shadow-sm"
                     />
                 </div>
@@ -367,9 +386,9 @@ export default function NoticesPage() {
                                         className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary"
                                     >
                                         <option value="All Faculty & Students">All Faculty & Students</option>
-                                        <option value="Class X - A">Class X - A</option>
-                                        <option value="Class IX - B">Class X - B</option>
-                                        <option value="Class X - C">Class X - C</option>
+                                        {assignedClasses.map((cls) => (
+                                            <option key={cls.id} value={cls.name}>{cls.name}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className="space-y-3">
