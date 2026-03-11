@@ -51,9 +51,12 @@ export default function SuperAdminOverview() {
     async function loadSchools() {
       const res = await getAllSchools()
 
-      if (res.success) {
+      if (res.success && res.data) {
         setSchools(res.data)
         setSchoolCount(res.data.length)
+      } else {
+        setSchools([])
+        setSchoolCount(0)
       }
     }
 

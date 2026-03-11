@@ -31,8 +31,8 @@ export default function SuperAdminProfileControl() {
         const [userRes, configRes] = await Promise.all([getSuperAdminUsers(), getSystemConfig()])
         if (userRes?.success) setUsers(userRes.data || [])
         if (configRes?.success && configRes.data) {
-          setSiteName(configRes.data.siteName)
-          setSiteSubtitle(configRes.data.siteSubtitle)
+          setSiteName(configRes.data.siteName || "")
+          setSiteSubtitle(configRes.data.siteSubtitle || "")
           setSiteLogo(configRes.data.siteLogo || "")
         }
       } finally { setLoading(false) }

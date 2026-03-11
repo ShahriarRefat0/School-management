@@ -159,10 +159,14 @@ export async function getStudents() {
     if (!currentUser || (currentUser.role as string) !== 'admin') {
         return { success: false, error: "Unauthorized: Principal access required." }
     }
+    if (!currentUser.schoolId) {
+        return { success: false, error: "Your account is not linked to a school." }
+    }
+    const schoolId = currentUser.schoolId as string;
     try {
         if (!prisma.student) return { success: false, error: "Database error." };
         const students = await prisma.student.findMany({
-            where: { schoolId: currentUser.schoolId },
+            where: { schoolId },
             orderBy: { createdAt: 'desc' }
         })
         return { success: true, data: students }
@@ -177,16 +181,21 @@ export async function updateStudent(id: string, formData: any) {
     if (!currentUser || (currentUser.role as string) !== 'admin') {
         return { success: false, error: "Unauthorized: Principal access required." }
     }
+    if (!currentUser.schoolId) {
+        return { success: false, error: "Your account is not linked to a school." }
+    }
+    const schoolId = currentUser.schoolId as string;
+
     try {
         const birthDate = formData.dateOfBirth ? new Date(formData.dateOfBirth) : undefined;
 
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id, schoolId: currentUser.schoolId }
+            where: { registrationNo: id, schoolId }
         });
 
         if (!student && id.length > 20) {
             student = await prisma.student.findFirst({
-                where: { id, schoolId: currentUser.schoolId }
+                where: { id, schoolId }
             });
         }
 
@@ -229,13 +238,18 @@ export async function deleteStudent(id: string) {
         return { success: false, error: "Unauthorized: Principal access required." }
     }
     try {
+        if (!currentUser.schoolId) {
+            return { success: false, error: "Your account is not linked to a school." };
+        }
+        const schoolId = currentUser.schoolId as string;
+
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id, schoolId: currentUser.schoolId }
+            where: { registrationNo: id, schoolId }
         });
 
         if (!student && id.length > 20) {
             student = await prisma.student.findFirst({
-                where: { id, schoolId: currentUser.schoolId }
+                where: { id, schoolId }
             });
         }
 
@@ -266,16 +280,20 @@ export async function getStudent(id: string) {
     if (!currentUser || (currentUser.role as string) !== 'admin') {
         return { success: false, error: "Unauthorized: Principal access required." }
     }
+    if (!currentUser.schoolId) {
+        return { success: false, error: "Your account is not linked to a school." }
+    }
+    const schoolId = currentUser.schoolId as string;
     try {
         // Try finding by registration No first (scoped to school)
         let student = await prisma.student.findFirst({
-            where: { registrationNo: id, schoolId: currentUser.schoolId }
+            where: { registrationNo: id, schoolId }
         });
 
         // If not found, try finding by UUID (scoped to school)
         if (!student && id.length > 20) {
             student = await prisma.student.findFirst({
-                where: { id: id, schoolId: currentUser.schoolId }
+                where: { id: id, schoolId }
             });
         }
 

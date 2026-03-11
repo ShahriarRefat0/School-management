@@ -103,7 +103,7 @@ export default function NoticesPage() {
                     background: document.documentElement.classList.contains('dark') ? '#0f172a' : '#fff',
                     color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a'
                 });
-                fetchNotices();
+                fetchInitialData();
             } else {
                 toast.error(deleteResult.error || "Failed to delete notice");
             }

@@ -14,6 +14,8 @@ export async function saveAttendance(records: {
     try {
         const currentUser = await getCurrentUser();
         if (!currentUser) return { success: false, error: "Authentication required" };
+        if (!currentUser.schoolId) return { success: false, error: "Your account is not linked to a school." };
+        const schoolId = currentUser.schoolId as string;
 
         const teacher = await prisma.teacher.findUnique({
             where: { userId: currentUser.id }
@@ -44,7 +46,7 @@ export async function saveAttendance(records: {
                         status: record.status,
                         date: attendanceDate,
                         classId: record.classId,
-                        schoolId: currentUser.schoolId,
+                        schoolId: schoolId,
                         teacherId: teacher.id
                     }
                 });
