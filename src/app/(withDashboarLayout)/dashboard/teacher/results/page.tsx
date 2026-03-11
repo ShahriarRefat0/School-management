@@ -35,9 +35,10 @@ export default function ResultsPage() {
         const fetchClasses = async () => {
             setIsLoading(true);
             const res = await getClasses();
-            if (res.success) {
+            if (res.success && res.data) {
                 setClasses(res.data);
             } else {
+                setClasses([]);
                 toast.error(res.error || "Failed to load classes");
             }
             setIsLoading(false);
@@ -59,12 +60,12 @@ export default function ResultsPage() {
                     subjects.map(sub => getResults(selectedClass, sub, examType))
                 );
 
-                const studentMap = studentsRes.data.map((student: any) => {
+                const studentMap = (studentsRes.data || []).map((student: any) => {
                     const marks: Record<string, number> = {};
                     subjects.forEach((sub, index) => {
                         const subResult = allResults[index];
                         if (subResult.success) {
-                            const studentResult = subResult.data.find((r: any) => r.studentId === student.id);
+                            const studentResult = (subResult.data || []).find((r: any) => r.studentId === student.id);
                             marks[sub] = studentResult ? studentResult.marks : 0;
                         } else {
                             marks[sub] = 0;

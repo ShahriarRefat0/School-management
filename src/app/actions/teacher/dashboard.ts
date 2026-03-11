@@ -7,6 +7,8 @@ export async function getTeacherDashboardData() {
     try {
         const currentUser = await getCurrentUser()
         if (!currentUser) return { success: false, error: "Authentication required" }
+        if (!currentUser.schoolId) return { success: false, error: "Your account is not linked to a school." }
+        const schoolId = currentUser.schoolId as string;
 
         const teacher = await prisma.teacher.findUnique({
             where: { userId: currentUser.id },
@@ -21,14 +23,14 @@ export async function getTeacherDashboardData() {
         // We'll use the names in teacher.assignedClasses to find matching students
         const students = await prisma.student.findMany({
             where: {
-                schoolId: currentUser.schoolId,
+                schoolId: schoolId,
                 currentClass: { in: teacher.assignedClasses }
             }
         })
 
         // 2. Get recent notices
         const recentNotices = await prisma.teacherNotice.findMany({
-            where: { schoolId: currentUser.schoolId },
+            where: { schoolId: schoolId },
             orderBy: { createdAt: 'desc' },
             take: 5
         })
@@ -36,7 +38,7 @@ export async function getTeacherDashboardData() {
         // 3. Get full class objects for assigned classes
         const assignedClassesData = await prisma.class.findMany({
             where: {
-                schoolId: currentUser.schoolId,
+                schoolId: schoolId,
                 name: { in: teacher.assignedClasses }
             },
             orderBy: { name: 'asc' }

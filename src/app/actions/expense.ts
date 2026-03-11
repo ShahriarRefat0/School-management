@@ -66,7 +66,10 @@ export async function createExpense(data: ExpenseInput) {
       return { success: false, error: 'Authentication required' };
     if (!canManageExpense(currentUser.role as string))
       return { success: false, error: 'Unauthorized' };
+    if (!currentUser.schoolId)
+      return { success: false, error: 'Your account is not linked to a school.' };
 
+    const schoolId = currentUser.schoolId as string;
     let attachmentUrl = data.attachmentUrl || null;
     if (data.image) {
       const uploadedUrl = await uploadToImgBB(data.image);
@@ -82,7 +85,7 @@ export async function createExpense(data: ExpenseInput) {
         note: data.note || null,
         status: data.status || 'Paid',
         attachmentUrl: attachmentUrl,
-        schoolId: currentUser.schoolId, // auto assign schoolId
+        schoolId: schoolId, // auto assign schoolId
         createdById: currentUser.id,
       },
     });
@@ -146,6 +149,10 @@ export async function updateExpense(id: string, data: Partial<ExpenseInput>) {
       return { success: false, error: 'Authentication required' };
     if (!canManageExpense(currentUser.role))
       return { success: false, error: 'Unauthorized' };
+    if (!currentUser.schoolId)
+      return { success: false, error: 'Your account is not linked to a school.' };
+
+    const schoolId = currentUser.schoolId as string;
 
     // verify ownership and existence
     if (!prisma.expense) {
@@ -153,7 +160,7 @@ export async function updateExpense(id: string, data: Partial<ExpenseInput>) {
       return { success: false, error: 'Database model "expense" is missing. Please run "npx prisma generate" and restart the server.' };
     }
     const existing = await prisma.expense.findFirst({
-      where: { id, schoolId: currentUser.schoolId },
+      where: { id, schoolId },
     });
     if (!existing) return { success: false, error: 'Expense not found' };
 
@@ -205,9 +212,13 @@ export async function deleteExpense(id: string) {
       return { success: false, error: 'Authentication required' };
     if (!canManageExpense(currentUser.role))
       return { success: false, error: 'Unauthorized' };
+    if (!currentUser.schoolId)
+      return { success: false, error: 'Your account is not linked to a school.' };
+
+    const schoolId = currentUser.schoolId as string;
 
     const existing = await prisma.expense.findFirst({
-      where: { id, schoolId: currentUser.schoolId },
+      where: { id, schoolId },
     });
     if (!existing) return { success: false, error: 'Expense not found' };
 

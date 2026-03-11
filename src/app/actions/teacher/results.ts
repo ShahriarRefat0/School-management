@@ -8,6 +8,8 @@ export async function getClasses() {
     try {
         const currentUser = await getCurrentUser();
         if (!currentUser) return { success: false, error: "Authentication required" };
+        if (!currentUser.schoolId) return { success: false, error: "Your account is not linked to a school." };
+        const schoolId = currentUser.schoolId as string;
 
         const teacher = await prisma.teacher.findUnique({
             where: { userId: currentUser.id }
@@ -18,7 +20,7 @@ export async function getClasses() {
         // Ensure teacher.assignedClasses are in the Class table
         for (const className of teacher.assignedClasses) {
             const cls = await prisma.class.findFirst({
-                where: { schoolId: currentUser.schoolId, name: className }
+                where: { schoolId: schoolId, name: className }
             });
 
             if (!cls) {
@@ -26,7 +28,7 @@ export async function getClasses() {
                 const newCls = await prisma.class.create({
                     data: {
                         name: className,
-                        schoolId: currentUser.schoolId || ""
+                        schoolId: schoolId
                     }
                 });
 
@@ -55,7 +57,7 @@ export async function getClasses() {
 
         const classes = await prisma.class.findMany({
             where: {
-                schoolId: currentUser.schoolId,
+                schoolId: schoolId,
                 name: { in: teacher.assignedClasses }
             },
             orderBy: { name: 'asc' }
@@ -132,6 +134,8 @@ export async function saveResults(resultsData: {
     try {
         const currentUser = await getCurrentUser();
         if (!currentUser) return { success: false, error: "Authentication required" };
+        if (!currentUser.schoolId) return { success: false, error: "Your account is not linked to a school." };
+        const schoolId = currentUser.schoolId as string;
 
         const teacher = await prisma.teacher.findUnique({
             where: { userId: currentUser.id }
@@ -161,7 +165,7 @@ export async function saveResults(resultsData: {
                         subject: res.subject,
                         examType: res.examType,
                         classId: res.classId,
-                        schoolId: currentUser.schoolId,
+                        schoolId: schoolId,
                         teacherId: teacher.id
                     }
                 });

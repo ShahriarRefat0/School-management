@@ -29,17 +29,6 @@ model School {
   exams            Exam[]
   fees             Fee[]
   payments         Payment[]
-    feedbacks        Feedback[]
-  results          Result[]
-  studyMaterials   StudyMaterial[]
-  subjects         Subject[]
-  supportTickets   SupportTicket[]
-  teacherNotices   TeacherNotice[]
-  users            User[]          @relation("SchoolUsers")
-  students         Student[]
-  teachers         Teacher[]
-  expenses         Expense[]
-  transactions     Transaction[]
   feedbacks        Feedback[]
   results          Result[]
   studyMaterials   StudyMaterial[]
@@ -50,6 +39,7 @@ model School {
   students         Student[]
   teachers         Teacher[]
   expenses         Expense[]
+  transactions     Transaction[]
 }
 
 model Transaction {
@@ -165,7 +155,7 @@ model SupportTicket {
 model Teacher {
   id               String           @id @default(uuid())
   teacherId        String           @unique
-  phone            String
+  phone            String?
   dateOfBirth      DateTime
   gender           String
   bloodGroup       String?
@@ -418,7 +408,7 @@ model ClassSchedule {
 model Parent {
   id        String   @id @default(cuid())
   name      String
-  phone     String
+  phone     String?
   email     String?
   studentId String
   createdAt DateTime @default(now())
@@ -481,4 +471,14 @@ model Feedback {
   @@index([studentId])
   @@index([teacherId])
   @@index([schoolId])
+}
+
+// Global configuration for the system (used by super admin dashboard)
+model SystemConfig {
+  id          String   @id @default("system_config")
+  siteName    String?
+  siteSubtitle String?
+  siteLogo    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

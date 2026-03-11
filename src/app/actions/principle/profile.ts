@@ -21,7 +21,7 @@ export async function getMyProfileData() {
 
 // ... আগের getMyProfileData এখানে থাকবে ...
 
-export async function updateMyProfileData(formData: { fullName: string; phone: string }) {
+export async function updateMyProfileData(formData: { fullName: string }) {
   try {
     const user = await getCurrentUser();
 
@@ -29,12 +29,11 @@ export async function updateMyProfileData(formData: { fullName: string; phone: s
       return { success: false, error: "সেশন পাওয়া যায়নি।" };
     }
 
-    // ডাটাবেস আপডেট (ধরে নিচ্ছি আপনার User মডেলে name এবং phone ফিল্ড আছে)
+    // ডাটাবেস আপডেট (বর্তমানে শুধুমাত্র নাম আপডেট করা হচ্ছে)
     await prisma.user.update({
       where: { id: user.id },
       data: {
         name: formData.fullName,
-        
       },
     });
 

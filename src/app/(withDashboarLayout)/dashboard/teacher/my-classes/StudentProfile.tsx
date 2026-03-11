@@ -50,19 +50,19 @@ export default function StudentProfile({ student, onBack }: StudentProfileProps)
         );
     }
 
-    const attendanceHistory = fullData?.attendance?.map((a: any) => ({
+    const attendanceHistory: { date: string; status: string }[] = fullData?.attendance?.map((a: any) => ({
         date: new Date(a.date).toLocaleDateString(),
         status: a.status.toLowerCase()
     })) || [];
 
-    const examResults = fullData?.results?.map((r: any) => ({
+    const examResults: { exam: string; subject: string; marks: string; grade: string }[] = fullData?.results?.map((r: any) => ({
         exam: r.exam?.name || "Assessment",
         subject: r.subjectRef?.name || "General",
         marks: `${r.marks}/100`,
         grade: r.marks >= 80 ? "A+" : r.marks >= 70 ? "A" : "B"
     })) || [];
 
-    const feedbacks = fullData?.feedbacks?.map((f: any) => ({
+    const feedbacks: { date: string; note: string; teacher: string }[] = fullData?.feedbacks?.map((f: any) => ({
         date: new Date(f.createdAt).toLocaleDateString(),
         note: f.comment,
         teacher: "Teacher" // We could fetch teacher name if info available
