@@ -231,6 +231,12 @@ export const principalMenuItems: DashboardMenuItem[] = [
     icon: LifeBuoy,
   },
   {
+    title: 'Subscription',
+    url: '/dashboard/principal/subscription',
+    icon: CreditCard,
+    badge: 'Pro',
+  },
+  {
     title: 'Settings',
     url: '/dashboard/principal/settings',
     icon: Settings,
