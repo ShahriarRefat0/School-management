@@ -2,6 +2,7 @@
 import React from 'react'
 import { Check, Zap, Shield, Crown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 const plans = [
     {
@@ -34,10 +35,15 @@ const plans = [
 export default function SubscriptionPage() {
     const router = useRouter();
 
+    const { user } = useAuth();
+
     const handleBuyNow = async (plan: any) => {
         try {
-            // এই ডাটাগুলো সাধারণত কারেন্ট ইউজার বা স্কুল থেকে আসবে
-            // আপাতত স্যাম্পল ডাটা ব্যবহার করছি, আপনার সিস্টেমে useAuth বা সেশন থেকে স্কুল আইডি পাবেন
+            if (!user) {
+                alert("Please log in first");
+                return;
+            }
+
             const res = await fetch('/api/subscription/initiate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -45,7 +51,10 @@ export default function SubscriptionPage() {
                     planName: plan.name,
                     amount: plan.price,
                     duration: plan.duration,
-                    schoolId: "clxt... (আপনার স্কুল আইডি)", // dynamic school id here
+                    customerName: user.user_metadata?.name || user.email,
+                    customerEmail: user.email,
+                    customerPhone: user.user_metadata?.phone,
+                    schoolId: user.user_metadata?.schoolId, // optional, server will find it if missing
                 })
             });
             const data = await res.json();
@@ -56,6 +65,7 @@ export default function SubscriptionPage() {
             }
         } catch (error) {
             console.error(error);
+            alert("An error occurred during payment initiation.");
         }
     }
 
