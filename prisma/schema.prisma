@@ -30,6 +30,16 @@ model School {
   fees             Fee[]
   payments         Payment[]
   transactions     Transaction[]
+  feedbacks        Feedback[]
+  results          Result[]
+  studyMaterials   StudyMaterial[]
+  subjects         Subject[]
+  supportTickets   SupportTicket[]
+  teacherNotices   TeacherNotice[]
+  users            User[]          @relation("SchoolUsers")
+  students         Student[]
+  teachers         Teacher[]
+  expenses         Expense[]
 }
 
 model Transaction {
@@ -51,16 +61,6 @@ model Transaction {
   updatedAt     DateTime @updatedAt
 
   @@index([schoolId])
-  feedbacks        Feedback[]
-  results          Result[]
-  studyMaterials   StudyMaterial[]
-  subjects         Subject[]
-  supportTickets   SupportTicket[]
-  teacherNotices   TeacherNotice[]
-  users            User[]          @relation("SchoolUsers")
-  students         Student[]
-  teachers         Teacher[]
-  expenses         Expense[]
 }
 
 model Announcement {
@@ -197,7 +197,7 @@ model User {
   name           String
   announcements  Announcement[]  @relation("AuthorAnnouncements")
   teacherNotices TeacherNotice[] @relation("AuthorTeacherNotices")
-  school         School          @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
+  school         School?         @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
   student        Student?        @relation("UserStudent")
   teacher        Teacher?        @relation("UserTeacher")
 
