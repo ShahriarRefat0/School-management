@@ -41,3 +41,9 @@ export async function getSchoolUsers(schoolId: string) {
     throw new Error("Failed to fetch users");
   }
 }
+
+
+
+
+//super admin user list 
+

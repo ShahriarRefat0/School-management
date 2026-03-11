@@ -28,6 +28,7 @@ import {
   Users2,
 } from 'lucide-react';
 import { DashboardMenuItem } from './types';
+import { profile } from 'console';
 
 export const studentMenuItems: DashboardMenuItem[] = [
   { title: 'Dashboard', url: '/dashboard/student', icon: LayoutDashboard },
@@ -78,6 +79,7 @@ export const teacherMenuItems: DashboardMenuItem[] = [
     badge: 'new',
   },
   { title: 'Feedback', url: '/dashboard/teacher/feedback', icon: Users },
+  { title: 'profile', url: '/dashboard/teacher/profile', icon: Users },
 ];
 
 export const superAdminMenuItems: DashboardMenuItem[] = [
@@ -108,8 +110,8 @@ export const superAdminMenuItems: DashboardMenuItem[] = [
     icon: LifeBuoy,
   },
   {
-    title: 'Global Settings',
-    url: '/dashboard/super-admin/settings',
+    title: 'Add Users',
+    url: '/dashboard/super-admin/add-users',
     icon: Settings2,
   },
 ];
