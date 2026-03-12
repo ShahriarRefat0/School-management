@@ -88,15 +88,30 @@ export default function ResultsPage() {
         fetchData();
     }, [selectedClass, examType]);
 
-    const handleAddSubject = () => {
-        const subjectName = prompt("Enter new subject name:");
-        if (subjectName && !subjects.includes(subjectName)) {
-            setSubjects(prev => [...prev, subjectName]);
+    const handleAddSubject = async () => {
+        const { value: subjectName } = await Swal.fire({
+            title: 'New Subject',
+            text: 'Enter a subject name to add it to the gradebook.',
+            input: 'text',
+            inputPlaceholder: 'e.g. History',
+            showCancelButton: true,
+            confirmButtonText: 'Add',
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value || !value.trim()) return 'Please enter a subject name.';
+                if (subjects.includes(value.trim())) return 'This subject is already added.';
+                return null;
+            }
+        });
+
+        if (subjectName && !subjects.includes(subjectName.trim())) {
+            const trimmed = subjectName.trim();
+            setSubjects(prev => [...prev, trimmed]);
             setStudentsData(prev => prev.map(student => ({
                 ...student,
                 marks: {
                     ...student.marks,
-                    [subjectName]: 0
+                    [trimmed]: 0
                 }
             })));
         }

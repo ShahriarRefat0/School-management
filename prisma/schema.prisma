@@ -388,7 +388,7 @@ model Fee {
   schoolId  String
   createdAt DateTime  @default(now())
   class     Class?    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school    School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   payments  Payment[]
 }
 
