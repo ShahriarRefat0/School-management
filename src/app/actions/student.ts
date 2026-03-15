@@ -1,4 +1,4 @@
-﻿"use server"
+"use server"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/getCurrentUser"
@@ -316,19 +316,25 @@ export async function addMultipleStudents(studentsData: any[]) {
             return { success: false, error: "Database error: Models missing." };
         }
 
-        // Find existing registration numbers to avoid duplicates
+        const currentUser = await getCurrentUser();
+        const schoolId = currentUser?.schoolId;
+
+        if (!schoolId) {
+            return { success: false, error: "Unauthorized: School ID not found." };
+        }
+
+        // 1. Filter out already existing registration numbers
         const registrationNos = studentsData.map(s => s.registrationNo).filter(Boolean);
         const existingStudents = await prisma.student.findMany({
             where: {
-                registrationNo: {
-                    in: registrationNos
-                }
+                registrationNo: { in: registrationNos },
+                schoolId: schoolId
             },
             select: { registrationNo: true }
         });
 
-        const existingRegNos = existingStudents.map(s => s.registrationNo);
-        const newStudentsData = studentsData.filter(s => !existingRegNos.includes(s.registrationNo));
+        const existingRegNos = new Set(existingStudents.map(s => s.registrationNo));
+        const newStudentsData = studentsData.filter(s => !existingRegNos.has(s.registrationNo));
 
         if (newStudentsData.length === 0) {
             return {
@@ -338,29 +344,33 @@ export async function addMultipleStudents(studentsData: any[]) {
             };
         }
 
+        // 2. Pre-fetch existing emails to minimize queries inside transaction
+        const candidateEmails = new Set(newStudentsData.map(s => s.email?.trim()).filter(Boolean));
+        const existingUsers = await prisma.user.findMany({
+            where: { email: { in: Array.from(candidateEmails as any) } },
+            select: { email: true }
+        });
+        const existingEmails = new Set(existingUsers.map(u => u.email));
+
         let createdCount = 0;
 
+        // 3. Perform bulk creation in a single transaction with increased timeout
         await prisma.$transaction(async (tx) => {
-            const currentUser = await getCurrentUser();
-            const schoolId = currentUser?.schoolId;
-
-            if (!schoolId) {
-                return { success: false, error: "System Error: Authorized school ID not found." };
-            }
-
             for (const data of newStudentsData) {
                 const birthDate = data.dateOfBirth ? new Date(data.dateOfBirth) : new Date();
                 const validBirthDate = isNaN(birthDate.getTime()) ? new Date() : birthDate;
 
-                const authUserId = `auth-${data.registrationNo}-${Date.now()}`;
+                // For bulk, we generate a unique authUserId placeholder
+                const authUserId = `auth-${data.registrationNo}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
                 const safeEmail = data.email?.trim() || `student_${data.registrationNo}@school.local`;
 
-                // Ensure email uniqueness before user creation
-                const existingUserWithEmail = await tx.user.findUnique({
-                    where: { email: safeEmail }
-                });
-
-                const finalEmail = existingUserWithEmail ? `student_${data.registrationNo}_${Date.now()}@school.local` : safeEmail;
+                // Check against pre-fetched and newly added emails in this transaction
+                const finalEmail = existingEmails.has(safeEmail) 
+                    ? `student_${data.registrationNo}_${Date.now()}@school.local` 
+                    : safeEmail;
+                
+                // Track newly used email to avoid collision within the same bulk batch
+                existingEmails.add(finalEmail);
 
                 const newUser = await tx.user.create({
                     data: {
@@ -399,6 +409,8 @@ export async function addMultipleStudents(studentsData: any[]) {
                 });
                 createdCount++;
             }
+        }, {
+            timeout: 30000 // Increase timeout to 30 seconds
         });
 
         console.log(`✅ Successfully bulk added ${createdCount} students`);
@@ -412,7 +424,7 @@ export async function addMultipleStudents(studentsData: any[]) {
     } catch (error: any) {
         console.error("❌ Bulk Student Create Error:", error);
         if (error.code === 'P2002') {
-            return { success: false, error: "A unique constraint failed during import (such as duplicate Email or Registration No within the file)." };
+            return { success: false, error: "A unique constraint failed during import (Duplicate Email or Registration No)." };
         }
         return { success: false, error: `সার্ভার এরর: ${error.message || "Database error occurred"}` };
     }
