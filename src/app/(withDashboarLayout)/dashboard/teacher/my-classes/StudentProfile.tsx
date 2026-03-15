@@ -55,12 +55,18 @@ export default function StudentProfile({ student, onBack }: StudentProfileProps)
         status: a.status.toLowerCase()
     })) || [];
 
-    const examResults: { exam: string; subject: string; marks: string; grade: string }[] = fullData?.results?.map((r: any) => ({
-        exam: r.exam?.name || "Assessment",
-        subject: r.subjectRef?.name || "General",
-        marks: `${r.marks}/100`,
-        grade: r.marks >= 80 ? "A+" : r.marks >= 70 ? "A" : "B"
-    })) || [];
+    const groupedResults = fullData?.results?.reduce((acc: any, r: any) => {
+        const type = r.examType || r.exam?.name || "Academic Assessment";
+        if (!acc[type]) acc[type] = [];
+        
+        const marksValue = Number(r.marks) || 0;
+        acc[type].push({
+            subject: r.subject || r.subjectRef?.name || "General",
+            marks: `${marksValue}/100`,
+            grade: marksValue >= 80 ? "A+" : marksValue >= 70 ? "A" : marksValue >= 60 ? "A-" : marksValue >= 50 ? "B" : marksValue >= 40 ? "C" : marksValue >= 33 ? "D" : "F"
+        });
+        return acc;
+    }, {}) || {};
 
     const feedbacks: { date: string; note: string; teacher: string }[] = fullData?.feedbacks?.map((f: any) => ({
         date: new Date(f.createdAt).toLocaleDateString(),
@@ -143,27 +149,40 @@ export default function StudentProfile({ student, onBack }: StudentProfileProps)
                         <h3 className="text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                             <Award size={20} className="text-primary" /> Recent Results
                         </h3>
-                        <div className="overflow-hidden rounded-2xl border border-border-light">
-                            <table className="w-full text-left">
-                                <thead className="bg-bg-page">
-                                    <tr>
-                                        <th className="py-3 px-4 text-[10px] font-black uppercase text-text-muted">Exam</th>
-                                        <th className="py-3 px-4 text-[10px] font-black uppercase text-text-muted">Marks</th>
-                                        <th className="py-3 px-4 text-[10px] font-black uppercase text-text-muted text-right">Grade</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border-light/50">
-                                    {examResults.map((res, idx) => (
-                                        <tr key={idx}>
-                                            <td className="py-3 px-4 text-sm font-bold text-text-secondary">{res.exam}</td>
-                                            <td className="py-3 px-4 text-sm font-bold text-text-primary">{res.marks}</td>
-                                            <td className="py-3 px-4 text-right">
-                                                <span className="text-sm font-black italic text-primary">{res.grade}</span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="space-y-4">
+                            {Object.keys(groupedResults).length > 0 ? (
+                                Object.entries(groupedResults).map(([examType, results]: [string, any]) => (
+                                    <div key={examType} className="overflow-hidden rounded-2xl border border-border-light">
+                                        <div className="bg-bg-page px-4 py-2 border-b border-border-light">
+                                            <span className="text-[10px] font-black uppercase text-primary tracking-widest">{examType}</span>
+                                        </div>
+                                        <table className="w-full text-left">
+                                            <thead>
+                                                <tr className="bg-white dark:bg-slate-900/50">
+                                                    <th className="py-2.5 px-4 text-[9px] font-black uppercase text-text-muted">Subject</th>
+                                                    <th className="py-2.5 px-4 text-[9px] font-black uppercase text-text-muted">Marks</th>
+                                                    <th className="py-2.5 px-4 text-[9px] font-black uppercase text-text-muted text-right">Grade</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-border-light/30">
+                                                {results.map((res: any, idx: number) => (
+                                                    <tr key={idx} className="hover:bg-primary/[0.02] transition-colors">
+                                                        <td className="py-3 px-4 text-xs font-bold text-text-secondary">{res.subject}</td>
+                                                        <td className="py-3 px-4 text-xs font-bold text-text-primary">{res.marks}</td>
+                                                        <td className="py-3 px-4 text-right">
+                                                            <span className={`text-xs font-black italic ${res.grade === 'F' ? 'text-red-500' : 'text-primary'}`}>{res.grade}</span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-10 text-center bg-bg-page/50 rounded-2xl border border-dashed border-border-light">
+                                    <p className="text-xs font-bold text-text-muted italic">No results found for this student.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

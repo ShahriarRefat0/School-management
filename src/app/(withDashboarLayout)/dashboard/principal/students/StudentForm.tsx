@@ -29,7 +29,9 @@ export default function StudentForm() {
         religion: "", currentClass: "", section: "",
         rollNo: "", session: "", fatherName: "",
         motherName: "", guardianPhone: "", emergencyContact: "",
-        email: "", password: "", presentAddress: "", permanentAddress: "",
+        email: "", password: "",
+        parentEmail: "", parentPassword: "",
+        presentAddress: "", permanentAddress: "",
     });
 
     useEffect(() => {
@@ -60,6 +62,8 @@ export default function StudentForm() {
                             emergencyContact: d.emergencyContact || "",
                             email: d.email || "",
                             password: "",
+                            parentEmail: d.parents?.[0]?.email || "",
+                            parentPassword: "",
                             presentAddress: d.presentAddress || "",
                             permanentAddress: d.permanentAddress || "",
                         });
@@ -206,7 +210,12 @@ export default function StudentForm() {
                             <div className="space-y-4">
                                 <h4 className="text-[11px] font-black uppercase tracking-tighter flex items-center gap-2 dark:text-blue-400"><GraduationCap size={16}/> Academic Info</h4>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <Input name="currentClass" value={form.currentClass} onChange={handleChange} placeholder="Class *" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
+                                    <select name="currentClass" value={form.currentClass} onChange={handleChange} required className="h-11 rounded-lg border dark:border-slate-800 px-3 text-xs font-medium bg-white dark:bg-slate-950 dark:text-white outline-none">
+                                        <option value="">Select Class *</option>
+                                        {[...Array(12)].map((_, i) => (
+                                            <option key={i + 1} value={`Class ${i + 1}`}>Class {i + 1}</option>
+                                        ))}
+                                    </select>
                                     <Input name="section" value={form.section} onChange={handleChange} placeholder="Section *" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
                                     <Input name="rollNo" type="number" value={form.rollNo} onChange={handleChange} placeholder="Roll *" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
                                     <Input name="session" value={form.session} onChange={handleChange} placeholder="Session *" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
@@ -218,6 +227,12 @@ export default function StudentForm() {
                                     <Input name="fatherName" value={form.fatherName} onChange={handleChange} placeholder="Father's Name *" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
                                     <Input name="motherName" value={form.motherName} onChange={handleChange} placeholder="Mother's Name *" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
                                     <Input name="guardianPhone" value={form.guardianPhone} onChange={handleChange} placeholder="Guardian Phone *" className="h-11 rounded-lg text-xs font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
+                                    
+                                    <div className="pt-2 border-t dark:border-slate-800 space-y-3">
+                                        <p className="text-[10px] font-bold uppercase text-muted-foreground dark:text-slate-500 tracking-widest">Parent Account (Optional)</p>
+                                        <Input name="parentEmail" type="email" value={form.parentEmail} onChange={handleChange} placeholder="Parent Email (pa.regno@school.site)" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
+                                        <Input name="parentPassword" type="password" value={form.parentPassword} onChange={handleChange} placeholder="Parent Password (Def: Parent@1234)" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

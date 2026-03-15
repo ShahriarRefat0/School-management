@@ -28,7 +28,7 @@ export async function createTeacherNotice(formData: {
                 title: formData.title,
                 content: formData.content,
                 audience: formData.audience,
-                targetClass: formData.audience === "students" ? formData.targetClass : null,
+                targetClass: formData.targetClass || null,
                 category: formData.category,
                 priority: formData.priority,
                 schoolId: schoolId,
@@ -62,7 +62,7 @@ export async function updateTeacherNotice(id: string, formData: {
                 title: formData.title,
                 content: formData.content,
                 audience: formData.audience,
-                targetClass: formData.audience === "students" ? formData.targetClass : null,
+                targetClass: formData.targetClass || null,
                 category: formData.category,
                 priority: formData.priority,
             },
@@ -72,6 +72,28 @@ export async function updateTeacherNotice(id: string, formData: {
         return { success: true, data: updatedNotice };
     } catch (error: any) {
         console.error("❌ updateTeacherNotice Error:", error.message);
+        return { success: false, error: "Error: " + error.message };
+    }
+}
+
+export async function getSchoolAnnouncements(schoolId?: string) {
+    try {
+        let finalSchoolId = schoolId;
+        if (!finalSchoolId) {
+            const currentUser = await getCurrentUser();
+            finalSchoolId = currentUser?.schoolId || "";
+        }
+
+        if (!finalSchoolId) return { success: false, error: "School ID not found" };
+
+        const announcements = await prisma.announcement.findMany({
+            where: { schoolId: finalSchoolId },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return { success: true, data: announcements.map(a => ({ ...a, type: 'admin' })) };
+    } catch (error: any) {
+        console.error("❌ getSchoolAnnouncements Error:", error.message);
         return { success: false, error: "Error: " + error.message };
     }
 }

@@ -35,7 +35,18 @@ export async function getTeacherDashboardData() {
             take: 5
         })
 
-        // 3. Get full class objects for assigned classes
+        // 3. Get full class objects for assigned classes (with repair logic)
+        for (const className of teacher.assignedClasses) {
+            const cls = await prisma.class.findFirst({
+                where: { schoolId, name: className }
+            });
+            if (!cls) {
+                await prisma.class.create({
+                    data: { name: className, schoolId }
+                });
+            }
+        }
+
         const assignedClassesData = await prisma.class.findMany({
             where: {
                 schoolId: schoolId,

@@ -200,6 +200,7 @@ model User {
   school         School?         @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
   student        Student?        @relation("UserStudent")
   teacher        Teacher?        @relation("UserTeacher")
+  parent         Parent?         @relation("UserParent")
 
   @@map("User")
 }
@@ -411,8 +412,10 @@ model Parent {
   phone     String?
   email     String?
   studentId String
+  userId    String?  @unique
   createdAt DateTime @default(now())
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user      User?    @relation("UserParent", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
