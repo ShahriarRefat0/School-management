@@ -61,14 +61,14 @@ export default function ResultsPage() {
                 );
 
                 const studentMap = (studentsRes.data || []).map((student: any) => {
-                    const marks: Record<string, number> = {};
+                    const marks: Record<string, any> = {};
                     subjects.forEach((sub, index) => {
                         const subResult = allResults[index];
                         if (subResult.success) {
                             const studentResult = (subResult.data || []).find((r: any) => r.studentId === student.id);
-                            marks[sub] = studentResult ? studentResult.marks : 0;
+                            marks[sub] = studentResult ? studentResult.marks : "";
                         } else {
-                            marks[sub] = 0;
+                            marks[sub] = "";
                         }
                     });
 
@@ -111,20 +111,39 @@ export default function ResultsPage() {
                 ...student,
                 marks: {
                     ...student.marks,
-                    [trimmed]: 0
+                    [trimmed]: ""
                 }
             })));
         }
     };
 
     const handleMarkChange = (studentId: string, subject: string, value: string) => {
+        if (value === "") {
+            setStudentsData(prev => prev.map(student => {
+                if (student.id === studentId) {
+                    return {
+                        ...student,
+                        marks: { ...student.marks, [subject]: "" }
+                    };
+                }
+                return student;
+            }));
+            return;
+        }
+
+        const numValue = parseInt(value);
+        if (isNaN(numValue)) return;
+        
+        // Ensure mark is between 1 and 100
+        const sanitizedValue = Math.min(100, Math.max(1, numValue));
+
         setStudentsData(prev => prev.map(student => {
             if (student.id === studentId) {
                 return {
                     ...student,
                     marks: {
                         ...student.marks,
-                        [subject]: parseInt(value) || 0
+                        [subject]: sanitizedValue
                     }
                 };
             }
@@ -142,7 +161,7 @@ export default function ResultsPage() {
                 subjects.forEach(subject => {
                     resultsToSave.push({
                         studentId: student.id,
-                        marks: student.marks[subject] || 0,
+                        marks: Number(student.marks[subject]) || 0,
                         subject,
                         examType,
                         classId: selectedClass
@@ -284,7 +303,7 @@ export default function ResultsPage() {
                                 >
                                     <option value="Final Term">Final Term</option>
                                     <option value="Mid Term">Mid Term</option>
-                                    <option value="First Terminal">First Terminal</option>
+                                    <option value="First Term">First Term</option>
                                 </select>
                             </div>
                         </div>
@@ -401,10 +420,11 @@ export default function ResultsPage() {
                                                                         <div className="relative">
                                                                             <input
                                                                                 type="number"
-                                                                                value={student.marks[subject] || 0}
+                                                                                value={student.marks[subject]}
                                                                                 onChange={(e) => handleMarkChange(student.id, subject, e.target.value)}
                                                                                 onClick={(e) => e.stopPropagation()}
-                                                                                min="0"
+                                                                                placeholder="-"
+                                                                                min="1"
                                                                                 max="100"
                                                                                 className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-border-light rounded-xl text-sm font-black text-center focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary shadow-sm transition-all hover:border-primary/40 focus:scale-[1.02]"
                                                                             />

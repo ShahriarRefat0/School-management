@@ -33,6 +33,7 @@ export default function ClassDetailPage() {
     const classId = params.classId as string;
 
     const [activeTab, setActiveTab] = useState<'students' | 'attendance' | 'results' | 'assignments'>('students');
+    const [searchQuery, setSearchQuery] = useState("");
     const [selectedStudent, setSelectedStudent] = useState<any>(null);
     const [data, setData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -64,14 +65,19 @@ export default function ClassDetailPage() {
 
     const studentList = data?.students?.map((s: any) => ({
         id: s.id,
-        name: `${s.firstName} ${s.lastName}`,
+        name: `${s.firstName || ''} ${s.lastName || ''}`.trim(),
         roll: s.rollNo?.toString() || "N/A",
         attendance: s.attendance?.length > 0
             ? `${Math.round((s.attendance.filter((a: any) => a.status === 'PRESENT').length / s.attendance.length) * 100)}%`
             : "0%",
-        performance: "Good", // Derived from results if available
-        grade: s.results?.[0]?.marks ? (s.results[0].marks >= 80 ? "A+" : "A") : "N/A"
+        performance: "Good",
+        grade: s.results?.[0]?.marks ? (s.results[0].marks >= 80 ? "A+" : s.results[0].marks >= 70 ? "A" : s.results[0].marks >= 60 ? "A-" : "B") : "N/A"
     })) || [];
+
+    const filteredStudents = studentList.filter((s: any) => 
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        s.roll.includes(searchQuery)
+    );
 
     if (selectedStudent) {
         return <StudentProfile student={selectedStudent} onBack={() => setSelectedStudent(null)} />;
@@ -83,6 +89,19 @@ export default function ClassDetailPage() {
         { id: 'results', label: 'Result Overview', icon: BarChart3 },
         { id: 'assignments', label: 'Assignments', icon: FileText },
     ];
+
+    // Stats calculations
+    const totalStudents = data?.students?.length || 0;
+    const avgAttendance = totalStudents > 0 
+        ? Math.round(studentList.reduce((acc: number, s: any) => acc + parseInt(s.attendance), 0) / totalStudents)
+        : 0;
+    
+    const highMarks = data?.students?.reduce((max: number, s: any) => {
+        const studentMax = s.results?.reduce((m: number, r: any) => Math.max(m, r.marks), 0) || 0;
+        return Math.max(max, studentMax);
+    }, 0);
+
+    const aPlusCount = data?.students?.filter((s: any) => s.results?.some((r: any) => r.marks >= 80)).length || 0;
 
     const cn = (...classes: (string | boolean | undefined)[]) => classes.filter(Boolean).join(" ");
 
@@ -127,13 +146,15 @@ export default function ClassDetailPage() {
                     <div className="p-6 md:p-8 border-b border-border-light flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                             <h2 className="text-xl font-bold text-text-primary">Student Directory</h2>
-                            <p className="text-xs font-medium text-text-muted mt-1 uppercase tracking-wider">Total {studentList.length} Students Enrolled</p>
+                            <p className="text-xs font-medium text-text-muted mt-1 uppercase tracking-wider">Total {totalStudents} Students Enrolled</p>
                         </div>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
                             <input
                                 type="text"
                                 placeholder="Search by name or roll..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-10 pr-4 py-2.5 bg-bg-page border border-border-light rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full md:w-64"
                             />
                         </div>
@@ -151,7 +172,7 @@ export default function ClassDetailPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-light/50">
-                                {studentList.map((student: any) => (
+                                {filteredStudents.map((student: any) => (
                                     <tr key={student.id} className="group hover:bg-bg-page/40 transition-all duration-200">
                                         <td className="py-6 px-8">
                                             <span className="text-sm font-black text-text-muted tabular-nums">{student.roll}</span>
@@ -193,6 +214,9 @@ export default function ClassDetailPage() {
                                 ))}
                             </tbody>
                         </table>
+                        {filteredStudents.length === 0 && (
+                            <div className="p-12 text-center text-text-muted font-bold">No students found.</div>
+                        )}
                     </div>
                 </div>
             )}
@@ -205,9 +229,9 @@ export default function ClassDetailPage() {
                         </h3>
                         <div className="space-y-6">
                             {[
-                                { label: "Present Today", value: "42/45", color: "text-emerald-500" },
-                                { label: "Average Attendance", value: "92.5%", color: "text-primary" },
-                                { label: "Late Coming This Week", value: "8 Students", color: "text-amber-500" }
+                                { label: "Total Students", value: totalStudents, color: "text-text-primary" },
+                                { label: "Average Attendance", value: `${avgAttendance}%`, color: "text-primary" },
+                                { label: "Class Section", value: classInfo.name.split(' - ')[1] || "A", color: "text-amber-500" }
                             ].map((stat, idx) => (
                                 <div key={idx} className="flex items-center justify-between p-4 bg-bg-page rounded-2xl border border-border-light/50">
                                     <span className="text-sm font-bold text-text-secondary">{stat.label}</span>
@@ -220,9 +244,8 @@ export default function ClassDetailPage() {
                         <TrendingUp className="mb-4 opacity-50" size={32} />
                         <h3 className="text-xl font-bold mb-2">Class Stability</h3>
                         <p className="text-emerald-50/80 text-sm leading-relaxed mb-6 font-medium">
-                            Attendance is 4% higher than last month. Consistency is excellent in this section.
+                            Attendance trends are calculated based on all historical records for the current students.
                         </p>
-                        <button className="w-full py-3 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-black uppercase tracking-widest transition-all">View Details</button>
                     </div>
                 </div>
             )}
@@ -234,10 +257,10 @@ export default function ClassDetailPage() {
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
-                            { label: "Highest Marks", value: "98/100", sub: "Rahim Ahmed" },
-                            { label: "Class Average", value: "76.4", sub: "Out of 100" },
-                            { label: "Failed Students", value: "0", sub: "Perfect Passing" },
-                            { label: "A+ Count", value: "12", sub: "Top Performers" }
+                            { label: "Highest Marks", value: `${highMarks}/100`, sub: "Across all subjects" },
+                            { label: "Class Average", value: "TBD", sub: "Performance Index" },
+                            { label: "A+ Count", value: aPlusCount, sub: "Top Performers" },
+                            { label: "Enrolled", value: totalStudents, sub: "Calculated students" }
                         ].map((item, idx) => (
                             <div key={idx} className="bg-bg-page/50 p-6 rounded-3xl border border-border-light/60 text-center">
                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">{item.label}</p>

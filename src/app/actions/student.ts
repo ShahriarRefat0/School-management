@@ -24,6 +24,8 @@ export async function addStudent(formData: {
     presentAddress: string
     permanentAddress?: string
     password?: string
+    parentEmail?: string
+    parentPassword?: string
 }) {
     console.log("📥 Receiving student request:", formData.registrationNo);
 
@@ -35,6 +37,8 @@ export async function addStudent(formData: {
     }
 
     let authUserId: string | null = null;
+    let parentAuthUserId: string | null = null;
+
     try {
         if (!prisma.student) {
             console.error("❌ Prisma student model is UNDEFINED!");
@@ -55,8 +59,9 @@ export async function addStudent(formData: {
         // Sanitize registration number for safe email (no spaces/special chars)
         const sanitizedReg = formData.registrationNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
         const safeEmail = formData.email?.trim() || `st.${sanitizedReg}@school.site`;
+        const parentSafeEmail = formData.parentEmail?.trim() || `pa.${sanitizedReg}@school.site`;
 
-        // 1. Create Student Auth Account via Admin Client
+        // 1. Create Student Auth Account
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email: safeEmail,
             password: formData.password || "Student@1234",
@@ -71,15 +76,37 @@ export async function addStudent(formData: {
             }
             return { success: false, error: "Auth Error: " + authError.message };
         }
-
         authUserId = authData.user.id;
+
+        // 2. Create Parent Auth Account
+        const { data: pAuthData, error: pAuthError } = await supabaseAdmin.auth.admin.createUser({
+            email: parentSafeEmail,
+            password: formData.parentPassword || "Parent@1234",
+            email_confirm: true,
+            user_metadata: { role: 'parent' }
+        });
+
+        if (pAuthError) {
+            console.error("❌ Parent Auth Creation Error:", pAuthError.message);
+            // If parent email exists, we might want to link to existing or just return error
+            // For now, returning error to be safe
+            if (pAuthError.message.includes("already registered")) {
+                // Potential rollback of student auth
+                await supabaseAdmin.auth.admin.deleteUser(authUserId);
+                return { success: false, error: "পিতার ইমেইলটি আগে থেকেই নিবন্ধিত আছে।" };
+            }
+            await supabaseAdmin.auth.admin.deleteUser(authUserId);
+            return { success: false, error: "Parent Auth Error: " + pAuthError.message };
+        }
+        parentAuthUserId = pAuthData.user.id;
+
         let createdStudent: any;
 
         await prisma.$transaction(async (tx: any) => {
             const schoolId = currentUser.schoolId; // Always use principal's school
             if (!schoolId) throw new Error("Unauthorized: School ID not found for this user.");
 
-            // 2. Update or create the user record
+            // 3. Create/Update Student User record
             const newUser = await tx.user.upsert({
                 where: { authUserId: authUserId as string },
                 update: {
@@ -99,7 +126,27 @@ export async function addStudent(formData: {
                 }
             });
 
-            // 3. Create the student linked to user
+            // 4. Create Parent User record
+            const newParentUser = await tx.user.upsert({
+                where: { authUserId: parentAuthUserId as string },
+                update: {
+                    name: `${formData.fatherName || 'Parent'}`.trim(),
+                    email: parentSafeEmail,
+                    schoolId: schoolId,
+                    role: 'parent',
+                    status: 'active'
+                },
+                create: {
+                    authUserId: parentAuthUserId as string,
+                    name: `${formData.fatherName || 'Parent'}`.trim(),
+                    email: parentSafeEmail,
+                    schoolId: schoolId,
+                    role: 'parent',
+                    status: 'active'
+                }
+            });
+
+            // 5. Create the student linked to user
             createdStudent = await tx.student.create({
                 data: {
                     registrationNo: formData.registrationNo,
@@ -124,20 +171,33 @@ export async function addStudent(formData: {
                     userId: newUser.id
                 },
             });
+
+            // 6. Create the Parent record linked to User and Student
+            await tx.parent.create({
+                data: {
+                    name: formData.fatherName,
+                    phone: formData.guardianPhone,
+                    email: parentSafeEmail,
+                    studentId: createdStudent.id,
+                    userId: newParentUser.id
+                }
+            });
         });
 
-        console.log("✅ Student successfully created:", createdStudent?.id);
+        console.log("✅ Student and Parent successfully created:", createdStudent?.id);
         return { success: true, data: createdStudent };
 
     } catch (error: any) {
-        console.error("❌ Student Create Database Error:", error);
+        console.error("❌ Student/Parent Create Database Error:", error);
 
-        // Rollback Auth User if Prisma fails
-        if (authUserId) {
-            await supabaseAdmin.auth.admin.deleteUser(authUserId).catch(err =>
-                console.error("Failed to rollback auth account:", err)
-            );
-        }
+        // Rollback Auth Users if Prisma fails
+        const rollbacks = [];
+        if (authUserId) rollbacks.push(supabaseAdmin.auth.admin.deleteUser(authUserId));
+        if (parentAuthUserId) rollbacks.push(supabaseAdmin.auth.admin.deleteUser(parentAuthUserId));
+        
+        await Promise.allSettled(rollbacks).catch(err =>
+            console.error("Failed to rollback auth accounts:", err)
+        );
 
         if (error.code === 'P2002') {
             const fields = error.meta?.target || [];
@@ -285,15 +345,19 @@ export async function getStudent(id: string) {
     }
     const schoolId = currentUser.schoolId as string;
     try {
-        // Try finding by registration No first (scoped to school)
-        let student = await prisma.student.findFirst({
-            where: { registrationNo: id, schoolId }
-        });
-
-        // If not found, try finding by UUID (scoped to school)
-        if (!student && id.length > 20) {
+        let student: any = null;
+        
+        if (id.length > 20) {
             student = await prisma.student.findFirst({
-                where: { id: id, schoolId }
+                where: { id: id, schoolId },
+                include: { parents: true }
+            });
+        }
+
+        if (!student) {
+            student = await prisma.student.findFirst({
+                where: { registrationNo: id, schoolId },
+                include: { parents: true }
             });
         }
 

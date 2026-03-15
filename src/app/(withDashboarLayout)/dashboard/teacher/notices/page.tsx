@@ -18,7 +18,7 @@ import {
 
 import { TeacherHeader } from "../TeacherHeader";
 import { useAuth } from "@/hooks/useAuth";
-import { createTeacherNotice, getTeacherNotices, updateTeacherNotice, deleteTeacherNotice } from "@/app/actions/teacher/createTeacherNotice";
+import { createTeacherNotice, getTeacherNotices, updateTeacherNotice, deleteTeacherNotice, getSchoolAnnouncements } from "@/app/actions/teacher/createTeacherNotice";
 import toast from "react-hot-toast";
 import Swal from 'sweetalert2';
 
@@ -26,6 +26,7 @@ export default function NoticesPage() {
     const [showPostModal, setShowPostModal] = React.useState(false);
     const [selectedNotice, setSelectedNotice] = React.useState<any | null>(null);
     const [activeFilter, setActiveFilter] = React.useState("all");
+    const [selectedClassFilter, setSelectedClassFilter] = React.useState("");
     const [editNotice, setEditNotice] = React.useState<any | null>(null);
     const [searchQuery, setSearchQuery] = React.useState("");
 
@@ -33,6 +34,7 @@ export default function NoticesPage() {
     const { user } = useAuth();
     const [title, setTitle] = React.useState("");
     const [audience, setAudience] = React.useState("All Faculty & Students");
+    const [targetClass, setTargetClass] = React.useState("");
     const [category, setCategory] = React.useState("Academic");
     const [content, setContent] = React.useState("");
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -49,12 +51,25 @@ export default function NoticesPage() {
     const fetchInitialData = async () => {
         setIsLoadingNotices(true);
         try {
-            const noticesRes = await getTeacherNotices(schoolId || undefined);
-            const classesRes = await import('@/app/actions/teacher/results').then(m => m.getClasses());
+            const [noticesRes, schoolAnnRes, classesRes] = await Promise.all([
+                getTeacherNotices(schoolId || undefined),
+                getSchoolAnnouncements(schoolId || undefined),
+                import('@/app/actions/teacher/results').then(m => m.getClasses())
+            ]);
 
+            let combinedNotices: any[] = [];
             if (noticesRes.success) {
-                setNotices(noticesRes.data || []);
+                combinedNotices = [...(noticesRes.data || []).map((n: any) => ({ ...n, type: 'teacher' }))];
             }
+            if (schoolAnnRes.success) {
+                combinedNotices = [...combinedNotices, ...(schoolAnnRes.data || []).map((n: any) => ({ ...n, type: 'admin', audience: 'Full School' }))];
+            }
+            
+            // Sort by date
+            combinedNotices.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            
+            setNotices(combinedNotices);
+
             if (classesRes.success) {
                 setAssignedClasses(classesRes.data || []);
             }
@@ -74,6 +89,7 @@ export default function NoticesPage() {
         setTitle(notice.title);
         setContent(notice.content);
         setAudience(notice.audience || "All Faculty & Students");
+        setTargetClass(notice.targetClass || "");
         setCategory(notice.category || "Academic");
         setShowPostModal(true);
     };
@@ -121,9 +137,10 @@ export default function NoticesPage() {
             const formData = {
                 title,
                 content,
-                audience,
+                audience: audience === "All Faculty & Students" ? "all" : "students",
+                targetClass: audience === "All Faculty & Students" ? null : audience, // The audience dropdown is bound to class names for teachers
                 category,
-                priority: editNotice?.priority || "normal", // Preserve priority if editing
+                priority: editNotice?.priority || "normal", 
                 schoolId,
                 authorId,
                 authorName
@@ -148,6 +165,7 @@ export default function NoticesPage() {
                 setTitle("");
                 setContent("");
                 setAudience("All Faculty & Students");
+                setTargetClass("");
                 setCategory("Academic");
                 // Reload notices after successful post
                 fetchInitialData();
@@ -193,12 +211,19 @@ export default function NoticesPage() {
     };
 
     const filteredNotices = notices.filter(notice => {
-        // 1. Filter by category
+        // 1. Filter by category/type
         let matchesFilter = true;
-        if (activeFilter === "General") matchesFilter = notice.category === "General";
-        else if (activeFilter === "Administration") matchesFilter = notice.category === "Urgent";
-        else if (activeFilter !== "all") {
-            matchesFilter = notice.audience === activeFilter || notice.targetClass === activeFilter;
+        
+        if (activeFilter === "General") {
+            matchesFilter = notice.type === 'teacher' && (notice.audience === 'all' || !notice.targetClass);
+        } else if (activeFilter === "Administration") {
+            matchesFilter = notice.type === 'admin';
+        } else if (activeFilter === "Class") {
+            if (selectedClassFilter) {
+                matchesFilter = notice.targetClass === selectedClassFilter;
+            } else {
+                matchesFilter = !!notice.targetClass && notice.type === 'teacher';
+            }
         }
 
         // 2. Filter by search query
@@ -227,16 +252,39 @@ export default function NoticesPage() {
             />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex bg-bg-card p-1.5 rounded-2xl border border-border-light overflow-x-auto scrollbar-hide">
-                    {["all", "General", "Administration", ...assignedClasses.map(c => c.name)].map((filter) => (
-                        <button
-                            key={filter}
-                            onClick={() => setActiveFilter(filter)}
-                            className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeFilter === filter ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-text-muted hover:text-text-secondary"}`}
-                        >
-                            {filter}
-                        </button>
-                    ))}
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex bg-bg-card p-1.5 rounded-2xl border border-border-light overflow-x-auto scrollbar-hide">
+                        {["all", "General", "Administration", "Class"].map((filter) => (
+                            <button
+                                key={filter}
+                                onClick={() => {
+                                    setActiveFilter(filter);
+                                    if (filter !== "Class") setSelectedClassFilter("");
+                                }}
+                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeFilter === filter ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-text-muted hover:text-text-secondary"}`}
+                            >
+                                {filter}
+                            </button>
+                        ))}
+                    </div>
+
+                    {activeFilter === "Class" && (
+                        <div className="relative animate-slideInRight">
+                            <select
+                                value={selectedClassFilter}
+                                onChange={(e) => setSelectedClassFilter(e.target.value)}
+                                className="pl-4 pr-10 py-3 bg-bg-card border border-border-light rounded-2xl text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-text-secondary appearance-none cursor-pointer"
+                            >
+                                <option value="">Select Class</option>
+                                {assignedClasses.map(cls => (
+                                    <option key={cls.id} value={cls.name}>{cls.name}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+                                <ChevronRight size={14} className="rotate-90" />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="relative w-full md:w-80 group">
@@ -281,6 +329,11 @@ export default function NoticesPage() {
                                         <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest ${getTagColor(notice.category)}`}>
                                             {notice.category}
                                         </span>
+                                        {notice.type === 'admin' && (
+                                            <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest bg-amber-500 text-white shadow-sm shadow-amber-500/20">
+                                                Administration
+                                            </span>
+                                        )}
                                         <div className="flex items-center gap-1.5 text-text-muted">
                                             <Calendar size={12} />
                                             <span className="text-xs font-bold">{formatDate(notice.createdAt)}</span>
@@ -306,22 +359,24 @@ export default function NoticesPage() {
                                         Read More
                                         <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
                                     </button>
-                                    <div className="flex items-center gap-2 ml-4">
-                                        <button
-                                            onClick={() => openEditModal(notice)}
-                                            className="p-2 hover:bg-primary/10 rounded-lg text-text-muted hover:text-primary transition-all"
-                                            title="Edit"
-                                        >
-                                            <Edit size={16} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(notice.id)}
-                                            className="p-2 hover:bg-red-50 rounded-lg text-text-muted hover:text-red-500 transition-all"
-                                            title="Delete"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
+                                    {notice.type === 'teacher' && (
+                                        <div className="flex items-center gap-2 ml-4">
+                                            <button
+                                                onClick={() => openEditModal(notice)}
+                                                className="p-2 hover:bg-primary/10 rounded-lg text-text-muted hover:text-primary transition-all"
+                                                title="Edit"
+                                            >
+                                                <Edit size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(notice.id)}
+                                                className="p-2 hover:bg-red-50 rounded-lg text-text-muted hover:text-red-500 transition-all"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -329,7 +384,9 @@ export default function NoticesPage() {
                                 <div className="flex flex-wrap items-center gap-4 text-text-muted">
                                     <div className="flex items-center gap-1.5 bg-bg-page px-3 py-1 rounded-lg border border-border-light/30">
                                         <Users size={12} className="text-primary/70" />
-                                        <span className="text-[10px] font-black uppercase tracking-tighter">{notice.audience} {notice.targetClass ? `(${notice.targetClass})` : ''}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-tighter">
+                                            {notice.audience === 'all' || notice.audience === 'All Faculty & Students' ? 'All Faculty & Students' : `Target: ${notice.targetClass || notice.audience}`}
+                                        </span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <Clock size={12} />
@@ -337,12 +394,12 @@ export default function NoticesPage() {
                                     </div>
                                     {notice.authorName && (
                                         <div className="flex items-center gap-1.5">
-                                            <span className="text-[10px] font-black text-text-muted">By: {notice.authorName}</span>
+                                            <span className="text-[10px] font-black text-text-muted">By: {notice.authorName} {notice.type === 'admin' ? '(Principal/Admin)' : ''}</span>
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex items-center gap-1 text-[10px] font-black text-primary/40 uppercase tracking-widest" title={notice.id}>
-                                    ID: {notice.id.slice(-6).toUpperCase()}
+                                    ID: {notice.type === 'admin' ? 'ADM' : 'TCH'}-{notice.id.slice(-6).toUpperCase()}
                                 </div>
                             </div>
                         </div>
@@ -353,7 +410,7 @@ export default function NoticesPage() {
             {/* Post Notice Modal */}
             {showPostModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-6 overflow-hidden">
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-fadeIn" onClick={() => setShowPostModal(false)}></div>
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-fadeIn" onClick={() => { setShowPostModal(false); setEditNotice(null); }}></div>
                     <div className="bg-bg-card w-full max-w-2xl max-h-[90vh] rounded-[3rem] overflow-hidden relative z-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-slideInBottom border border-white/5 flex flex-col">
                         <div className="px-8 md:px-12 py-8 bg-gradient-to-r from-primary to-indigo-700 text-white flex items-center justify-between shrink-0">
                             <div>
@@ -380,29 +437,35 @@ export default function NoticesPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-1">Target Audience</label>
-                                    <select
-                                        value={audience}
-                                        onChange={(e) => setAudience(e.target.value)}
-                                        className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary"
-                                    >
-                                        <option value="All Faculty & Students">All Faculty & Students</option>
-                                        {assignedClasses.map((cls) => (
-                                            <option key={cls.id} value={cls.name}>{cls.name}</option>
-                                        ))}
-                                    </select>
+                                    <div className="relative">
+                                        <select
+                                            value={audience}
+                                            onChange={(e) => setAudience(e.target.value)}
+                                            className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary"
+                                        >
+                                            <option value="All Faculty & Students">All Faculty & Students</option>
+                                            {assignedClasses.map((cls) => (
+                                                <option key={cls.id} value={cls.name}>Target: {cls.name}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronRight size={14} className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 text-text-muted pointer-events-none" />
+                                    </div>
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] px-1">Category</label>
-                                    <select
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary"
-                                    >
-                                        <option value="Academic">Academic</option>
-                                        <option value="Event">Event</option>
-                                        <option value="Urgent">Urgent</option>
-                                        <option value="Holiday">Holiday</option>
-                                    </select>
+                                    <div className="relative">
+                                        <select
+                                            value={category}
+                                            onChange={(e) => setCategory(e.target.value)}
+                                            className="w-full px-6 py-4 bg-bg-page border border-border-light rounded-2xl text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm text-text-secondary"
+                                        >
+                                            <option value="Academic">Academic</option>
+                                            <option value="Event">Event</option>
+                                            <option value="Urgent">Urgent</option>
+                                            <option value="Update">Update</option>
+                                        </select>
+                                        <ChevronRight size={14} className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 text-text-muted pointer-events-none" />
+                                    </div>
                                 </div>
                             </div>
 
@@ -480,17 +543,17 @@ export default function NoticesPage() {
                                 <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
                                     <div className="flex items-center gap-2 text-primary/60">
                                         <Bell size={14} />
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Class</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em]">Audience</p>
                                     </div>
-                                    <p className="text-sm font-black text-text-primary truncate">{selectedNotice.targetClass || "Full School"}</p>
+                                    <p className="text-sm font-black text-text-primary truncate">{selectedNotice.targetClass || selectedNotice.audience}</p>
                                 </div>
                                 <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
                                     <div className="flex items-center gap-2 text-primary/60">
                                         <Megaphone size={14} />
                                         <p className="text-[10px] font-black uppercase tracking-[0.2em]">Posted By</p>
                                     </div>
-                                    <p className="text-sm font-black text-text-primary truncate break-all" title={selectedNotice.authorName || "Teacher"}>
-                                        {selectedNotice.authorName || "Teacher"}
+                                    <p className="text-sm font-black text-text-primary truncate break-all" title={selectedNotice.authorName || (selectedNotice.type === 'admin' ? "Principal/Admin" : "Teacher")}>
+                                        {selectedNotice.authorName || (selectedNotice.type === 'admin' ? "Principal/Admin" : "Teacher")}
                                     </p>
                                 </div>
                                 <div className="bg-bg-page/50 p-5 rounded-3xl border border-border-light/40 space-y-2">
