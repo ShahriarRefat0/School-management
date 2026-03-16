@@ -220,3 +220,19 @@ h4 {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+
+
+/* animetion of all school */
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 25s linear infinite;
+}

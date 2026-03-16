@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.43.0",
+    "@next/bundle-analyzer": "^16.1.6",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "@supabase/ssr": "^0.8.0",

@@ -1,19 +1,22 @@
 import type { NextConfig } from "next";
+import withBundleAnalyzer from "@next/bundle-analyzer";
+
+const bundleAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const nextConfig: NextConfig = {
-  // other config options here
-
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**", // allow all hostnames
+        hostname: "**",
       },
       {
         protocol: "http",
-        hostname: "**", // allow all http hostnames
+        hostname: "**",
       },
-        {
+      {
         protocol: "http",
         hostname: "images.unsplash.com",
         pathname: "/**",
@@ -22,4 +25,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default bundleAnalyzer(nextConfig);
