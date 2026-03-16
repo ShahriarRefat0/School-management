@@ -4,9 +4,40 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/getCurrentUser";
 
+export async function uploadMaterialToImgBB(formData: FormData) {
+    try {
+        const apiKey = process.env.IMGBB_API_KEY;
+        if (!apiKey) {
+            console.error("IMGBB_API_KEY is missing in server environment");
+            return { success: false, error: "Server Configuration Error: IMGBB_API_KEY is missing." };
+        }
+
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            return { success: true, url: data.data.url };
+        } else {
+            return { success: false, error: data.error?.message || "Upload failed" };
+        }
+    } catch (error: any) {
+        console.error("ImgBB Upload Error:", error);
+        return { success: false, error: error.message || "Failed to upload to ImgBB" };
+    }
+}
+
 export async function getStudyMaterials(schoolId?: string) {
     try {
-        const whereClause = schoolId ? { schoolId } : {};
+        let finalSchoolId = schoolId;
+        if (!finalSchoolId) {
+            const currentUser = await getCurrentUser();
+            finalSchoolId = currentUser?.schoolId || "";
+        }
+
+        const whereClause = finalSchoolId ? { schoolId: finalSchoolId } : {};
         const materials = await prisma.studyMaterial.findMany({
             where: whereClause,
             orderBy: { createdAt: 'desc' }

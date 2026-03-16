@@ -50,3 +50,19 @@ export async function getAnnouncements(schoolId: string) {
     return { success: false, error: "Failed to fetch announcements" };
   }
 }
+
+
+// get anousment by id 
+
+export async function getAnnouncementById(id: string) {
+  if (!id) return { success: false, error: "No Notice ID provided" };
+  try {
+    const data = await prisma.announcement.findUnique({
+      where: { id: id },
+    });
+    if (!data) return { success: false, error: "Notice not found" };
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: "Failed to fetch announcement details" };
+  }
+}

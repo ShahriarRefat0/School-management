@@ -92,7 +92,13 @@ export async function deleteTeacherNotice(id: string) {
 
 export async function getTeacherNotices(schoolId?: string) {
     try {
-        const whereClause = schoolId ? { schoolId } : {};
+        let finalSchoolId = schoolId;
+        if (!finalSchoolId) {
+            const currentUser = await getCurrentUser();
+            finalSchoolId = currentUser?.schoolId || "";
+        }
+
+        const whereClause = finalSchoolId ? { schoolId: finalSchoolId } : {};
         const notices = await prisma.teacherNotice.findMany({
             where: whereClause,
             orderBy: { createdAt: 'desc' },
