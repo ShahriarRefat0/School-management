@@ -343,6 +343,29 @@ model Payment {
   @@index([studentId])
 }
 
+<<<<<<< HEAD
+/// supportoption
+
+model SupportOption {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @db.Text
+  iconName     String   // Lucide আইকনের নাম (যেমন: 'MessageCircle', 'Mail')
+  status       String   // ডিজাইনের ব্যাজ (যেমন: 'Coming Soon', 'Active', '24/7', 'Urgent')
+  accentColor  String   // ডিজাইনের কালার কী (যেমন: 'blue', 'purple', 'emerald', 'amber')
+  actionLabel  String   @default("Contact Now")
+  link         String   @default("#")
+  order        Int      @default(0) // কার্ডের সিরিয়াল কন্ট্রোল করার জন্য
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SupportFAQ {
+  id       String @id @default(cuid())
+  question String
+  answer   String @db.Text
+  order    Int    @default(0)
+=======
 model Subject {
   id        String           @id @default(cuid())
   name      String
@@ -434,6 +457,7 @@ model Expense {
   updatedAt     DateTime @updatedAt
 
   @@index([schoolId, transactionAt])
+>>>>>>> 73803563999074f3d3f890e0efcaf4d67154d01d
 }
 
 enum AttendanceStatus {
@@ -450,7 +474,6 @@ enum Role {
   parent
   accountant
 }
-
 enum UserStatus {
   active
   blocked
