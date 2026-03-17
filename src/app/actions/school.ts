@@ -192,6 +192,43 @@ export async function getSchoolById(id: string) {
   }
 }
 
+export async function getMySchool() {
+  try {
+    const user = await getCurrentUser();
+    if (!user || !user.schoolId) {
+      console.log("⚠️ getMySchool: No authorized user or schoolId found");
+      return { success: false, error: "Unauthorized" };
+    }
+    
+    console.log(`🔍 getMySchool: Fetching data for schoolId [${user.schoolId}]`);
+    
+    // Fetch School with Subscriptions
+    const school = await prisma.school.findUnique({
+      where: { id: user.schoolId },
+      include: {
+        subscriptions: {
+          orderBy: { createdAt: 'desc' },
+          take: 5
+        }
+      }
+    });
+
+    if (!school) {
+      console.log(`❌ getMySchool: School [${user.schoolId}] not found in DB`);
+      return { success: false, error: "School not found" };
+    }
+
+    console.log(`📊 getMySchool: Stats for [${school.schoolName}]`);
+    console.log(`   - Plan: ${school.plan}`);
+    console.log(`   - Subscriptions Found: ${school.subscriptions?.length || 0}`);
+
+    return { success: true, data: JSON.parse(JSON.stringify(school)) };
+  } catch (error: any) {
+    console.error("🔥 getMySchool CRITICAL ERROR:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+
 // ২. স্কুল ডিলিট করার ফাংশন (ফিক্সড)
 export async function deleteSchool(id: string) {
   try {

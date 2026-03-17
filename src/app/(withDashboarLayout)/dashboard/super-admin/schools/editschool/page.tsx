@@ -5,6 +5,7 @@ import {
   Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon, Save, Trash2
 } from 'lucide-react' // বা lucide-react
 import { updateSchool, deleteSchool } from '@/app/actions/school' 
+import { getPlans } from '@/app/actions/plans'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/navigation'
 
@@ -33,8 +34,16 @@ export default function EditSchool({ initialData }: EditSchoolProps) {
     language: 'english'
   })
 
+  const [plans, setPlans] = useState<any[]>([])
+
   // ২. ডাটাবেজ থেকে আসা ডাটা ফর্মে বসানো
   useEffect(() => {
+    const fetchPlans = async () => {
+      const res = await getPlans()
+        if (res.success && res.data) setPlans(res.data)
+    }
+    fetchPlans()
+
     if (initialData) {
       setFormData({
         schoolName: initialData.schoolName || '',
@@ -184,9 +193,10 @@ export default function EditSchool({ initialData }: EditSchoolProps) {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <select name="plan" value={formData.plan} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange}>
-                <option value="basic">Basic Plan</option>
-                <option value="standard">Standard Plan</option>
-                <option value="premium">Premium / Enterprise</option>
+                <option value="basic">Default (Basic)</option>
+                {plans.map((p) => (
+                  <option key={p.id} value={p.name.toLowerCase()}>{p.name}</option>
+                ))}
               </select>
               <select name="duration" value={formData.duration} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange}>
                 <option value="1">1 Month</option>
