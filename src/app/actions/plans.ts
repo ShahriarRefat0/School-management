@@ -40,7 +40,6 @@ export async function createPlan(formData: any) {
                 students: formData.students,
                 teachers: formData.teachers,
                 storage: formData.storage,
-                modules: formData.modules || [],
             },
         });
 
@@ -65,7 +64,6 @@ export async function updatePlan(id: string, formData: any) {
                 students: formData.students,
                 teachers: formData.teachers,
                 storage: formData.storage,
-                modules: formData.modules,
             },
         });
 

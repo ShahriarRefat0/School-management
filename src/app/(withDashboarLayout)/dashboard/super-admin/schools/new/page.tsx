@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
     Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon
@@ -30,6 +30,8 @@ const schoolSchema = z.object({
     adminPassword: z.string().min(6, "Password must be at least 6 characters")
 })
 
+import { getPlans } from '@/app/actions/plans'
+
 export default function NewSchool() {
     const [loading, setLoading] = useState(false)
     const { signUp } = useAuth()
@@ -43,7 +45,7 @@ export default function NewSchool() {
         address: '',
         plan: 'basic',
         duration: '12',
-        schoolCategory: 'high-school',
+        schoolCategory: 'primary',
         expectedStudents: '',
         registrationId: '',
         facebookUrl: '',
@@ -53,6 +55,16 @@ export default function NewSchool() {
         adminEmail: '',
         adminPassword: ''
     })
+
+    const [plans, setPlans] = useState<any[]>([])
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            const res = await getPlans()
+            if (res.success && res.data) setPlans(res.data)
+        }
+        fetchPlans()
+    }, [])
 
     const generateSlug = (name: string) => {
         return name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
@@ -218,9 +230,10 @@ export default function NewSchool() {
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Select Plan</label>
                                 <select name="plan" value={formData.plan} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
-                                    <option value="basic">Basic Plan</option>
-                                    <option value="standard">Standard Plan</option>
-                                    <option value="premium">Premium / Enterprise</option>
+                                    <option value="basic">Default (Basic)</option>
+                                    {plans.map((p) => (
+                                      <option key={p.id} value={p.name.toLowerCase()}>{p.name}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="space-y-2">
