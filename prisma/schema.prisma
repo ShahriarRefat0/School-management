@@ -347,9 +347,6 @@ model Payment {
   @@index([studentId])
 }
 
-<<<<<<< HEAD
-/// supportoption
-
 model SupportOption {
   id           String   @id @default(cuid())
   title        String
@@ -369,7 +366,8 @@ model SupportFAQ {
   question String
   answer   String @db.Text
   order    Int    @default(0)
-=======
+}
+
 model Subject {
   id        String           @id @default(cuid())
   name      String
@@ -461,7 +459,6 @@ model Expense {
   updatedAt     DateTime @updatedAt
 
   @@index([schoolId, transactionAt])
->>>>>>> 73803563999074f3d3f890e0efcaf4d67154d01d
 }
 
 enum AttendanceStatus {
