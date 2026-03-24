@@ -31,7 +31,8 @@ export default function EditSchool({ initialData }: EditSchoolProps) {
     registrationId: '',
     facebookUrl: '',
     websiteUrl: '',
-    language: 'english'
+    language: 'english',
+    numberOfClasses: ''
   })
 
   const [plans, setPlans] = useState<any[]>([])
@@ -59,6 +60,7 @@ export default function EditSchool({ initialData }: EditSchoolProps) {
         facebookUrl: initialData.facebookUrl || '',
         websiteUrl: initialData.websiteUrl || '',
         language: initialData.language || 'english',
+        numberOfClasses: initialData.numberOfClasses?.toString() || '',
       })
     }
   }, [initialData])
@@ -131,6 +133,10 @@ export default function EditSchool({ initialData }: EditSchoolProps) {
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Expected Students</label>
                 <input type="number" name="expectedStudents" value={formData.expectedStudents} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Number of Classes</label>
+                <input type="number" name="numberOfClasses" value={formData.numberOfClasses} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-primary)]" onChange={handleChange} />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">System Language</label>
