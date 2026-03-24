@@ -1,4 +1,4 @@
-﻿"use server"
+"use server"
 
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/getCurrentUser"
@@ -24,6 +24,8 @@ export async function addStudent(formData: {
     presentAddress: string
     permanentAddress?: string
     password?: string
+    parentEmail?: string
+    parentPassword?: string
 }) {
     console.log("📥 Receiving student request:", formData.registrationNo);
 
@@ -35,6 +37,8 @@ export async function addStudent(formData: {
     }
 
     let authUserId: string | null = null;
+    let parentAuthUserId: string | null = null;
+
     try {
         if (!prisma.student) {
             console.error("❌ Prisma student model is UNDEFINED!");
@@ -55,8 +59,9 @@ export async function addStudent(formData: {
         // Sanitize registration number for safe email (no spaces/special chars)
         const sanitizedReg = formData.registrationNo.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
         const safeEmail = formData.email?.trim() || `st.${sanitizedReg}@school.site`;
+        const parentSafeEmail = formData.parentEmail?.trim() || `pa.${sanitizedReg}@school.site`;
 
-        // 1. Create Student Auth Account via Admin Client
+        // 1. Create Student Auth Account
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email: safeEmail,
             password: formData.password || "Student@1234",
@@ -71,15 +76,37 @@ export async function addStudent(formData: {
             }
             return { success: false, error: "Auth Error: " + authError.message };
         }
-
         authUserId = authData.user.id;
+
+        // 2. Create Parent Auth Account
+        const { data: pAuthData, error: pAuthError } = await supabaseAdmin.auth.admin.createUser({
+            email: parentSafeEmail,
+            password: formData.parentPassword || "Parent@1234",
+            email_confirm: true,
+            user_metadata: { role: 'parent' }
+        });
+
+        if (pAuthError) {
+            console.error("❌ Parent Auth Creation Error:", pAuthError.message);
+            // If parent email exists, we might want to link to existing or just return error
+            // For now, returning error to be safe
+            if (pAuthError.message.includes("already registered")) {
+                // Potential rollback of student auth
+                await supabaseAdmin.auth.admin.deleteUser(authUserId);
+                return { success: false, error: "পিতার ইমেইলটি আগে থেকেই নিবন্ধিত আছে।" };
+            }
+            await supabaseAdmin.auth.admin.deleteUser(authUserId);
+            return { success: false, error: "Parent Auth Error: " + pAuthError.message };
+        }
+        parentAuthUserId = pAuthData.user.id;
+
         let createdStudent: any;
 
         await prisma.$transaction(async (tx: any) => {
             const schoolId = currentUser.schoolId; // Always use principal's school
             if (!schoolId) throw new Error("Unauthorized: School ID not found for this user.");
 
-            // 2. Update or create the user record
+            // 3. Create/Update Student User record
             const newUser = await tx.user.upsert({
                 where: { authUserId: authUserId as string },
                 update: {
@@ -99,7 +126,27 @@ export async function addStudent(formData: {
                 }
             });
 
-            // 3. Create the student linked to user
+            // 4. Create Parent User record
+            const newParentUser = await tx.user.upsert({
+                where: { authUserId: parentAuthUserId as string },
+                update: {
+                    name: `${formData.fatherName || 'Parent'}`.trim(),
+                    email: parentSafeEmail,
+                    schoolId: schoolId,
+                    role: 'parent',
+                    status: 'active'
+                },
+                create: {
+                    authUserId: parentAuthUserId as string,
+                    name: `${formData.fatherName || 'Parent'}`.trim(),
+                    email: parentSafeEmail,
+                    schoolId: schoolId,
+                    role: 'parent',
+                    status: 'active'
+                }
+            });
+
+            // 5. Create the student linked to user
             createdStudent = await tx.student.create({
                 data: {
                     registrationNo: formData.registrationNo,
@@ -124,20 +171,33 @@ export async function addStudent(formData: {
                     userId: newUser.id
                 },
             });
+
+            // 6. Create the Parent record linked to User and Student
+            await tx.parent.create({
+                data: {
+                    name: formData.fatherName,
+                    phone: formData.guardianPhone,
+                    email: parentSafeEmail,
+                    studentId: createdStudent.id,
+                    userId: newParentUser.id
+                }
+            });
         });
 
-        console.log("✅ Student successfully created:", createdStudent?.id);
+        console.log("✅ Student and Parent successfully created:", createdStudent?.id);
         return { success: true, data: createdStudent };
 
     } catch (error: any) {
-        console.error("❌ Student Create Database Error:", error);
+        console.error("❌ Student/Parent Create Database Error:", error);
 
-        // Rollback Auth User if Prisma fails
-        if (authUserId) {
-            await supabaseAdmin.auth.admin.deleteUser(authUserId).catch(err =>
-                console.error("Failed to rollback auth account:", err)
-            );
-        }
+        // Rollback Auth Users if Prisma fails
+        const rollbacks = [];
+        if (authUserId) rollbacks.push(supabaseAdmin.auth.admin.deleteUser(authUserId));
+        if (parentAuthUserId) rollbacks.push(supabaseAdmin.auth.admin.deleteUser(parentAuthUserId));
+        
+        await Promise.allSettled(rollbacks).catch(err =>
+            console.error("Failed to rollback auth accounts:", err)
+        );
 
         if (error.code === 'P2002') {
             const fields = error.meta?.target || [];
@@ -285,15 +345,19 @@ export async function getStudent(id: string) {
     }
     const schoolId = currentUser.schoolId as string;
     try {
-        // Try finding by registration No first (scoped to school)
-        let student = await prisma.student.findFirst({
-            where: { registrationNo: id, schoolId }
-        });
-
-        // If not found, try finding by UUID (scoped to school)
-        if (!student && id.length > 20) {
+        let student: any = null;
+        
+        if (id.length > 20) {
             student = await prisma.student.findFirst({
-                where: { id: id, schoolId }
+                where: { id: id, schoolId },
+                include: { parents: true }
+            });
+        }
+
+        if (!student) {
+            student = await prisma.student.findFirst({
+                where: { registrationNo: id, schoolId },
+                include: { parents: true }
             });
         }
 
@@ -316,19 +380,25 @@ export async function addMultipleStudents(studentsData: any[]) {
             return { success: false, error: "Database error: Models missing." };
         }
 
-        // Find existing registration numbers to avoid duplicates
+        const currentUser = await getCurrentUser();
+        const schoolId = currentUser?.schoolId;
+
+        if (!schoolId) {
+            return { success: false, error: "Unauthorized: School ID not found." };
+        }
+
+        // 1. Filter out already existing registration numbers
         const registrationNos = studentsData.map(s => s.registrationNo).filter(Boolean);
         const existingStudents = await prisma.student.findMany({
             where: {
-                registrationNo: {
-                    in: registrationNos
-                }
+                registrationNo: { in: registrationNos },
+                schoolId: schoolId
             },
             select: { registrationNo: true }
         });
 
-        const existingRegNos = existingStudents.map(s => s.registrationNo);
-        const newStudentsData = studentsData.filter(s => !existingRegNos.includes(s.registrationNo));
+        const existingRegNos = new Set(existingStudents.map(s => s.registrationNo));
+        const newStudentsData = studentsData.filter(s => !existingRegNos.has(s.registrationNo));
 
         if (newStudentsData.length === 0) {
             return {
@@ -338,29 +408,33 @@ export async function addMultipleStudents(studentsData: any[]) {
             };
         }
 
+        // 2. Pre-fetch existing emails to minimize queries inside transaction
+        const candidateEmails = new Set(newStudentsData.map(s => s.email?.trim()).filter(Boolean));
+        const existingUsers = await prisma.user.findMany({
+            where: { email: { in: Array.from(candidateEmails as any) } },
+            select: { email: true }
+        });
+        const existingEmails = new Set(existingUsers.map(u => u.email));
+
         let createdCount = 0;
 
+        // 3. Perform bulk creation in a single transaction with increased timeout
         await prisma.$transaction(async (tx) => {
-            const currentUser = await getCurrentUser();
-            const schoolId = currentUser?.schoolId;
-
-            if (!schoolId) {
-                return { success: false, error: "System Error: Authorized school ID not found." };
-            }
-
             for (const data of newStudentsData) {
                 const birthDate = data.dateOfBirth ? new Date(data.dateOfBirth) : new Date();
                 const validBirthDate = isNaN(birthDate.getTime()) ? new Date() : birthDate;
 
-                const authUserId = `auth-${data.registrationNo}-${Date.now()}`;
+                // For bulk, we generate a unique authUserId placeholder
+                const authUserId = `auth-${data.registrationNo}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
                 const safeEmail = data.email?.trim() || `student_${data.registrationNo}@school.local`;
 
-                // Ensure email uniqueness before user creation
-                const existingUserWithEmail = await tx.user.findUnique({
-                    where: { email: safeEmail }
-                });
-
-                const finalEmail = existingUserWithEmail ? `student_${data.registrationNo}_${Date.now()}@school.local` : safeEmail;
+                // Check against pre-fetched and newly added emails in this transaction
+                const finalEmail = existingEmails.has(safeEmail) 
+                    ? `student_${data.registrationNo}_${Date.now()}@school.local` 
+                    : safeEmail;
+                
+                // Track newly used email to avoid collision within the same bulk batch
+                existingEmails.add(finalEmail);
 
                 const newUser = await tx.user.create({
                     data: {
@@ -399,6 +473,8 @@ export async function addMultipleStudents(studentsData: any[]) {
                 });
                 createdCount++;
             }
+        }, {
+            timeout: 30000 // Increase timeout to 30 seconds
         });
 
         console.log(`✅ Successfully bulk added ${createdCount} students`);
@@ -412,7 +488,7 @@ export async function addMultipleStudents(studentsData: any[]) {
     } catch (error: any) {
         console.error("❌ Bulk Student Create Error:", error);
         if (error.code === 'P2002') {
-            return { success: false, error: "A unique constraint failed during import (such as duplicate Email or Registration No within the file)." };
+            return { success: false, error: "A unique constraint failed during import (Duplicate Email or Registration No)." };
         }
         return { success: false, error: `সার্ভার এরর: ${error.message || "Database error occurred"}` };
     }

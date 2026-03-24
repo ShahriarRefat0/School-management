@@ -39,26 +39,30 @@ model School {
   students         Student[]
   teachers         Teacher[]
   expenses         Expense[]
-  transactions     Transaction[]
+  subscriptions    Subscription[]
 }
 
-model Transaction {
-  id            String   @id @default(cuid())
-  transactionId String   @unique
+
+
+model Subscription {
+  id            String    @id @default(cuid())
+  transactionId String    @unique
   amount        Float
-  currency      String   @default("BDT")
-  status        String   @default("PENDING") // PENDING, SUCCESS, FAIL, CANCEL
+  currency      String    @default("BDT")
+  status        String    @default("PENDING") // PENDING, SUCCESS, FAIL, CANCEL
   planName      String
   duration      String
   schoolId      String
-  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   method        String?
   valId         String?
   customerName  String
   customerEmail String
   customerPhone String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([schoolId])
 }
@@ -200,6 +204,7 @@ model User {
   school         School?         @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
   student        Student?        @relation("UserStudent")
   teacher        Teacher?        @relation("UserTeacher")
+  parent         Parent?         @relation("UserParent")
 
   @@map("User")
 }
@@ -342,6 +347,27 @@ model Payment {
   @@index([studentId])
 }
 
+model SupportOption {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @db.Text
+  iconName     String   // Lucide আইকনের নাম (যেমন: 'MessageCircle', 'Mail')
+  status       String   // ডিজাইনের ব্যাজ (যেমন: 'Coming Soon', 'Active', '24/7', 'Urgent')
+  accentColor  String   // ডিজাইনের কালার কী (যেমন: 'blue', 'purple', 'emerald', 'amber')
+  actionLabel  String   @default("Contact Now")
+  link         String   @default("#")
+  order        Int      @default(0) // কার্ডের সিরিয়াল কন্ট্রোল করার জন্য
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SupportFAQ {
+  id       String @id @default(cuid())
+  question String
+  answer   String @db.Text
+  order    Int    @default(0)
+}
+
 model Subject {
   id        String           @id @default(cuid())
   name      String
@@ -388,7 +414,7 @@ model Fee {
   schoolId  String
   createdAt DateTime  @default(now())
   class     Class?    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school    School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   payments  Payment[]
 }
 
@@ -411,8 +437,10 @@ model Parent {
   phone     String?
   email     String?
   studentId String
+  userId    String?  @unique
   createdAt DateTime @default(now())
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user      User?    @relation("UserParent", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
@@ -447,7 +475,6 @@ enum Role {
   parent
   accountant
 }
-
 enum UserStatus {
   active
   blocked

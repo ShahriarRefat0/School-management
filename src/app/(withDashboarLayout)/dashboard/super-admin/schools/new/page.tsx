@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
     Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon
@@ -21,14 +21,20 @@ const schoolSchema = z.object({
     duration: z.string(),
     schoolCategory: z.string(),
     expectedStudents: z.preprocess((val) => Number(val), z.number().optional()),
+    numberOfClasses: z.preprocess((val) => Number(val), z.number().min(0).optional()),
     registrationId: z.string().min(1, "Registration ID is required"),
     facebookUrl: z.string().optional(),
     websiteUrl: z.string().optional(),
     language: z.string(),
     adminName: z.string().min(3, "Admin name is required"),
     adminEmail: z.string().email("Invalid admin email"),
-    adminPassword: z.string().min(6, "Password must be at least 6 characters")
+    adminPassword: z.string().min(6, "Password must be at least 6 characters"),
+    accountantName: z.string().min(3, "Accountant name is required"),
+    accountantEmail: z.string().email("Invalid accountant email"),
+    accountantPassword: z.string().min(6, "Password must be at least 6 characters")
 })
+
+import { getPlans } from '@/app/actions/plans'
 
 export default function NewSchool() {
     const [loading, setLoading] = useState(false)
@@ -43,16 +49,30 @@ export default function NewSchool() {
         address: '',
         plan: 'basic',
         duration: '12',
-        schoolCategory: 'high-school',
+        schoolCategory: 'primary',
         expectedStudents: '',
+        numberOfClasses: '',
         registrationId: '',
         facebookUrl: '',
         websiteUrl: '',
         language: 'english',
         adminName: '',
         adminEmail: '',
-        adminPassword: ''
+        adminPassword: '',
+        accountantName: '',
+        accountantEmail: '',
+        accountantPassword: ''
     })
+
+    const [plans, setPlans] = useState<any[]>([])
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            const res = await getPlans()
+            if (res.success && res.data) setPlans(res.data)
+        }
+        fetchPlans()
+    }, [])
 
     const generateSlug = (name: string) => {
         return name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
@@ -82,6 +102,7 @@ export default function NewSchool() {
             const result = await createSchool({
                 ...formData,
                 expectedStudents: parseInt(formData.expectedStudents) || 0,
+                numberOfClasses: parseInt(formData.numberOfClasses) || 0,
             })
 
             if (!result.success) throw new Error(result.error)
@@ -156,6 +177,10 @@ export default function NewSchool() {
                                 <input type="number" name="expectedStudents" value={formData.expectedStudents} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
                             </div>
                             <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Number of Classes</label>
+                                <input type="number" name="numberOfClasses" value={formData.numberOfClasses} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" placeholder="e.g. 5" onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">System Language</label>
                                 <select name="language" value={formData.language} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
                                     <option value="english">English</option>
@@ -218,9 +243,10 @@ export default function NewSchool() {
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Select Plan</label>
                                 <select name="plan" value={formData.plan} className="w-full px-4 py-3 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange}>
-                                    <option value="basic">Basic Plan</option>
-                                    <option value="standard">Standard Plan</option>
-                                    <option value="premium">Premium / Enterprise</option>
+                                    <option value="basic">Default (Basic)</option>
+                                    {plans.map((p) => (
+                                      <option key={p.id} value={p.name.toLowerCase()}>{p.name}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="space-y-2">
@@ -254,6 +280,30 @@ export default function NewSchool() {
                                 <div className="relative">
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
                                     <input required type="text" name="adminPassword" value={formData.adminPassword} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl font-mono text-orange-600 font-bold" onChange={handleChange} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 5. Accountant Account */}
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-black text-blue-500 flex items-center gap-2 border-b border-[var(--color-border-light)] pb-2 uppercase tracking-tighter">
+                            <Users size={20} /> Accountant Credentials
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Full Name</label>
+                                <input required type="text" name="accountantName" value={formData.accountantName} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Accountant Email</label>
+                                <input required type="email" name="accountantEmail" value={formData.accountantEmail} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none" onChange={handleChange} />
+                            </div>
+                            <div className="md:col-span-2 space-y-2">
+                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Login Password (Visible)</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" size={18} />
+                                    <input required type="text" name="accountantPassword" value={formData.accountantPassword} className="w-full pl-12 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl font-mono text-blue-600 font-bold" onChange={handleChange} />
                                 </div>
                             </div>
                         </div>

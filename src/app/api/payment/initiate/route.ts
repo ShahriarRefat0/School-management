@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/getCurrentUser';
 
 /**
  * SSLCommerz Payment Initiation
@@ -12,8 +13,8 @@ export async function POST(req: Request) {
         const body = await req.json();
         const {
             amount,
-            studentId,
-            schoolId,
+            studentId: providedStudentId,
+            schoolId: providedSchoolId,
             feeCategory,
             customerName,
             customerEmail,
@@ -21,9 +22,28 @@ export async function POST(req: Request) {
         } = body;
 
         // 1. Validation
-        if (!amount || !studentId || !schoolId) {
-            return NextResponse.json({ error: 'Missing required payment details' }, { status: 400 });
+        if (!amount) {
+            return NextResponse.json({ error: 'Missing required payment amount' }, { status: 400 });
         }
+
+        // If not provided, attempt to resolve student/school from current session
+        const currentUser = await getCurrentUser();
+        if (!currentUser) {
+            return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+        }
+
+        const student = await prisma.student.findFirst({
+            where: { userId: currentUser.id }
+        });
+
+        if (!student) {
+            return NextResponse.json({ error: 'Student record not found for current user' }, { status: 400 });
+        }
+
+        // Always use the student record linked to the current logged-in user.
+        // This prevents requests from accidentally using mock/invalid IDs.
+        const studentId = student.id;
+        const schoolId = student.schoolId;
 
         // 2. Transaction Setup
         const transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;

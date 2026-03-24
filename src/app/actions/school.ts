@@ -14,7 +14,8 @@ export async function createSchool(formData: any) {
     return { success: false, error: "Unauthorized: Super Admin access required." };
   }
 
-  let authUserId: string | null = null;
+  let adminAuthUserId: string | null = null;
+  let accountantAuthUserId: string | null = null;
 
   try {
     // 🛡️ CRITICAL KEY CHECK
@@ -24,22 +25,42 @@ export async function createSchool(formData: any) {
 
     // 1️⃣ Create the Principal in Supabase Auth via Admin Client
     // This avoids client-side 422 errors and prevents session collisions
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: adminAuthData, error: adminAuthError } = await supabaseAdmin.auth.admin.createUser({
       email: formData.adminEmail,
       password: formData.adminPassword || "School@1234", // Default password
       email_confirm: true,
       user_metadata: { role: 'admin' }
     });
 
-    if (authError) {
-      console.error("❌ Supabase Admin Auth Error:", authError.message);
-      if (authError.message.includes("already registered")) {
+    if (adminAuthError) {
+      console.error("❌ Supabase Admin Auth Error:", adminAuthError.message);
+      if (adminAuthError.message.includes("already registered")) {
         return { success: false, error: "This admin email is already registered." };
       }
-      return { success: false, error: "Auth Error: " + authError.message };
+      return { success: false, error: "Auth Error: " + adminAuthError.message };
     }
 
-    authUserId = authData.user.id;
+    adminAuthUserId = adminAuthData.user.id;
+
+    // 1.5️⃣ Create the Accountant in Supabase Auth via Admin Client
+    const { data: accountantAuthData, error: accountantAuthError } = await supabaseAdmin.auth.admin.createUser({
+      email: formData.accountantEmail,
+      password: formData.accountantPassword || "Accountant@1234",
+      email_confirm: true,
+      user_metadata: { role: 'accountant' }
+    });
+
+    if (accountantAuthError) {
+      // If accountant fails, rollback admin immediately before doing Prisma
+      console.error("❌ Supabase Accountant Auth Error:", accountantAuthError.message);
+      await supabaseAdmin.auth.admin.deleteUser(adminAuthUserId);
+      if (accountantAuthError.message.includes("already registered")) {
+        return { success: false, error: "This accountant email is already registered." };
+      }
+      return { success: false, error: "Accountant Auth Error: " + accountantAuthError.message };
+    }
+
+    accountantAuthUserId = accountantAuthData.user.id;
 
     const result = await prisma.$transaction(async (tx: any) => {
       // 2️⃣ Create School
@@ -63,7 +84,7 @@ export async function createSchool(formData: any) {
 
       // 3️⃣ Update or Create Admin User record
       await tx.user.upsert({
-        where: { authUserId: authUserId as string },
+        where: { authUserId: adminAuthUserId as string },
         update: {
           name: formData.adminName,
           email: formData.adminEmail,
@@ -72,7 +93,7 @@ export async function createSchool(formData: any) {
           status: "active"
         },
         create: {
-          authUserId: authUserId as string,
+          authUserId: adminAuthUserId as string,
           name: formData.adminName,
           email: formData.adminEmail,
           role: "admin",
@@ -80,6 +101,32 @@ export async function createSchool(formData: any) {
           status: "active"
         },
       });
+
+      // 4️⃣ Create Accountant User record
+      await tx.user.create({
+        data: {
+          authUserId: accountantAuthUserId as string,
+          name: formData.accountantName,
+          email: formData.accountantEmail,
+          role: "accountant",
+          schoolId: newSchool.id,
+          status: "active"
+        }
+      });
+
+      // 5️⃣ Generate Classes
+      if (formData.numberOfClasses && formData.numberOfClasses > 0) {
+        const classesToCreate = [];
+        for (let i = 1; i <= formData.numberOfClasses; i++) {
+          classesToCreate.push({
+            name: `Class ${i}`,
+            schoolId: newSchool.id
+          });
+        }
+        await tx.class.createMany({
+          data: classesToCreate
+        });
+      }
 
       return newSchool;
     });
@@ -94,10 +141,15 @@ export async function createSchool(formData: any) {
   } catch (error: any) {
     console.error("❌ createSchool CRITICAL ERROR:", error);
 
-    // Rollback Auth User if Prisma fails
-    if (authUserId) {
-      await supabaseAdmin.auth.admin.deleteUser(authUserId).catch(err =>
-        console.error("Failed to rollback auth string:", err)
+    // Rollback Auth Users if Prisma fails
+    if (adminAuthUserId) {
+      await supabaseAdmin.auth.admin.deleteUser(adminAuthUserId).catch(err =>
+        console.error("Failed to rollback admin auth string:", err)
+      );
+    }
+    if (accountantAuthUserId) {
+      await supabaseAdmin.auth.admin.deleteUser(accountantAuthUserId).catch(err =>
+        console.error("Failed to rollback accountant auth string:", err)
       );
     }
 
@@ -150,29 +202,54 @@ export async function getAllUsers() {
 // ১. স্কুল আপডেট করার ফাংশন
 export async function updateSchool(id: string, formData: any) {
   try {
-    const updated = await prisma.school.update({
-      where: { id },
-      data: {
-        schoolName: formData.schoolName,
-        slug: formData.slug,
-        schoolEmail: formData.schoolEmail,
-        phone: formData.phone || null,
-        address: formData.address || null,
-        plan: formData.plan,
-        duration: formData.duration,
-        schoolCategory: formData.schoolCategory,
-        expectedStudents: formData.expectedStudents ? Number(formData.expectedStudents) : null,
-        registrationId: formData.registrationId,
-        facebookUrl: formData.facebookUrl || null,
-        websiteUrl: formData.websiteUrl || null,
-        language: formData.language,
-      },
+    const result = await prisma.$transaction(async (tx: any) => {
+      const updated = await tx.school.update({
+        where: { id },
+        data: {
+          schoolName: formData.schoolName,
+          slug: formData.slug,
+          schoolEmail: formData.schoolEmail,
+          phone: formData.phone || null,
+          address: formData.address || null,
+          plan: formData.plan,
+          duration: formData.duration,
+          schoolCategory: formData.schoolCategory,
+          expectedStudents: formData.expectedStudents ? Number(formData.expectedStudents) : null,
+          registrationId: formData.registrationId,
+          facebookUrl: formData.facebookUrl || null,
+          websiteUrl: formData.websiteUrl || null,
+          language: formData.language,
+        },
+      });
+
+      // ৫️⃣ Generate Additional Classes if needed
+      if (formData.numberOfClasses && formData.numberOfClasses > 0) {
+        const currentClassCount = await tx.class.count({
+          where: { schoolId: id }
+        });
+
+        if (formData.numberOfClasses > currentClassCount) {
+          const classesToCreate = [];
+          for (let i = currentClassCount + 1; i <= formData.numberOfClasses; i++) {
+            classesToCreate.push({
+              name: `Class ${i}`,
+              schoolId: id
+            });
+          }
+          await tx.class.createMany({
+            data: classesToCreate
+          });
+        }
+      }
+
+      return updated;
     });
 
     revalidatePath("/schools"); // যেখানে লিস্ট দেখান সেই পাথ
     revalidatePath(`/schools/${id}`); // স্পেসিফিক পেজ থাকলে
+    revalidatePath("/dashboard/super-admin/schools");
 
-    return { success: true, data: updated };
+    return { success: true, data: result };
   } catch (error: any) {
     console.error("❌ Update Error:", error.message);
     return { success: false, error: "Update failed: " + error.message };
@@ -183,11 +260,62 @@ export async function updateSchool(id: string, formData: any) {
 export async function getSchoolById(id: string) {
   try {
     const school = await prisma.school.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        _count: {
+          select: { classes: true }
+        }
+      }
     });
     if (!school) return { success: false, error: "School not found" };
-    return { success: true, data: school };
+    
+    // Flatten the result to match the expected format
+    const { _count, ...schoolData } = school;
+    return { 
+      success: true, 
+      data: { 
+        ...schoolData, 
+        numberOfClasses: _count.classes 
+      } 
+    };
   } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getMySchool() {
+  try {
+    const user = await getCurrentUser();
+    if (!user || !user.schoolId) {
+      console.log("⚠️ getMySchool: No authorized user or schoolId found");
+      return { success: false, error: "Unauthorized" };
+    }
+    
+    console.log(`🔍 getMySchool: Fetching data for schoolId [${user.schoolId}]`);
+    
+    // Fetch School with Subscriptions
+    const school = await prisma.school.findUnique({
+      where: { id: user.schoolId },
+      include: {
+        subscriptions: {
+          orderBy: { createdAt: 'desc' },
+          take: 5
+        }
+      }
+    });
+
+    if (!school) {
+      console.log(`❌ getMySchool: School [${user.schoolId}] not found in DB`);
+      return { success: false, error: "School not found" };
+    }
+
+    console.log(`📊 getMySchool: Stats for [${school.schoolName}]`);
+    console.log(`   - Plan: ${school.plan}`);
+    console.log(`   - Subscriptions Found: ${school.subscriptions?.length || 0}`);
+
+    return { success: true, data: JSON.parse(JSON.stringify(school)) };
+  } catch (error: any) {
+    console.error("🔥 getMySchool CRITICAL ERROR:", error.message);
     return { success: false, error: error.message };
   }
 }

@@ -46,7 +46,7 @@ const AllLogin = () => {
       icon: <Users />,
       type: 'standard',
       color: 'amber',
-      link: '/dashboard/parents'
+      link: '/dashboard/parent'
     },
     {
       title: "Accountant",
