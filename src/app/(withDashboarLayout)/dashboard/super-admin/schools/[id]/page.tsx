@@ -18,7 +18,7 @@ export default function EditSchoolPage() {
     plan: 'basic', duration: '12', schoolCategory: 'high-school',
     expectedStudents: '', registrationId: '', facebookUrl: '',
     websiteUrl: '', language: 'english', adminName: '',
-    adminEmail: '', adminPassword: ''
+    adminEmail: '', adminPassword: '', numberOfClasses: ''
   })
 
   // ১. ডাটাবেস থেকে সব ডাটা লোড করা
@@ -113,6 +113,10 @@ export default function EditSchoolPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Registration ID</label>
                 <input name="registrationId" value={formData.registrationId} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)] tracking-widest">Number of Classes</label>
+                <input type="number" name="numberOfClasses" value={formData.numberOfClasses} className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl" onChange={handleChange} />
               </div>
             </div>
           </div>
