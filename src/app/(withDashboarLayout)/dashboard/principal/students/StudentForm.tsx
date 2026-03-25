@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-    UserPlus, Save, ChevronLeft, User, GraduationCap, 
-    Users, MapPin, CheckCircle2, AlertCircle, 
+    UserPlus, Save, ChevronLeft, User, GraduationCap,
+    Users, MapPin, CheckCircle2, AlertCircle,
     RefreshCcw, Trash2, Mail, Lock, ShieldCheck, Info
 } from "lucide-react";
 import { addStudent, getStudent, updateStudent, deleteStudent } from "@/app/actions/student";
@@ -66,7 +66,6 @@ export default function StudentForm() {
                             parentPassword: "",
                             presentAddress: d.presentAddress || "",
                             permanentAddress: d.permanentAddress || "",
-                            password: "",
                         });
                     } else { setError(result.error || "Student record not found."); }
                 } catch (err) { setError("Failed to load student data."); }
@@ -209,7 +208,7 @@ export default function StudentForm() {
                         {/* Academic & Parents */}
                         <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2rem] border dark:border-slate-800 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <h4 className="text-[11px] font-black uppercase tracking-tighter flex items-center gap-2 dark:text-blue-400"><GraduationCap size={16}/> Academic Info</h4>
+                                <h4 className="text-[11px] font-black uppercase tracking-tighter flex items-center gap-2 dark:text-blue-400"><GraduationCap size={16} /> Academic Info</h4>
                                 <div className="grid grid-cols-2 gap-3">
                                     <select name="currentClass" value={form.currentClass} onChange={handleChange} required className="h-11 rounded-lg border dark:border-slate-800 px-3 text-xs font-medium bg-white dark:bg-slate-950 dark:text-white outline-none">
                                         <option value="">Select Class *</option>
@@ -223,12 +222,12 @@ export default function StudentForm() {
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <h4 className="text-[11px] font-black uppercase tracking-tighter flex items-center gap-2 dark:text-emerald-400"><Users size={16}/> Family Info</h4>
+                                <h4 className="text-[11px] font-black uppercase tracking-tighter flex items-center gap-2 dark:text-emerald-400"><Users size={16} /> Family Info</h4>
                                 <div className="space-y-3">
                                     <Input name="fatherName" value={form.fatherName} onChange={handleChange} placeholder="Father's Name *" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
                                     <Input name="motherName" value={form.motherName} onChange={handleChange} placeholder="Mother's Name *" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
                                     <Input name="guardianPhone" value={form.guardianPhone} onChange={handleChange} placeholder="Guardian Phone *" className="h-11 rounded-lg text-xs font-bold dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
-                                    
+
                                     <div className="pt-2 border-t dark:border-slate-800 space-y-3">
                                         <p className="text-[10px] font-bold uppercase text-muted-foreground dark:text-slate-500 tracking-widest">Parent Account (Optional)</p>
                                         <Input name="parentEmail" type="email" value={form.parentEmail} onChange={handleChange} placeholder="Parent Email (pa.regno@school.site)" className="h-11 rounded-lg text-xs dark:bg-slate-950 dark:border-slate-800 dark:text-white" />
@@ -242,7 +241,7 @@ export default function StudentForm() {
                     {/* Right Side: Action & Address */}
                     <div className="space-y-6">
                         <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border dark:border-slate-800 shadow-sm space-y-4">
-                            <h3 className="text-xs font-black uppercase flex items-center gap-2 dark:text-white"><MapPin size={16}/> Address</h3>
+                            <h3 className="text-xs font-black uppercase flex items-center gap-2 dark:text-white"><MapPin size={16} /> Address</h3>
                             <textarea
                                 name="presentAddress" rows={4} value={form.presentAddress} onChange={handleChange} required
                                 placeholder="Student's Residential Address *"
@@ -255,7 +254,7 @@ export default function StudentForm() {
                                 {isSubmitting ? <RefreshCcw className="animate-spin mr-2" /> : <Save className="mr-2" size={18} />}
                                 {isSubmitting ? "Syncing..." : isEdit ? "Update Record" : "Finalize Registration"}
                             </Button>
-                            
+
                             {isEdit && (
                                 <Button type="button" onClick={handleDelete} variant="outline" className="h-14 rounded-2xl border-red-100 dark:border-red-900/30 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 text-[10px] font-bold uppercase tracking-widest">
                                     <Trash2 size={16} className="mr-2" /> Delete Student
