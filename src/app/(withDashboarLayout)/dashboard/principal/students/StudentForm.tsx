@@ -66,6 +66,7 @@ export default function StudentForm() {
                             parentPassword: "",
                             presentAddress: d.presentAddress || "",
                             permanentAddress: d.permanentAddress || "",
+                            password: "",
                         });
                     } else { setError(result.error || "Student record not found."); }
                 } catch (err) { setError("Failed to load student data."); }
