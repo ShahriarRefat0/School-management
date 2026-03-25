@@ -12,7 +12,7 @@ export default function FeedbackPage() {
     useEffect(() => {
         async function loadFeedback() {
             const res = await getMyFeedback()
-            if (res.success) {
+            if (res.success && res.data) {
                 setFeedback(res.data)
             }
             setLoading(false)
@@ -31,8 +31,8 @@ export default function FeedbackPage() {
 
     return (
         <div className="max-w-5xl mx-auto space-y-10 pb-20 px-4">
-            <Link 
-                href="/dashboard/student" 
+            <Link
+                href="/dashboard/student"
                 className="inline-flex items-center gap-2 text-text-muted font-black text-[10px] uppercase tracking-[0.2em] hover:text-blue-600 transition-colors group mb-[-20px]"
             >
                 <div className="w-8 h-8 rounded-full bg-bg-card border border-border-light flex items-center justify-center group-hover:border-blue-200 shadow-sm transition-all group-active:scale-90">
@@ -50,8 +50,8 @@ export default function FeedbackPage() {
                     <p className="text-text-muted text-sm md:text-base font-medium mt-1">Valuable insights and performance reviews from your instructors.</p>
                 </div>
                 <div className="px-5 py-3 md:px-6 md:py-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 self-start md:self-auto">
-                     <p className="text-[9px] md:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1">Total Reviews</p>
-                     <p className="text-lg md:text-xl font-black text-blue-900 dark:text-blue-100">{feedback.length} Entries</p>
+                    <p className="text-[9px] md:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1">Total Reviews</p>
+                    <p className="text-lg md:text-xl font-black text-blue-900 dark:text-blue-100">{feedback.length} Entries</p>
                 </div>
             </div>
 
@@ -113,10 +113,10 @@ export default function FeedbackPage() {
                                 </div>
 
                                 <div className="bg-bg-page/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-border-light relative overflow-hidden">
-                                     <div className="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
-                                     <p className="text-xs md:text-sm text-text-secondary leading-relaxed font-medium italic">
-                                         "{item.comment || "No specific comments provided."}"
-                                     </p>
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
+                                    <p className="text-xs md:text-sm text-text-secondary leading-relaxed font-medium italic">
+                                        "{item.comment || "No specific comments provided."}"
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -124,13 +124,13 @@ export default function FeedbackPage() {
                 </div>
             ) : (
                 <div className="py-24 bg-bg-card border border-border-light border-dashed rounded-[3rem] flex flex-col items-center justify-center text-center px-10">
-                     <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-8 text-slate-400 rotate-12 group-hover:rotate-0 transition-transform">
-                         <MessageSquare size={48} />
-                     </div>
-                     <h3 className="text-2xl font-black text-text-primary tracking-tight">No feedback records yet</h3>
-                     <p className="text-text-muted text-sm font-medium mt-3 max-w-sm leading-relaxed">
-                         Teachers will share their insights about your academic performance and participation here soon.
-                     </p>
+                    <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-8 text-slate-400 rotate-12 group-hover:rotate-0 transition-transform">
+                        <MessageSquare size={48} />
+                    </div>
+                    <h3 className="text-2xl font-black text-text-primary tracking-tight">No feedback records yet</h3>
+                    <p className="text-text-muted text-sm font-medium mt-3 max-w-sm leading-relaxed">
+                        Teachers will share their insights about your academic performance and participation here soon.
+                    </p>
                 </div>
             )}
         </div>
