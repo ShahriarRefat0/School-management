@@ -119,6 +119,11 @@ export const superAdminMenuItems: DashboardMenuItem[] = [
 export const accountantMenuItems: DashboardMenuItem[] = [
   { title: 'Dashboard', url: '/dashboard/accountant', icon: LayoutDashboard },
   {
+    title: 'Assign Fee',
+    url: '/dashboard/accountant/fee-collection',
+    icon: CreditCard,
+  },
+  {
     title: 'Student Due List',
     url: '/dashboard/accountant/due-list',
     icon: Receipt,

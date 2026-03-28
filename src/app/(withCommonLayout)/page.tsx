@@ -6,6 +6,7 @@ import TestimonialsSection from "@/components/home/TestimonialsSection/Testimoni
 import Features from "@/components/home/Features/Features";
 import PrincipalMessage from "@/components/home/PricipalMessage/PricipalMessage";
 import SchoolMarquee from "@/components/home/SchoolMarquee/SchoolMarquee";
+import { FloatingClock } from "@/components/shared/FloatingClock";
 
 
 
@@ -21,6 +22,7 @@ const HomePage = () => {
       <NoticeBoard></NoticeBoard>
       <TestimonialsSection></TestimonialsSection>
       <Contact></Contact>
+      <FloatingClock />
       {/* <LoginPage></LoginPage>
       <RegisterPage></RegisterPage>       */}
     </div>

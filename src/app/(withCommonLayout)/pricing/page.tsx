@@ -1,167 +1,153 @@
 'use client';
-
-import React from "react";
-import { Check, ChevronRight, Sparkles } from "lucide-react";
-import Link from "next/link";
+import React, { useEffect, useState } from 'react';
+import {
+  Check, Zap, Shield, Crown, Loader2, Users, UserRound,
+  HardDrive, Star, Rocket, Gem, Sparkles, Globe,
+  ChevronRight
+} from 'lucide-react';
 import { motion } from "framer-motion";
+import Link from 'next/link';
+import { getPlans } from '@/app/actions/plans';
+
+const iconMap: Record<string, React.ElementType> = {
+  Zap, Shield, Crown, Star, Rocket, Gem, Sparkles, Globe
+};
 
 const PricingPage = () => {
+    const [plans, setPlans] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                const res = await getPlans();
+                if (res.success && res.data) {
+                    setPlans(res.data);
+                }
+            } catch (error) {
+                console.error('Error fetching plans:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPlans();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex justify-center items-center bg-gray-50">
+                <Loader2 className="animate-spin h-12 w-12 text-blue-600" />
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-bg-page pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden relative">
+        <div className="min-h-screen bg-[#FDFDFF] pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden relative">
             {/* Background elements */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none">
-                <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-[100px] opacity-60" />
-                <div className="absolute top-40 right-10 w-96 h-96 bg-primary/5 rounded-full blur-[120px] opacity-60" />
+                <div className="absolute top-20 left-10 w-72 h-72 bg-blue-100/50 rounded-full blur-[100px] opacity-60" />
+                <div className="absolute top-40 right-10 w-96 h-96 bg-purple-100/50 rounded-full blur-[120px] opacity-60" />
             </div>
 
             <div className="max-w-7xl mx-auto relative z-10">
-                <div className="text-center max-w-3xl mx-auto mb-20">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6"
-                    >
-                        <Sparkles size={14} />
-                        <span className="text-[11px] font-bold tracking-[0.2em] uppercase">Flexible Plans</span>
-                    </motion.div>
+                <div className="text-center max-w-3xl mx-auto mb-24">
+                  <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 mb-6"
+                  >
+                      <Sparkles size={14} />
+                      <span className="text-[10px] font-black tracking-[0.2em] uppercase">Flexible Packages</span>
+                  </motion.div>
 
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        className="text-4xl sm:text-5xl lg:text-6xl font-bold text-text-primary mb-6 tracking-tight"
-                    >
-                        Simple, transparent <span className="text-primary">pricing</span>
-                    </motion.h1>
+                  <motion.h1
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="text-5xl md:text-7xl font-black text-gray-900 mb-8 tracking-tight"
+                  >
+                      The perfect plan for <span className="text-blue-600">every school</span>
+                  </motion.h1>
 
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="text-lg text-text-secondary leading-relaxed max-w-2xl mx-auto"
-                    >
-                        Choose the perfect plan for your institution. Empower your administration, teachers, and students with our all-in-one platform.
-                    </motion.p>
+                  <motion.p
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="text-xl text-gray-500 font-medium max-w-2xl mx-auto"
+                  >
+                      From small startups to large institutions, we have a plan to suit your needs.
+                      Everything you need to manage your school in one place.
+                  </motion.p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
-                    {/* Starter Plan */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="bg-bg-card border border-border-light rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group relative"
-                    >
-                        <h3 className="text-2xl font-bold text-text-primary mb-2 group-hover:text-primary transition-colors">Starter</h3>
-                        <p className="text-text-secondary mb-8 text-sm leading-relaxed">Perfect for small schools just getting started with digitalization.</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-7xl mx-auto">
+                    {plans.map((plan, index) => {
+                        const IconComponent = plan.icon && iconMap[plan.icon] ? iconMap[plan.icon] : Zap;
+                        const isPopular = index === 1;
 
-                        <div className="mb-8 pb-8 border-b border-border-light">
-                            <span className="text-5xl font-black text-text-primary tracking-tight">৳4,999</span>
-                            <span className="text-text-secondary font-medium ml-1">/month</span>
-                        </div>
+                        let colorClasses = 'bg-blue-50 text-blue-600';
+                        if (plan.color === 'purple') colorClasses = 'bg-purple-50 text-purple-600';
+                        if (plan.color === 'orange') colorClasses = 'bg-orange-50 text-orange-600';
+                        if (plan.color === 'emerald') colorClasses = 'bg-emerald-50 text-emerald-600';
+                        if (plan.color === 'rose') colorClasses = 'bg-rose-50 text-rose-600';
 
-                        <ul className="space-y-5 mb-10 flex-1">
-                            {["Up to 500 Students", "Basic Student Management", "Attendance Tracking", "Email Support"].map((feature, idx) => (
-                                <li key={idx} className="flex items-start gap-3">
-                                    <div className="mt-1 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                        <Check size={12} strokeWidth={3} />
+                        return (
+                            <motion.div
+                                key={plan.id}
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className={`relative bg-white p-12 rounded-[3.5rem] border-2 transition-all hover:scale-[1.02] ${isPopular ? 'border-blue-600 shadow-[0_40px_80px_-20px_rgba(37,99,235,0.15)]' : 'border-gray-50 shadow-xl shadow-gray-200/50'}`}
+                            >
+                                {isPopular && (
+                                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-600/30">
+                                        Best Value
                                     </div>
-                                    <span className="text-text-primary text-sm font-medium">{feature}</span>
-                                </li>
-                            ))}
-                        </ul>
+                                )}
 
-                        <Link href="/login" className="w-full">
-                            <button className="w-full py-4 rounded-xl bg-secondary text-primary font-bold text-sm uppercase tracking-wider hover:bg-primary/10 transition-colors">
-                                Get Started
-                            </button>
-                        </Link>
-                    </motion.div>
+                                <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center mb-10 shadow-inner ${colorClasses}`}>
+                                    <IconComponent size={36} />
+                                </div>
 
-                    {/* Professional Plan */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.4 }}
-                        className="relative"
-                    >
-                        <div className="absolute -inset-1 bg-gradient-to-b from-primary to-primary/30 rounded-[34px] blur-sm opacity-50" />
-                        <div className="bg-bg-card border-2 border-primary rounded-3xl p-10 shadow-2xl relative flex flex-col transform md:-translate-y-4">
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase shadow-md flex items-center gap-1">
-                                Most Popular
-                            </div>
-
-                            <h3 className="text-2xl font-bold text-text-primary mb-2 mt-2">Professional</h3>
-                            <p className="text-text-secondary mb-8 text-sm leading-relaxed">The complete suite for growing institutions looking to scale.</p>
-
-                            <div className="mb-8 pb-8 border-b border-border-light">
-                                <span className="text-6xl font-black text-text-primary tracking-tight">৳9,999</span>
-                                <span className="text-text-secondary font-medium ml-1">/month</span>
-                            </div>
-
-                            <ul className="space-y-5 mb-10 flex-1">
-                                {[
-                                    "Up to 2000 Students",
-                                    "Advanced Management",
-                                    "Online Payments via SSLCommerz",
-                                    "Teacher & Staff Portals",
-                                    "Priority 24/7 Support",
-                                ].map((feature, idx) => (
-                                    <li key={idx} className="flex items-start gap-3">
-                                        <div className="mt-1 h-5 w-5 rounded-full bg-primary flex items-center justify-center text-white shrink-0 shadow-sm">
-                                            <Check size={12} strokeWidth={3} />
-                                        </div>
-                                        <span className="text-text-primary text-sm font-bold">{feature}</span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Link href="/login" className="w-full">
-                                <button className="w-full py-4 rounded-xl bg-primary text-white font-bold text-sm uppercase tracking-wider hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2">
-                                    Start Free Trial <ChevronRight size={16} />
-                                </button>
-                            </Link>
-                        </div>
-                    </motion.div>
-
-                    {/* Enterprise Plan */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.5 }}
-                        className="bg-bg-card border border-border-light rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group relative"
-                    >
-                        <h3 className="text-2xl font-bold text-text-primary mb-2 group-hover:text-primary transition-colors">Enterprise</h3>
-                        <p className="text-text-secondary mb-8 text-sm leading-relaxed">Custom solutions tailored for large networks and universities.</p>
-
-                        <div className="mb-8 pb-8 border-b border-border-light flex items-end h-[88px]">
-                            <span className="text-4xl font-black text-text-primary tracking-tight mb-1">Custom Plan</span>
-                        </div>
-
-                        <ul className="space-y-5 mb-10 flex-1">
-                            {[
-                                "Unlimited Students",
-                                "Custom Integrations",
-                                "Dedicated Account Manager",
-                                "On-premise Options",
-                                "Data Migration Service",
-                            ].map((feature, idx) => (
-                                <li key={idx} className="flex items-start gap-3">
-                                    <div className="mt-1 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                        <Check size={12} strokeWidth={3} />
+                                <h3 className="text-3xl font-black text-gray-900 leading-tight">{plan.name}</h3>
+                                <div className="mt-8 flex flex-col">
+                                    <div className="flex items-baseline gap-1">
+                                      <span className="text-6xl font-black text-gray-900">৳{plan.price}</span>
+                                      <span className="text-gray-400 font-bold text-lg">/{plan.duration.split(' ')[1] || 'mo'}</span>
                                     </div>
-                                    <span className="text-text-primary text-sm font-medium">{feature}</span>
-                                </li>
-                            ))}
-                        </ul>
+                                    <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-4">Subscription Plan</p>
+                                </div>
 
-                        <Link href="/support" className="w-full">
-                            <button className="w-full py-4 rounded-xl border border-border-light text-text-primary font-bold text-sm uppercase tracking-wider hover:bg-bg-page transition-colors shadow-sm">
-                                Contact Sales
-                            </button>
-                        </Link>
-                    </motion.div>
+                                <div className="grid grid-cols-2 gap-4 my-10 font-bold text-sm">
+                                  <div className="flex items-center gap-3 text-gray-700">
+                                    <Users size={18} className="text-blue-500" />
+                                    <span>{plan.students} Students</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 text-gray-700">
+                                    <UserRound size={18} className="text-purple-500" />
+                                    <span>{plan.teachers} Teachers</span>
+                                  </div>
+                                </div>
+
+                                <ul className="space-y-5 mb-12 flex-1 pt-6 border-t border-gray-50">
+                                    {plan.modules && plan.modules.slice(0, 5).map((module: string, idx: number) => (
+                                        <li key={idx} className="flex items-center gap-4 text-sm font-bold text-gray-600">
+                                            <div className="w-6 h-6 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                                                <Check size={14} className="text-emerald-600" />
+                                            </div>
+                                            {module}
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <Link href="/login" className="block">
+                                  <button className={`w-full py-5 rounded-[2.5rem] font-black text-lg transition-all shadow-2xl flex items-center justify-center gap-2 ${isPopular ? 'bg-gray-900 text-white shadow-gray-400/50 hover:bg-black' : 'bg-gray-50 text-gray-900 shadow-gray-100 hover:bg-blue-600 hover:text-white'}`}>
+                                      Start Exploring <ChevronRight size={20} />
+                                  </button>
+                                </Link>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
         </div>

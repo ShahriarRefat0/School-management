@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
     try {
-        const transactions = await prisma.transaction.findMany({
+        const transactions = await prisma.subscription.findMany({
             include: {
                 school: {
                     select: {

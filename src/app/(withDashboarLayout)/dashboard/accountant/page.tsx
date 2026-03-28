@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import {
   TrendingUp,
   TrendingDown,
@@ -154,7 +155,7 @@ export default function AccountantOverview() {
     },
     {
       title: "Due Fees",
-      value: "৳ 3,25,000",
+      value: "Tk 3,25,000",
       icon: AlertCircle,
       iconBg: "bg-red-500/10 to-pink-500 shadow-red-500/30",
       iconColor: "text-red-500",
@@ -163,7 +164,7 @@ export default function AccountantOverview() {
     },
     {
       title: "Net Balance",
-      value: "৳ 2,45,000",
+      value: "Tk 2,45,000",
       change: "+22%",
       changeType: "up",
       icon: TrendingUp,
@@ -180,7 +181,7 @@ export default function AccountantOverview() {
       time: "10:30 AM",
       name: "Mohammad Rafiq",
       type: "Monthly Fee",
-      amount: "+ ৳ 5,000",
+      amount: "+ Tk 5,000",
       status: "Completed",
       statusColor: "emerald",
       icon: Receipt,
@@ -191,7 +192,7 @@ export default function AccountantOverview() {
       time: "09:15 AM",
       name: "Mr. Alam",
       type: "Salary",
-      amount: "- ৳ 15,000",
+      amount: "- Tk 15,000",
       status: "Paid",
       statusColor: "blue",
       icon: Wallet,
@@ -219,10 +220,10 @@ export default function AccountantOverview() {
             <span className="text-sm font-medium">Filter</span>
           </button>
 
-          <button className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:shadow-blue-600/30 transition-all duration-300 flex items-center gap-2">
+          <Link href="/dashboard/accountant/fee-collection" className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:shadow-blue-600/30 transition-all duration-300 flex items-center gap-2">
             <Receipt size={18} />
-            <span className="text-sm font-semibold">New Transaction</span>
-          </button>
+            <span className="text-sm font-semibold">Assign Fee</span>
+          </Link>
         </div>
       </div>
 
