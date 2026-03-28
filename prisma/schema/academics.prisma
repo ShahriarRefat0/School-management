@@ -1,0 +1,104 @@
+model Class {
+  id         String          @id @default(cuid())
+  name       String
+  schoolId   String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  attendance Attendance[]
+  school     School          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schedules  ClassSchedule[]
+  exams      Exam[]
+  fees       Fee[]
+  results    Result[]
+  sections   Section[]
+  subjects   Subject[]
+
+  @@index([schoolId])
+}
+
+model Section {
+  id        String    @id @default(cuid())
+  name      String
+  classId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  students  Student[]
+
+  @@index([classId])
+}
+
+model Subject {
+  id        String           @id @default(cuid())
+  name      String
+  code      String?
+  classId   String
+  schoolId  String
+  createdAt DateTime         @default(now())
+  schedules ClassSchedule[]
+  results   Result[]
+  class     Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  school    School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teachers  TeacherSubject[]
+}
+
+model TeacherSubject {
+  id        String  @id @default(cuid())
+  teacherId String
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, subjectId])
+}
+
+model Exam {
+  id        String   @id @default(cuid())
+  name      String
+  examType  String
+  classId   String
+  schoolId  String
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  results   Result[]
+}
+
+model Result {
+  id         String   @id @default(uuid())
+  examType   String?
+  subject    String?
+  marks      Float
+  studentId  String
+  schoolId   String
+  teacherId  String?
+  classId    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  examId     String?
+  subjectId  String?
+  class      Class?   @relation(fields: [classId], references: [id])
+  exam       Exam?    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectRef Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher    Teacher? @relation(fields: [teacherId], references: [id])
+
+  @@index([studentId])
+  @@index([schoolId])
+}
+
+model ClassSchedule {
+  id        String  @id @default(cuid())
+  classId   String
+  subjectId String
+  teacherId String
+  day       String
+  startTime String
+  endTime   String
+  class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+}

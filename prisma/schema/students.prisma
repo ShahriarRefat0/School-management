@@ -1,0 +1,70 @@
+model Student {
+  id               String       @id @default(uuid())
+  registrationNo   String
+  firstName        String       @default("")
+  lastName         String       @default("")
+  dateOfBirth      DateTime
+  gender           String
+  bloodGroup       String?
+  religion         String?
+  currentClass     String?
+  sectionName      String?
+  sectionId        String?
+  rollNo           Int
+  session          String
+  admissionDate    DateTime     @default(now())
+  fatherName       String
+  motherName       String
+  guardianPhone    String
+  emergencyContact String?
+  email            String?
+  presentAddress   String
+  permanentAddress String?
+  isActive         Boolean      @default(true)
+  schoolId         String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  userId           String       @unique
+  attendance       Attendance[]
+  parents          Parent[]
+  feedbacks        Feedback[]
+  payments         Payment[]
+  results          Result[]
+  school           School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  section          Section?     @relation(fields: [sectionId], references: [id])
+  user             User         @relation("UserStudent", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("students")
+}
+
+model Parent {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  studentId String
+  userId    String?  @unique
+  createdAt DateTime @default(now())
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user      User?    @relation("UserParent", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Feedback {
+  id            String   @id @default(cuid())
+  academic      Int      @default(0)
+  behavior      Int      @default(0)
+  participation Int      @default(0)
+  comment       String?
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacherId     String
+  teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([teacherId])
+  @@index([schoolId])
+}

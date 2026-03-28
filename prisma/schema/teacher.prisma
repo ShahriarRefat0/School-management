@@ -1,0 +1,51 @@
+model Teacher {
+  id               String           @id @default(uuid())
+  teacherId        String           @unique
+  phone            String?
+  dateOfBirth      DateTime
+  gender           String
+  bloodGroup       String?
+  religion         String?
+  designation      String
+  department       String
+  qualification    String
+  joiningDate      DateTime         @default(now())
+  salary           Float?
+  presentAddress   String
+  permanentAddress String?
+  isActive         Boolean          @default(true)
+  schoolId         String
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  userId           String           @unique
+  assignedClasses  String[]
+  attendances      Attendance[]
+  schedules        ClassSchedule[]
+  feedbacks        Feedback[]
+  results          Result[]
+  studyMaterials   StudyMaterial[]
+  subjects         TeacherSubject[]
+  school           School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  user             User             @relation("UserTeacher", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("teachers")
+}
+
+model StudyMaterial {
+  id            String   @id @default(cuid())
+  title         String
+  type          String
+  subject       String
+  class         String
+  description   String?
+  attachmentUrl String
+  size          String?
+  schoolId      String
+  teacherId     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId])
+}

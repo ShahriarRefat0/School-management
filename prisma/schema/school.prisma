@@ -1,0 +1,123 @@
+model School {
+  id               String          @id @default(cuid())
+  schoolName       String
+  slug             String
+  schoolEmail      String
+  phone            String?
+  address          String?
+  plan             String          @default("basic")
+  duration         String          @default("12")
+  schoolCategory   String
+  expectedStudents Int?
+  registrationId   String
+  facebookUrl      String?
+  websiteUrl       String?
+  language         String          @default("english")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  announcements    Announcement[]
+  attendance       Attendance[]
+  classes          Class[]
+  exams            Exam[]
+  fees             Fee[]
+  payments         Payment[]
+  feedbacks        Feedback[]
+  results          Result[]
+  studyMaterials   StudyMaterial[]
+  subjects         Subject[]
+  supportTickets   SupportTicket[]
+  teacherNotices   TeacherNotice[]
+  users            User[]          @relation("SchoolUsers")
+  students         Student[]
+  teachers         Teacher[]
+  expenses         Expense[]
+  subscriptions    Subscription[]
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  transactionId String   @unique
+  amount        Float
+  currency      String   @default("BDT")
+  status        String   @default("PENDING")
+  planName      String
+  duration      String
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  method        String?
+  valId         String?
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([schoolId])
+}
+
+model Announcement {
+  id            String   @id @default(cuid())
+  title         String
+  content       String
+  audience      String   @default("all")
+  targetClass   String?
+  category      String   @default("academic")
+  priority      String   @default("normal")
+  attachmentUrl String?
+  publishDate   DateTime @default(now())
+  expiryDate    DateTime?
+  status        String   @default("published")
+  schoolId      String
+  authorId      String?
+  authorName    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  author        User?    @relation("AuthorAnnouncements", fields: [authorId], references: [id])
+  school        School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+}
+
+model Plan {
+  id        String   @id @default(cuid())
+  name      String
+  price     String
+  duration  String
+  icon      String?
+  color     String?
+  students  String
+  teachers  String
+  storage   String
+  modules   String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeacherNotice {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  audience    String   @default("students")
+  targetClass String?
+  category    String   @default("academic")
+  priority    String   @default("normal")
+  status      String   @default("published")
+  schoolId    String
+  authorId    String?
+  authorName  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  author      User?    @relation("AuthorTeacherNotices", fields: [authorId], references: [id])
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([schoolId])
+}
+
+model SystemConfig {
+  id           String   @id @default("system_config")
+  siteName     String?
+  siteSubtitle String?
+  siteLogo     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

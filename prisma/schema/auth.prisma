@@ -1,0 +1,19 @@
+model User {
+  id             String          @id @default(uuid())
+  authUserId     String          @unique
+  schoolId       String?
+  role           Role
+  status         UserStatus      @default(active)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  email          String          @unique
+  name           String
+  announcements  Announcement[]  @relation("AuthorAnnouncements")
+  teacherNotices TeacherNotice[] @relation("AuthorTeacherNotices")
+  school         School?         @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
+  student        Student?        @relation("UserStudent")
+  teacher        Teacher?        @relation("UserTeacher")
+  parent         Parent?         @relation("UserParent")
+
+  @@map("User")
+}

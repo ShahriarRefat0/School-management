@@ -1,0 +1,19 @@
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum Role {
+  super_admin
+  admin
+  teacher
+  student
+  parent
+  accountant
+}
+
+enum UserStatus {
+  active
+  blocked
+}

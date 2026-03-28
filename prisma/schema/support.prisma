@@ -1,0 +1,34 @@
+model SupportTicket {
+  id            String   @id @default(cuid())
+  subject       String
+  description   String
+  priority      String   @default("low")
+  status        String   @default("open")
+  schoolId      String?
+  userEmail     String
+  attachmentUrl String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  school        School?  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+}
+
+model SupportOption {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  iconName    String
+  status      String
+  accentColor String
+  actionLabel String   @default("Contact Now")
+  link        String   @default("#")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SupportFAQ {
+  id       String @id @default(cuid())
+  question String
+  answer   String @db.Text
+  order    Int    @default(0)
+}
