@@ -24,6 +24,7 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(searchParams.get('payment') === 'success');
   const [showError, setShowError] = useState(searchParams.get('payment') === 'failed');
+  const [showUpgradeView, setShowUpgradeView] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -59,12 +60,12 @@ export default function SubscriptionPage() {
     const sub = subscriptions[0]; // লেটেস্ট সাবস্ক্রিপশন
 
     await Swal.fire({
-      title: 'Payment Details 🎉',
+      title: 'Payment Receipt 🎉',
       html: `
         <div style="text-align: center; padding: 10px;">
-          <div style="margin-bottom: 20px; color: #3b82f6; background: #eff6ff; padding: 25px; border-radius: 24px; border: 1px solid #dbeafe;">
-            <p style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; color: #1d4ed8;">Active Package</p>
-            <p style="font-size: 32px; font-weight: 900; margin: 0; color: #1e3a8a; text-transform: capitalize;">${plan}</p>
+          <div style="margin-bottom: 20px; color: #059669; background: #ecfdf5; padding: 25px; border-radius: 24px; border: 1px solid #d1fae5;">
+            <p style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; color: #065f46;">Your Current Plan</p>
+            <p style="font-size: 32px; font-weight: 900; margin: 0; color: #064e3b; text-transform: capitalize;">${plan}</p>
           </div>
           
           <div style="padding: 20px; background: #f9fafb; border-radius: 24px; text-align: left; border: 1px solid #f3f4f6;">
@@ -97,11 +98,11 @@ export default function SubscriptionPage() {
       `,
       icon: 'success',
       confirmButtonText: 'Got it!',
-      confirmButtonColor: '#3b82f6',
+      confirmButtonColor: '#10b981',
       showCloseButton: true,
       customClass: {
         popup: 'rounded-[3rem]',
-        confirmButton: 'rounded-2xl px-10 py-4 font-black shadow-xl shadow-blue-200'
+        confirmButton: 'rounded-2xl px-10 py-4 font-black shadow-xl shadow-emerald-100'
       }
     });
 
@@ -198,10 +199,10 @@ export default function SubscriptionPage() {
     );
   }
 
-  // Active Subscription View
-  const hasActiveSubscription = mySchool?.plan && mySchool.plan.toLowerCase() !== 'basic';
+  // Active Subscription View - If there is at least one successful transaction
+  const hasActiveSubscription = mySchool?.subscriptions?.some((s: any) => s.status === 'SUCCESS');
 
-  if (hasActiveSubscription) {
+  if (hasActiveSubscription && !showUpgradeView) {
     const activePlanDetails = plans.find(p => p.name.toLowerCase() === mySchool.plan.toLowerCase());
     const Icon = activePlanDetails?.icon && iconMap[activePlanDetails.icon] ? iconMap[activePlanDetails.icon] : Crown;
 
@@ -309,9 +310,9 @@ export default function SubscriptionPage() {
                   <button
                     onClick={() => {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
-                      setMySchool((p: any) => ({ ...p, plan: 'basic' }));
+                      setShowUpgradeView(true);
                     }}
-                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-900/40"
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-900/40 text-white"
                   >
                     Upgrade / Change Plan <Rocket size={14} />
                   </button>
