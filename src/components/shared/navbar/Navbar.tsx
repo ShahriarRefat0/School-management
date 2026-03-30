@@ -13,7 +13,7 @@ import { Bell, ChevronDown, LogOut, AlertCircle, User } from "lucide-react"
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, signOut } = useAuth()
+  const { user, role, signOut } = useAuth()
   const router = useRouter();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -121,7 +121,15 @@ const Navbar = () => {
                         className="absolute right-0 mt-2 w-52 rounded-2xl border border-border-light bg-bg-card p-2 shadow-2xl z-[70]"
                       >
                         <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-border-light mb-1">Account</div>
-                        <Link href="/dashboard/principal" className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-text-primary hover:bg-secondary/30 rounded-xl transition-all">
+                        <Link 
+                          href={
+                            role === "parent" ? "/dashboard/parent" : 
+                            role === "student" ? "/dashboard/student" :
+                            role === "teacher" ? "/dashboard/teacher" :
+                            "/dashboard/principal"
+                          } 
+                          className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-text-primary hover:bg-secondary/30 rounded-xl transition-all"
+                        >
                           <LucideLayoutDashboard size={18} className="text-primary" /> Dashboard
                         </Link>
                         <button
