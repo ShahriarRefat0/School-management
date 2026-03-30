@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/getCurrentUser";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "../notification";
 
 export async function getTeacherSalariesData() {
     try {
@@ -72,6 +73,16 @@ export async function payTeacherSalaryAction(teacherId: string, amount: number, 
 
         // Create notification for the teacher
         if (teacher) {
+            // New Notification System
+            await createNotification({
+                userId: teacher.userId,
+                title: "Salary Processed",
+                message: `Your salary of Tk ${amount.toLocaleString()} for ${new Date().toLocaleString('default', { month: 'long' })} has been processed and paid.`,
+                type: "payment",
+                link: "/dashboard" // Or a specific salary history link if it exists
+            });
+
+            // Keep existing TeacherNotice for redundancy/history in that module
             await prisma.teacherNotice.create({
                 data: {
                     title: "Salary Paid",

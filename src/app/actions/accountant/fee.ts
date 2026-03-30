@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/getCurrentUser";
 import { revalidatePath } from "next/cache";
+import { createBulkNotifications } from "../notification";
 
 export async function getAccountantClasses() {
   try {
@@ -72,6 +73,7 @@ export async function assignClassFee(data: {
       },
       select: {
         id: true,
+        userId: true,
         firstName: true,
         lastName: true,
         guardianPhone: true,
@@ -117,6 +119,19 @@ export async function assignClassFee(data: {
         data: paymentRecords,
         skipDuplicates: true,
       });
+
+      // --- Notification Logic ---
+      const studentUserIds = students.map(s => s.userId).filter(Boolean) as string[];
+      if (studentUserIds.length > 0) {
+        await createBulkNotifications({
+          userIds: studentUserIds,
+          title: `New Fee Assigned: ${feeItem.title}`,
+          message: `A new fee of Tk ${feeItem.amount} has been assigned to your class. Please review it in your dues section.`,
+          type: "payment",
+          link: `/dashboard/student/fees`
+        });
+      }
+      // --- End Notification Logic ---
 
       totalAssignments += 1;
     }
