@@ -87,7 +87,7 @@ const HeroSection = () => {
                 href="/login"
                 className="px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-black text-lg transition-all shadow-2xl shadow-blue-900/40 flex items-center gap-2 group hover:scale-105"
               >
-                Get Started, <span className="opacity-80 font-bold">It's Free</span>
+                Get Started
                 <ChevronRight className="group-hover:translate-x-1 transition-transform" />
               </Link>
 
@@ -96,13 +96,8 @@ const HeroSection = () => {
                   <PlayCircle size={24} />
                 </div>
                 <div>
-                  <p className="font-bold text-sm">Trusted by 125,000+ schools</p>
-                  <div className="flex items-center gap-1">
-                    <span className="text-blue-400 font-black text-xs">Rated 4.6</span>
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={10} fill={i < 4 ? "currentColor" : "none"} className="text-amber-400" />
-                    ))}
-                  </div>
+                  <p className="font-bold text-sm">Watch 2-min Demo</p>
+                  <p className="text-blue-400 font-bold text-xs mt-0.5">See how to automate your school</p>
                 </div>
               </div>
             </motion.div>

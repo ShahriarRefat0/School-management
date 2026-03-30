@@ -58,13 +58,18 @@ const Navbar = () => {
 
           {/* CENTER: Desktop nav links */}
           <div className="hidden md:flex items-center gap-10">
-            {["Features", "Pricing", "Support", "Privacy"].map((item) => (
+            {[
+              { label: "Why Choose Us", href: "/why-choose-us" },
+              { label: "Pricing", href: "/pricing" },
+              { label: "Support", href: "/support" },
+              { label: "Privacy", href: "/privacy" }
+            ].map((item) => (
               <Link
-                key={item}
-                href={`/${item.toLowerCase()}`}
+                key={item.label}
+                href={item.href}
                 className="text-text-secondary text-sm font-bold hover:text-primary transition-all relative group"
               >
-                {item}
+                {item.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
@@ -143,14 +148,19 @@ const Navbar = () => {
             className="md:hidden bg-bg-card border-b border-border-light shadow-xl"
           >
             <div className="px-4 pt-2 pb-6 space-y-2">
-              {["Features", "Pricing", "Support", "Privacy"].map((item) => (
+              {[
+                { label: "Why Choose Us", href: "/why-choose-us" },
+                { label: "Pricing", href: "/pricing" },
+                { label: "Support", href: "/support" },
+                { label: "Privacy", href: "/privacy" }
+              ].map((item) => (
                 <Link
-                  key={item}
-                  href={`/${item.toLowerCase()}`}
+                  key={item.label}
+                  href={item.href}
                   className="block text-text-secondary font-semibold hover:text-primary transition-colors py-2"
                   onClick={() => setIsOpen(false)}
                 >
-                  {item}
+                  {item.label}
                 </Link>
               ))}
               {!user && (
