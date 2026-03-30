@@ -24,6 +24,7 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(searchParams.get('payment') === 'success');
   const [showError, setShowError] = useState(searchParams.get('payment') === 'failed');
+  const [showUpgradeView, setShowUpgradeView] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -47,51 +48,51 @@ export default function SubscriptionPage() {
   }, []);
 
   const showSubscriptionDetails = async (shouldCloseBanner = false) => {
-    // Refresh data to be sure
+    // ডাটা রিফ্রেশ করা যাতে লেটেস্ট তথ্য পাওয়া যায়
     const schoolRes = await getMySchool();
     const currentSchool = schoolRes.success ? schoolRes.data : mySchool;
-    
+
     if (schoolRes.success) {
       setMySchool(schoolRes.data);
     }
 
     const { plan = 'Premium', duration = '12', subscriptions = [] } = currentSchool || {};
-    const sub = subscriptions[0];
+    const sub = subscriptions[0]; // লেটেস্ট সাবস্ক্রিপশন
 
     await Swal.fire({
       title: 'Payment Receipt 🎉',
       html: `
         <div style="text-align: center; padding: 10px;">
-          <div style="margin-bottom: 20px; color: #059669; background: #ecfdf5; padding: 20px; border-radius: 24px; border: 1px solid #d1fae5; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);">
+          <div style="margin-bottom: 20px; color: #059669; background: #ecfdf5; padding: 25px; border-radius: 24px; border: 1px solid #d1fae5;">
             <p style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; color: #065f46;">Your Current Plan</p>
-            <p style="font-size: 28px; font-weight: 900; margin: 0; color: #064e3b; text-transform: capitalize;">${plan}</p>
+            <p style="font-size: 32px; font-weight: 900; margin: 0; color: #064e3b; text-transform: capitalize;">${plan}</p>
           </div>
           
-          <div style="margin-top: 20px; padding: 20px; background: #f9fafb; border-radius: 24px; text-align: left; border: 1px solid #f3f4f6;">
+          <div style="padding: 20px; background: #f9fafb; border-radius: 24px; text-align: left; border: 1px solid #f3f4f6;">
             <p style="font-size: 10px; font-weight: 900; color: #9ca3af; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05em;">Transaction Information:</p>
             
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px dashed #e5e7eb;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
                 <span style="color: #6b7280; font-weight: 600;">Transaction ID:</span>
-                <span style="color: #111827; font-weight: 800; font-family: 'JetBrains Mono', monospace; font-size: 13px;">${sub?.transactionId || 'Legacy/Internal'}</span>
+                <span style="color: #111827; font-weight: 800; font-family: 'JetBrains Mono', monospace;">${sub?.transactionId || '---'}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px dashed #e5e7eb;">
+              <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
                 <span style="color: #6b7280; font-weight: 600;">Amount Authorized:</span>
-                <span style="color: #111827; font-weight: 800; font-size: 15px;">৳${sub?.amount || 'N/A (Included)'}</span>
+                <span style="color: #111827; font-weight: 800;">৳${sub?.amount || '0.00'}</span>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 10px; border-bottom: 1px dashed #e5e7eb;">
+              <div style="display: flex; justify-content: space-between; font-size: 14px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb;">
                 <span style="color: #6b7280; font-weight: 600;">Validity Period:</span>
                 <span style="color: #111827; font-weight: 800;">${duration} Months</span>
               </div>
               <div style="display: flex; justify-content: space-between; font-size: 14px;">
                 <span style="color: #6b7280; font-weight: 600;">Activation Date:</span>
-                <span style="color: #111827; font-weight: 800;">${sub?.createdAt ? new Date(sub.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Verified Internal Record'}</span>
+                <span style="color: #111827; font-weight: 800;">${sub?.createdAt ? new Date(sub.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Verified'}</span>
               </div>
             </div>
           </div>
           
-          <div style="margin-top: 20px; text-align: left; padding: 0 10px;">
-             <p style="font-size: 12px; color: #6b7280; font-weight: 500; line-height: 1.5;">আপনার সাবস্ক্রিপশনটি এখন সচল আছে। যেহেতু আমি আজ ডাটাবেজ ক্লিন করেছি, তাই আগের পেমেন্ট রেকর্ডগুলো এখানে দেখাচ্ছে না। আপনার পরবর্তী পেমেন্ট থেকে সব রিসিট এখানে পরিষ্কারভাবে শো করবে।</p>
+          <div style="margin-top: 20px; padding: 0 10px;">
+             <p style="font-size: 12px; color: #6b7280; font-weight: 500; line-height: 1.6;">আপনার পেমেন্ট রেকর্ড নিরাপদে ডাটাবেজে সংরক্ষিত আছে। আপনার সাবস্ক্রিপশনটি অটোমেটিক আপডেট করা হয়েছে। ধন্যবাদ আমাদের সাথে থাকার জন্য।</p>
           </div>
         </div>
       `,
@@ -101,7 +102,7 @@ export default function SubscriptionPage() {
       showCloseButton: true,
       customClass: {
         popup: 'rounded-[3rem]',
-        confirmButton: 'rounded-2xl px-10 py-4 font-black shadow-xl'
+        confirmButton: 'rounded-2xl px-10 py-4 font-black shadow-xl shadow-emerald-100'
       }
     });
 
@@ -198,10 +199,10 @@ export default function SubscriptionPage() {
     );
   }
 
-  // Active Subscription View
-  const hasActiveSubscription = mySchool?.plan && mySchool.plan.toLowerCase() !== 'basic';
+  // Active Subscription View - If there is at least one successful transaction
+  const hasActiveSubscription = mySchool?.subscriptions?.some((s: any) => s.status === 'SUCCESS');
 
-  if (hasActiveSubscription) {
+  if (hasActiveSubscription && !showUpgradeView) {
     const activePlanDetails = plans.find(p => p.name.toLowerCase() === mySchool.plan.toLowerCase());
     const Icon = activePlanDetails?.icon && iconMap[activePlanDetails.icon] ? iconMap[activePlanDetails.icon] : Crown;
 
@@ -300,14 +301,20 @@ export default function SubscriptionPage() {
                 <p className="text-2xl font-black mb-1">Verified ✓</p>
                 <p className="text-sm text-gray-400 font-medium">Full access to all modules is active.</p>
                 <div className="space-y-2 mt-6">
-                  <button 
+                  <button
                     onClick={() => showSubscriptionDetails(false)}
                     className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
                   >
                     View Details Receipt
                   </button>
-                  <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-900/40">
-                    Manage Billing <ArrowRight size={14} />
+                  <button
+                    onClick={() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      setShowUpgradeView(true);
+                    }}
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-900/40 text-white"
+                  >
+                    Upgrade / Change Plan <Rocket size={14} />
                   </button>
                 </div>
               </div>
@@ -315,13 +322,8 @@ export default function SubscriptionPage() {
           </div>
         </div>
 
-        <div className="text-center">
-          <button
-            onClick={() => setMySchool((p: any) => ({ ...p, plan: 'basic' }))}
-            className="text-gray-400 hover:text-blue-600 text-sm font-bold transition-colors"
-          >
-            Want to see other plans? Click here to upgrade
-          </button>
+        <div className="text-center pb-10">
+          <p className="text-gray-400 text-sm font-medium">Looking to manage enterprise settings? Contact our support team.</p>
         </div>
       </div>
     );

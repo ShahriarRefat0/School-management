@@ -2,13 +2,11 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Logo from "@/components/shared/logo/logo";
-import { LogIn, LucideLayoutDashboard, Menu, X } from "lucide-react";
+import { LogIn, LucideLayoutDashboard, Menu, X, Bell, ChevronDown, LogOut, AlertCircle, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "@/components/theme/ThemeToggle";
-import { supabase } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
-import { Bell, ChevronDown, LogOut, AlertCircle, User } from "lucide-react"
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,10 +34,12 @@ const Navbar = () => {
     }
   };
 
+  if (!mounted) return null;
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-card/70 backdrop-blur-xl border-b border-border-light transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-22">
+        <div className="flex justify-between items-center h-16">
 
           {/* LEFT: Hamburger (mobile) + Logo */}
           <div className="flex items-center gap-3">
@@ -48,15 +48,7 @@ const Navbar = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 rounded-lg bg-secondary text-primary transition-all"
             >
-              {isOpen ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
             <Link href="/" onClick={handleClickLogo} className="hover:opacity-90 transition-opacity">
@@ -66,19 +58,24 @@ const Navbar = () => {
 
           {/* CENTER: Desktop nav links */}
           <div className="hidden md:flex items-center gap-10">
-            {["Features", "Pricing", "support", "Privacy"].map((item) => (
+            {[
+              { label: "Why Choose Us", href: "/why-choose-us" },
+              { label: "Pricing", href: "/pricing" },
+              { label: "Support", href: "/support" },
+              { label: "Privacy", href: "/privacy" }
+            ].map((item) => (
               <Link
-                key={item}
-                href={`/${item.toLowerCase()}`}
+                key={item.label}
+                href={item.href}
                 className="text-text-secondary text-sm font-bold hover:text-primary transition-all relative group"
               >
-                {item}
+                {item.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
           </div>
 
-          {/* RIGHT: Theme + Profile/Login — always on right */}
+          {/* RIGHT: Theme + Profile/Login */}
           <div className="flex items-center gap-3 sm:gap-5">
             <ThemeToggle />
 
@@ -86,18 +83,17 @@ const Navbar = () => {
               <>
                 <Link
                   href="/login"
-                  className="hidden sm:block text-primary font-bold hover:text-primary-hover px-4 py-2 transition-colors"
+                  className="hidden sm:block text-primary font-bold hover:text-primary-hover px-4 py-2 transition-colors text-sm"
                 >
                   Login
                 </Link>
                 <Link href="/live-demo">
-                  <button className="hidden md:block bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-full font-bold shadow-md active:scale-95 transition-all">
+                  <button className="hidden md:block bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-full font-bold shadow-md active:scale-95 transition-all text-sm">
                     Live Demo
                   </button>
                 </Link>
               </>
             ) : (
-              /* Profile button - always visible on RIGHT side on all screen sizes */
               <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -106,7 +102,7 @@ const Navbar = () => {
                   <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
                     SR
                   </div>
-                  {/* <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180 text-primary' : ''}`} /> */}
+                  <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -120,13 +116,8 @@ const Navbar = () => {
                         className="absolute right-0 mt-2 w-52 rounded-2xl border border-border-light bg-bg-card p-2 shadow-2xl z-[70]"
                       >
                         <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-border-light mb-1">Account</div>
-                        <Link 
-                          href={
-                            role === "parent" ? "/dashboard/parent" : 
-                            role === "student" ? "/dashboard/student" :
-                            role === "teacher" ? "/dashboard/teacher" :
-                            "/dashboard/principal"
-                          } 
+                        <Link
+                          href={role === "parent" ? "/dashboard/parent" : role === "student" ? "/dashboard/student" : role === "teacher" ? "/dashboard/teacher" : "/dashboard/principal"}
                           className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-text-primary hover:bg-secondary/30 rounded-xl transition-all"
                         >
                           <LucideLayoutDashboard size={18} className="text-primary" /> Dashboard
@@ -147,38 +138,45 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile dropdown menu - only nav links */}
-      {isOpen && (
-        <div className="md:hidden bg-bg-card border-b border-border-light shadow-xl animate-in slide-in-from-top duration-300">
-          <div className="px-4 pt-2 pb-6 space-y-2">
-            {["Features", "Pricing", "support", "Privacy"].map((item) => (
-              <Link
-                key={item}
-                href={`/${item.toLowerCase()}`}
-                className="block text-text-secondary font-semibold hover:text-primary transition-colors py-2"
-              >
-                {item}
-              </Link>
-            ))}
-
-            {/* Show Login/Demo buttons in mobile menu only when not logged in */}
-            {!user && (
-              <div className="pt-4 flex flex-col gap-3">
-                <Link href="/login" className="w-full">
-                  <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">
-                    Login
-                  </button>
+      {/* Mobile Dropdown */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden bg-bg-card border-b border-border-light shadow-xl"
+          >
+            <div className="px-4 pt-2 pb-6 space-y-2">
+              {[
+                { label: "Why Choose Us", href: "/why-choose-us" },
+                { label: "Pricing", href: "/pricing" },
+                { label: "Support", href: "/support" },
+                { label: "Privacy", href: "/privacy" }
+              ].map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="block text-text-secondary font-semibold hover:text-primary transition-colors py-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.label}
                 </Link>
-                <Link href="/live-demo">
-                  <button className="w-full bg-primary text-white py-3 rounded-xl font-bold">
-                    Live Demo
-                  </button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+              ))}
+              {!user && (
+                <div className="pt-4 flex flex-col gap-3">
+                  <Link href="/login" onClick={() => setIsOpen(false)} className="w-full">
+                    <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">Login</button>
+                  </Link>
+                  <Link href="/live-demo" onClick={() => setIsOpen(false)} className="w-full">
+                    <button className="w-full bg-primary text-white py-3 rounded-xl font-bold">Live Demo</button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Logout Modal */}
       <AnimatePresence>

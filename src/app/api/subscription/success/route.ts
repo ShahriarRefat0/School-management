@@ -10,18 +10,34 @@ export async function POST(req: Request) {
         const { tran_id, status, val_id, bank_tran_id, card_type } = data as any;
 
         if (status === 'VALID') {
-            // ১. Subscription স্ট্যাটাস আপডেট করা
+            // ১. Subscription তথ্য খুঁজে বের করা
+            const existingSub = await prisma.subscription.findUnique({
+                where: { transactionId: tran_id }
+            });
+
+            if (!existingSub) {
+                return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/principal/subscription?payment=failed&reason=not_found`);
+            }
+
+            // ২. মেয়াদ হিসাব করা (মাস হিসেবে)
+            const durationMonths = parseInt(existingSub.duration) || 12;
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setMonth(startDate.getMonth() + durationMonths);
+
+            // ৩. Subscription স্ট্যাটাস আপডেট করা
             const subscription = await prisma.subscription.update({
                 where: { transactionId: tran_id },
                 data: {
                     status: 'SUCCESS',
                     valId: val_id,
                     method: card_type || bank_tran_id,
-                    startDate: new Date(),
+                    startDate: startDate,
+                    endDate: endDate,
                 }
             });
 
-            // ২. স্কুলের Plan আপডেট করা
+            // ৪. স্কুলের Plan এবং Duration আপডেট করা
             await prisma.school.update({
                 where: { id: subscription.schoolId },
                 data: {
@@ -30,7 +46,7 @@ export async function POST(req: Request) {
                 }
             });
 
-            // ডাটা রিফ্রেশ নিশ্চিত করা
+            // ৫. ডাটা রিফ্রেশ নিশ্চিত করা
             revalidatePath('/dashboard/principal/subscription');
 
             // পেমেন্ট সফল হওয়ার পর আবার সাবস্ক্রিপশন পেজেই পাঠানো (সাথে সাকসেস ফ্ল্যাগ)
@@ -43,7 +59,7 @@ export async function POST(req: Request) {
             await prisma.subscription.update({
                 where: { transactionId: tran_id },
                 data: { status: 'FAIL' }
-            }).catch(() => {});
+            }).catch(() => { });
 
             return NextResponse.redirect(
                 `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/principal/subscription?payment=failed`,

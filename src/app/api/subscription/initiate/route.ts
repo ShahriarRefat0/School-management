@@ -4,11 +4,23 @@ import { prisma } from '@/lib/prisma';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { planName, amount, duration, schoolId, customerName, customerEmail, customerPhone } = body;
+        const { planName, schoolId, customerName, customerEmail, customerPhone } = body;
 
         if (!process.env.SSL_STORE_ID || !process.env.SSL_STORE_PASS) {
             return NextResponse.json({ error: 'SSL credentials missing' }, { status: 500 });
         }
+
+        // --- SECURITY: Fetch Plan Details from Database (Never trust Client Amount) ---
+        const plan = await prisma.plan.findFirst({
+            where: { name: { equals: planName, mode: 'insensitive' } }
+        });
+
+        if (!plan) {
+            return NextResponse.json({ error: 'Plan not found' }, { status: 400 });
+        }
+
+        const amount = parseFloat(plan.price);
+        const duration = plan.duration;
 
         let school: any = null;
         if (schoolId) school = await prisma.school.findUnique({ where: { id: schoolId } });
@@ -66,7 +78,7 @@ export async function POST(req: Request) {
                 await prisma.subscription.create({
                     data: {
                         transactionId: transactionId,
-                        amount: parseFloat(amount),
+                        amount: amount,
                         status: 'PENDING',
                         planName: planName,
                         duration: duration,
