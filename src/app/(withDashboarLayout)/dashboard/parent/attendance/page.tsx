@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -10,155 +10,203 @@ import {
   ChevronRight,
   Info,
   AlertTriangle,
+  FileText,
+  Loader2,
+  GraduationCap,
 } from 'lucide-react';
+import { getParentAttendanceData } from "@/app/actions/parent/attendance";
 
-const cn = (...classes: (string | boolean | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
+// Simple className merger
+const cn = (...classes: (string | boolean | undefined)[]) => {
+  return classes.filter(Boolean).join(" ");
+};
+
+// Card Component
+const Card = ({
+  children,
+  className = "",
+  style = {}
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) => (
+  <div
+    className={cn(
+      "bg-bg-card rounded-2xl border border-border-light shadow-sm hover:shadow-xl hover:border-blue-200/60 transition-all duration-500",
+      className
+    )}
+    style={style}
+  >
+    {children}
+  </div>
+);
 
 export default function AttendancePage() {
-  const [currentMonth] = useState('ফেব্রুয়ারি ২০২৬');
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
+  const [currentMonth] = useState('February 2026');
 
-  const attendanceSummary = [
-    { label: 'মোট কার্যদিবস', value: '১৮', icon: CalendarIcon },
-    { label: 'উপস্থিত', value: '১৬', icon: CheckCircle2 },
-    { label: 'অনুপস্থিত', value: '০২', icon: XCircle },
-    { label: 'গড় উপস্থিতির হার', value: '৮৯%', icon: Clock },
-  ];
+  useEffect(() => {
+    async function loadData() {
+      const res = await getParentAttendanceData();
+      if (res.success) {
+        setData(res.data);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, []);
 
-  const attendanceLog = [
-    {
-      date: '১৭ ফেব, ২০২৬',
-      day: 'মঙ্গলবার',
-      entry: '১০:১৫ AM',
-      exit: '০৪:০০ PM',
-      status: 'Present',
-      statusBn: 'উপস্থিত',
-    },
-    {
-      date: '১৬ ফেব, ২০২৬',
-      day: 'সোমবার',
-      entry: '১০:০৫ AM',
-      exit: '০৪:০৫ PM',
-      status: 'Present',
-      statusBn: 'উপস্থিত',
-    },
-    {
-      date: '১৫ ফেব, ২০২৬',
-      day: 'রবিবার',
-      entry: '---',
-      exit: '---',
-      status: 'Absent',
-      statusBn: 'অনুপস্থিত',
-    },
-    {
-      date: '১১ ফেব, ২০২৬',
-      day: 'বুধবার',
-      entry: '১০:২০ AM',
-      exit: '০৪:১০ PM',
-      status: 'Late',
-      statusBn: 'বিলম্বিত',
-    },
-  ];
+  if (loading) {
+    return (
+      <div className="h-[70vh] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <Loader2 className="animate-spin text-blue-600" size={60} />
+          <GraduationCap className="absolute inset-0 m-auto text-blue-900/20" size={30} />
+        </div>
+        <div className="text-center space-y-2">
+          <p className="text-xl font-black text-text-primary tracking-tight animate-pulse">Fetching Attendance Records...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const attendanceLog = data?.attendanceLog || [];
+  
+  const presentCount = attendanceLog.filter((l: any) => l.status === 'Present').length;
+  const absentCount = attendanceLog.filter((l: any) => l.status === 'Absent').length;
+  const attendancePercentage = attendanceLog.length > 0 
+    ? ((presentCount / attendanceLog.length) * 100).toFixed(0) + '%'
+    : '0%';
 
   return (
-    <div className="space-y-8 bg-bg-page min-h-screen p-6">
+    <div className="space-y-8 animate-fadeIn p-2 md:p-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">
-            উপস্থিতি রিপোর্ট
+          <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+            Attendance Report
           </h1>
           <p className="text-sm text-text-muted mt-1">
-            সন্তানের প্রতিদিনের উপস্থিতির বিস্তারিত তথ্য দেখুন
+            View detailed daily attendance record of your child
           </p>
         </div>
 
-        <div className="flex items-center gap-3 bg-bg-card p-2 rounded-lg border border-border-light">
-          <button className="p-1.5 rounded-md hover:bg-primary/5">
+        <div className="flex items-center gap-3 bg-bg-card p-1.5 rounded-xl border border-border-light shadow-sm">
+          <button 
+            onClick={() => alert('Viewing previous month attendance...')}
+            className="p-2 rounded-lg hover:bg-bg-page text-text-secondary transition-colors"
+          >
             <ChevronLeft size={18} />
           </button>
-          <span className="text-sm font-semibold text-text-primary px-4">
+          <span className="text-sm font-bold text-text-primary px-4 min-w-[140px] text-center">
             {currentMonth}
           </span>
-          <button className="p-1.5 rounded-md hover:bg-primary/5">
+          <button 
+            onClick={() => alert('Viewing next month attendance...')}
+            className="p-2 rounded-lg hover:bg-bg-page text-text-secondary transition-colors"
+          >
             <ChevronRight size={18} />
           </button>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {attendanceSummary.map((item, idx) => (
-          <div
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Total Recorded', value: attendanceLog.length, icon: CalendarIcon, bg: 'bg-blue-500/10', color: 'text-blue-500' },
+          { label: 'Present', value: presentCount, icon: CheckCircle2, bg: 'bg-emerald-500/10', color: 'text-emerald-500' },
+          { label: 'Absent', value: absentCount, icon: XCircle, bg: 'bg-red-500/10', color: 'text-red-500' },
+          { label: 'Avg. Rate', value: attendancePercentage, icon: Clock, bg: 'bg-indigo-500/10', color: 'text-indigo-500' },
+        ].map((item, idx) => (
+          <Card
             key={idx}
-            className="bg-bg-card p-5 rounded-xl border border-border-light"
+            className="p-5 group"
           >
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-              <item.icon size={18} className="text-primary" />
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110", item.bg)}>
+              <item.icon size={20} className={item.color} />
             </div>
-            <p className="text-xs text-text-muted uppercase tracking-wide">
+            <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
               {item.label}
             </p>
-            <p className="text-xl font-bold text-text-primary mt-1">
+            <p className="text-2xl font-bold text-text-primary mt-1">
               {item.value}
             </p>
-          </div>
+          </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Table */}
-        <div className="lg:col-span-2 bg-bg-card rounded-xl border border-border-light overflow-hidden">
-          <div className="p-6 border-b border-border-light flex justify-between items-center">
-            <h3 className="font-semibold text-text-primary">দৈনিক হাজিরা লগ</h3>
-            <button className="text-xs font-semibold text-primary flex items-center gap-1">
-              <Info size={14} /> নিয়মাবলী
+        <Card className="lg:col-span-2 overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-border-light flex justify-between items-center bg-bg-page/30">
+            <h3 className="font-bold text-text-primary flex items-center gap-2">
+               Daily Logs
+            </h3>
+            <button 
+              onClick={() => alert('Attendance Policy:\n- 85% attendance required for exam eligibility.\n- Late entry after 08:30 AM.\n- Consecutive 3 days absence requires a medical certificate.')}
+              className="text-[10px] font-black text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 rounded-lg transition-colors border border-blue-500/10 uppercase tracking-widest"
+            >
+              <Info size={14} /> View Rules
             </button>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-border-light">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs text-text-muted uppercase">
-                    তারিখ
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-bg-page/50 text-text-muted">
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider border-b border-border-light">
+                    Date
                   </th>
-                  <th className="px-6 py-4 text-left text-xs text-text-muted uppercase">
-                    প্রবেশ
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider border-b border-border-light">
+                    Entry Time
                   </th>
-                  <th className="px-6 py-4 text-left text-xs text-text-muted uppercase">
-                    প্রস্থান
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider border-b border-border-light">
+                    Exit Time
                   </th>
-                  <th className="px-6 py-4 text-left text-xs text-text-muted uppercase">
-                    স্ট্যাটাস
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider border-b border-border-light text-right">
+                    Status
                   </th>
                 </tr>
               </thead>
 
-              <tbody>
+              <tbody className="divide-y divide-border-light">
                 {attendanceLog.map((log, idx) => (
                   <tr
                     key={idx}
-                    className="border-b border-border-light hover:bg-primary/5 transition"
+                    className="hover:bg-bg-page/80 transition-colors group animate-fadeInSlide"
+                    style={{ animationDelay: `${idx * 50}ms` }}
                   >
                     <td className="px-6 py-4">
-                      <p className="text-sm font-semibold text-text-primary">
-                        {log.date}
-                      </p>
-                      <p className="text-xs text-text-muted">{log.day}</p>
-                    </td>
-
-                    <td className="px-6 py-4 text-sm text-text-secondary">
-                      {log.entry}
-                    </td>
-
-                    <td className="px-6 py-4 text-sm text-text-secondary">
-                      {log.exit}
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-text-primary">
+                          {log.date}
+                        </span>
+                        <span className="text-[10px] font-medium text-text-muted">{log.day}</span>
+                      </div>
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 text-[10px] font-semibold rounded-full bg-primary/10 text-primary">
-                        {log.statusBn}
+                      <div className="flex items-center gap-2 text-sm text-text-secondary">
+                        <Clock size={14} className="text-text-muted" />
+                        {log.entry || "---"}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 text-sm text-text-secondary">
+                      {log.exit || "---"}
+                    </td>
+
+                    <td className="px-6 py-4 text-right">
+                      <span
+                        className={cn(
+                          "px-3 py-1 text-[10px] font-black rounded-lg border uppercase tracking-widest leading-none shadow-sm",
+                          log.statusColor === 'emerald' && "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                          log.statusColor === 'red' && "bg-red-500/10 text-red-500 border-red-500/20",
+                          log.statusColor === 'orange' && "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        )}
+                      >
+                        {log.status}
                       </span>
                     </td>
                   </tr>
@@ -166,40 +214,51 @@ export default function AttendancePage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        {/* Notice */}
+        {/* Info Sidebar */}
         <div className="space-y-6">
-          <div className="bg-bg-card p-6 rounded-xl border border-border-light">
-            <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
-              <AlertTriangle size={18} className="text-primary" />
-              গুরুত্বপূর্ণ নোট
+          <Card className="p-6 bg-bg-card border-border-light relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+            <h3 className="font-bold text-text-primary mb-6 flex items-center gap-2 text-sm uppercase tracking-widest relative z-10">
+              <AlertTriangle size={18} className="text-amber-500" />
+              Information
             </h3>
 
-            <div className="space-y-3 text-xs text-text-secondary leading-relaxed">
-              <p>
-                সকাল <b>১০:১৫</b> এর পর প্রবেশ করলে সেটি <b>বিলম্বিত (Late)</b>{' '}
-                হিসেবে গণ্য করা হবে।
-              </p>
+            <div className="space-y-4 text-xs text-text-secondary leading-relaxed">
+              <div className="flex gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 shrink-0" />
+                <p>
+                  Entry after <span className="font-bold text-text-primary">10:15 AM</span> will be marked as <span className="font-bold text-orange-600">Late</span>.
+                </p>
+              </div>
 
-              <p>
-                টানা ৩ দিন অনুপস্থিত থাকলে অভিভাবককে অবশ্যই স্কুল কর্তৃপক্ষের
-                সাথে যোগাযোগ করতে হবে।
-              </p>
+              <div className="flex gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 shrink-0" />
+                <p>
+                  If absent for <span className="font-bold text-text-primary">3 consecutive days</span>, parents must submit valid justification.
+                </p>
+              </div>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-primary/10 p-6 rounded-xl border border-border-light">
-            <h4 className="font-semibold text-text-primary mb-2">
-              ছুটির আবেদন?
+          <Card className="p-6 bg-linear-to-br from-blue-600 to-indigo-700 text-white border-none shadow-blue-200">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
+              <FileText size={24} className="text-white" />
+            </div>
+            <h4 className="font-bold text-lg mb-2">
+              Apply for Leave?
             </h4>
-            <p className="text-xs text-text-secondary mb-4">
-              ভবিষ্যতে অনুপস্থিত থাকলে অগ্রিম ছুটির আবেদন করুন।
+            <p className="text-xs text-white/80 mb-6 leading-relaxed">
+              Plan to be away? Submit an advance leave request to avoid unmarked absences.
             </p>
-            <button className="w-full py-2.5 bg-primary text-white rounded-lg text-xs font-semibold hover:opacity-90 transition">
-              আবেদন ফর্ম পূরণ করুন
+            <button 
+              onClick={() => alert('Leave Request Form will open in a new window.')}
+              className="w-full py-3 bg-white text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-50 transition-colors shadow-lg"
+            >
+              Open Request Form
             </button>
-          </div>
+          </Card>
         </div>
       </div>
     </div>

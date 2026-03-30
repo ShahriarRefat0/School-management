@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Megaphone,
   Search,
@@ -10,196 +10,273 @@ import {
   ChevronRight,
   Calendar,
   FileText,
+  Filter,
+  X,
+  Loader2,
+  GraduationCap,
 } from 'lucide-react';
+import { getParentNoticesData } from "@/app/actions/parent/notices";
 
-const cn = (...classes: (string | boolean | undefined)[]) =>
-  classes.filter(Boolean).join(' ');
+// Simple className merger
+const cn = (...classes: (string | boolean | undefined)[]) => {
+  return classes.filter(Boolean).join(" ");
+};
+
+// Card Component
+const Card = ({
+  children,
+  className = "",
+  style = {}
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) => (
+  <div
+    className={cn(
+      "bg-bg-card rounded-2xl border border-border-light shadow-sm hover:shadow-xl hover:border-blue-200/60 transition-all duration-500",
+      className
+    )}
+    style={style}
+  >
+    {children}
+  </div>
+);
 
 export default function NoticesPage() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const notices = [
-    {
-      id: 1,
-      title: 'বার্ষিক ক্রীড়া প্রতিযোগিতা ২০২৬',
-      date: '২০ ফেব, ২০২৬',
-      category: 'Event',
-      desc: '২৫শে ফেব্রুয়ারি বার্ষিক ক্রীড়া প্রতিযোগিতা অনুষ্ঠিত হবে। সকলকে উপস্থিত থাকার অনুরোধ করা হচ্ছে।',
-      isPinned: true,
-      priority: 'High',
-    },
-    {
-      id: 2,
-      title: 'শবে বরাত উপলক্ষে ছুটি',
-      date: '১৫ ফেব, ২০২৬',
-      category: 'Holiday',
-      desc: '১৮ই ফেব্রুয়ারি স্কুল ছুটি থাকবে। ১৯শে ফেব্রুয়ারি থেকে ক্লাস শুরু।',
-      isPinned: false,
-      priority: 'Normal',
-    },
-    {
-      id: 3,
-      title: 'প্রথম সাময়িক পরীক্ষার সময়সূচী',
-      date: '১০ ফেব, ২০২৬',
-      category: 'Exam',
-      desc: 'প্রথম সাময়িক পরীক্ষার রুটিন প্রকাশিত হয়েছে। নিচ থেকে ডাউনলোড করুন।',
-      isPinned: false,
-      priority: 'Urgent',
-    },
+  useEffect(() => {
+    async function loadData() {
+      const res = await getParentNoticesData();
+      if (res.success) {
+        setData(res.data);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-[70vh] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <Loader2 className="animate-spin text-blue-600" size={60} />
+          <GraduationCap className="absolute inset-0 m-auto text-blue-900/20" size={30} />
+        </div>
+        <div className="text-center space-y-2">
+          <p className="text-xl font-black text-text-primary tracking-tight animate-pulse">Fetching Bulletins...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const allNotices = data?.notices || [];
+
+  const categories = [
+    { name: 'Academic', count: 12, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { name: 'Exams', count: 4, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { name: 'Events', count: 8, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { name: 'Holidays', count: 5, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
   ];
 
   return (
-    <div className="space-y-8 bg-bg-page min-h-screen p-4 md:p-6 transition-colors duration-300">
+    <div className="space-y-8 animate-fadeIn p-2 md:p-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-            <Megaphone size={22} className="text-primary" />
-            নোটিশ বোর্ড
+          <h1 className="text-2xl font-bold text-text-primary tracking-tight flex items-center gap-2">
+             Notice Board
           </h1>
-          <p className="text-sm text-text-muted mt-1">
-            গুরুত্বপূর্ণ আপডেট এবং সর্বশেষ নোটিশসমূহ
+          <p className="text-sm text-text-muted mt-1 leading-relaxed">
+            Stay updated with important school announcements and news
           </p>
         </div>
 
-        <div className="relative group">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors"
-            size={16}
-          />
-          <input
-            type="text"
-            placeholder="নোটিশ খুঁজুন..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-4 py-2.5 bg-bg-card border border-border-light rounded-xl text-sm w-full md:w-64 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 text-text-primary transition-all shadow-sm"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative group">
+            <Search
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-blue-600 transition-colors"
+              size={18}
+            />
+            <input
+              type="text"
+              placeholder="Search notices..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-11 pr-5 py-3 bg-bg-card border border-border-light rounded-2xl text-sm w-full md:w-72 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
+            />
+          </div>
+          <button className="p-3 bg-bg-card border border-border-light rounded-2xl text-text-muted hover:bg-bg-page hover:text-blue-600 transition-all shadow-sm">
+            <Filter size={18} />
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Notice List */}
-        <div className="lg:col-span-2 space-y-4">
-          {notices.map((notice, idx) => (
-            <div
+        <div className="lg:col-span-2 space-y-6">
+          {allNotices
+            .filter((n: any) => 
+              (selectedCategory === 'All' || n.category === selectedCategory) &&
+              (n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.desc.toLowerCase().includes(searchQuery.toLowerCase()))
+            )
+            .map((notice: any, idx: number) => (
+            <Card
               key={notice.id}
+              className="p-8 group animate-fadeInSlide relative overflow-hidden"
               style={{ animationDelay: `${idx * 100}ms` }}
-              className={cn(
-                'bg-bg-card p-6 rounded-2xl border border-border-light transition-all hover:border-primary/40 relative shadow-sm hover:shadow-md animate-in fade-in slide-in-from-left-4 duration-500 fill-mode-both',
-              )}
             >
               {notice.isPinned && (
-                <div className="absolute -left-2 -top-2 bg-primary text-white p-1.5 rounded-lg shadow-lg">
-                  <Pin size={14} fill="currentColor" />
+                <div className="absolute right-0 top-0 bg-blue-600 text-white p-2 rounded-bl-3xl shadow-lg z-10 transition-transform group-hover:scale-110">
+                  <Pin size={16} fill="currentColor" className="-rotate-12" />
                 </div>
               )}
 
-              <div className="flex justify-between items-start mb-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider border border-primary/20">
-                      {notice.category}
-                    </span>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <span className={cn(
+                    "text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest border shadow-sm leading-none",
+                    notice.category === 'Event' && "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                    notice.category === 'Holiday' && "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                    notice.category === 'Exam' && "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                  )}>
+                    {notice.category}
+                  </span>
 
-                    <span className="text-xs text-text-muted flex items-center gap-1">
-                      <Clock size={12} /> {notice.date}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-text-primary leading-tight">
-                    {notice.title}
-                  </h3>
+                  <span className="text-[10px] text-text-muted font-bold flex items-center gap-1.5 uppercase tracking-wider">
+                    <Clock size={14} className="text-slate-400" /> {notice.date}
+                  </span>
                 </div>
 
-                <button className="p-2.5 rounded-xl bg-bg-page hover:bg-primary/10 transition-colors group">
-                  <Download
-                    size={18}
-                    className="text-text-muted group-hover:text-primary"
-                  />
-                </button>
+                <div className="flex justify-between items-start gap-4">
+                  <h3 className="text-xl font-bold text-text-primary leading-tight group-hover:text-blue-600 transition-colors">
+                    {notice.title}
+                  </h3>
+                  
+                  <button 
+                    onClick={() => window.print()}
+                    className="shrink-0 p-3 rounded-2xl bg-bg-page border border-border-light text-text-muted group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-300 shadow-sm"
+                  >
+                    <Download size={20} />
+                  </button>
+                </div>
+
+                <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
+                  {notice.desc}
+                </p>
+
+                <div className="pt-6 mt-6 border-t border-border-light flex justify-between items-center">
+                  <button 
+                    onClick={() => alert('Detailed notice view coming soon!')}
+                    className="text-xs font-bold text-blue-600 flex items-center gap-1 hover:gap-3 transition-all"
+                  >
+                    View Details <ChevronRight size={16} />
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    {notice.priority === 'Urgent' && (
+                       <span className="flex items-center gap-2 text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20 leading-none shadow-sm">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.5)]" />
+                        Urgent
+                      </span>
+                    )}
+                    {notice.priority !== 'Urgent' && (
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        {notice.priority} Priority
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <p className="text-sm text-text-secondary leading-relaxed">
-                {notice.desc}
-              </p>
-
-              <div className="mt-5 pt-4 border-t border-border-light flex justify-between items-center">
-                <button className="text-xs font-bold text-primary flex items-center gap-1 hover:gap-2 transition-all">
-                  বিস্তারিত পড়ুন <ChevronRight size={14} />
-                </button>
-
-                {notice.priority === 'Urgent' ? (
-                  <span className="flex items-center gap-1.5 text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-2 py-1 rounded">
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                    জরুরি
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-bold text-text-muted uppercase">
-                    সাধারণ
-                  </span>
-                )}
-              </div>
-            </div>
+              {/* Decorative accent */}
+              <div className={cn(
+                "absolute left-0 top-0 bottom-0 w-1 transition-all group-hover:w-1.5",
+                notice.category === 'Event' && "bg-blue-500",
+                notice.category === 'Holiday' && "bg-emerald-500",
+                notice.category === 'Exam' && "bg-amber-500",
+              )} />
+            </Card>
           ))}
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-700">
+        <div className="space-y-6">
           {/* Categories */}
-          <div className="bg-bg-card p-6 rounded-2xl border border-border-light shadow-sm">
-            <h3 className="font-bold text-text-primary mb-4 flex items-center gap-2">
-              <span className="w-1 h-4 bg-primary rounded-full" />
-              ক্যাটাগরি
+          <Card className="p-6">
+            <h3 className="font-bold text-text-primary mb-6 flex items-center gap-2">
+              <span className="w-1.5 h-4 bg-blue-600 rounded-full" />
+               Categories
             </h3>
 
-            <div className="space-y-1">
-              {[
-                { name: 'একাডেমিক', count: 12 },
-                { name: 'পরীক্ষা', count: 4 },
-                { name: 'ইভেন্ট', count: 8 },
-                { name: 'ছুটি', count: 5 },
-              ].map((cat, i) => (
+            <div className="space-y-2">
+              {categories.map((cat, i) => (
                 <button
                   key={i}
-                  className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-primary/5 transition-all group"
+                  className="w-full flex items-center justify-between p-3.5 rounded-2xl hover:bg-bg-page transition-all group border border-transparent hover:border-border-light"
                 >
-                  <span className="text-sm text-text-secondary group-hover:text-primary font-medium">
-                    {cat.name}
-                  </span>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-bg-page text-text-muted group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("w-2 h-2 rounded-full", cat.color.replace('text', 'bg'))} />
+                    <span className="text-sm text-text-secondary group-hover:text-text-primary font-bold transition-colors">
+                      {cat.name}
+                    </span>
+                  </div>
+                  <span className={cn("text-[10px] font-black px-2.5 py-1 rounded-lg border transition-all uppercase tracking-widest leading-none", cat.bg, cat.color, "border-transparent group-hover:border-current/20 shadow-sm")}>
                     {cat.count}
                   </span>
                 </button>
               ))}
             </div>
-          </div>
+          </Card>
 
-          {/* Calendar Card */}
-          <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 relative overflow-hidden group">
-            <div className="absolute -right-4 -bottom-4 text-primary/10 group-hover:scale-110 transition-transform duration-500">
-              <Calendar size={100} />
+          {/* Calendar Promotion Card */}
+          <Card className="p-6 bg-linear-to-br from-blue-600 to-indigo-700 text-white border-none shadow-blue-200 group overflow-hidden relative">
+            <div className="absolute -right-6 -bottom-6 text-white/5 rotate-12 transition-transform duration-700 group-hover:scale-125 group-hover:-rotate-12">
+              <Calendar size={180} />
             </div>
 
             <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-primary rounded-lg text-white">
-                  <Calendar size={18} />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+                  <Calendar size={24} className="text-white" />
                 </div>
-                <h3 className="font-bold text-text-primary">
-                  স্কুল ক্যালেন্ডার
+                <h3 className="font-bold text-lg">
+                  School Calendar
                 </h3>
               </div>
 
-              <p className="text-xs text-text-muted mb-5 leading-relaxed">
-                পুরো বছরের ছুটির তালিকা এবং একাডেমিক ইভেন্ট ক্যালেন্ডার ডাউনলোড
-                করে সংগ্রহে রাখুন।
+              <p className="text-xs text-white/80 mb-8 leading-relaxed">
+                Download the complete academic calendar for 2026, including holidays and events.
               </p>
 
-              <button className="w-full py-3 bg-primary text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/30 transition-all active:scale-95">
-                <FileText size={16} /> পিডিএফ ডাউনলোড
+              <button 
+                onClick={() => window.print()}
+                className="w-full py-3.5 bg-white text-blue-700 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:shadow-xl hover:bg-blue-50 transition-all active:scale-[0.98] group/btn shadow-lg"
+              >
+                <FileText size={18} className="transition-transform group-hover/btn:-translate-y-0.5" />
+                Download PDF
               </button>
             </div>
-          </div>
+          </Card>
+          
+          {/* Quick Notice Card */}
+          <Card className="p-6 bg-slate-900 text-white border-none">
+            <h4 className="font-bold mb-2 flex items-center gap-2">
+              <Megaphone size={18} className="text-amber-400" />
+              Quick Alert
+            </h4>
+            <p className="text-[10px] text-slate-400 leading-relaxed mb-4">
+              All notifications are also sent to your registered mobile number and email address.
+            </p>
+            <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+              <p className="text-[10px] font-bold text-white/70 uppercase mb-1">Last Sync</p>
+              <p className="text-xs font-mono">Today, 10:45 AM</p>
+            </div>
+          </Card>
         </div>
       </div>
     </div>
