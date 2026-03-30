@@ -13,9 +13,11 @@ import { useAuth } from "@/hooks/useAuth"
 export function DashboardHeader({ onMenuClick }: any) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
+        setIsMounted(true);
         const timer = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
@@ -49,12 +51,16 @@ const {user, signOut } = useAuth()
 
                     {/* Real-time Clock - AI Project Styled */}
                     <div className="hidden lg:flex flex-col items-center justify-center">
-                        <p className="text-sm font-bold text-text-primary font-mono tracking-wider">
-                            {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </p>
-                        <p className="text-[10px] font-medium text-primary/70 uppercase tracking-widest">
-                            {currentTime.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </p>
+                        {isMounted && (
+                            <>
+                                <p className="text-sm font-bold text-text-primary font-mono tracking-wider">
+                                    {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                </p>
+                                <p className="text-[10px] font-medium text-primary/70 uppercase tracking-widest">
+                                    {currentTime.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })}
+                                </p>
+                            </>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
