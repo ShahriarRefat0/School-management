@@ -29,10 +29,10 @@ export function FloatingClock() {
             <div className="relative group">
                 {/* Magnetic Glow Effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-blue-500/30 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                
+
                 {/* Main Pill Container */}
                 <div className="relative flex items-center gap-3 px-4 py-2 bg-slate-950/60 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.3)]">
-                    
+
                     {/* Status Dot */}
                     <div className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
