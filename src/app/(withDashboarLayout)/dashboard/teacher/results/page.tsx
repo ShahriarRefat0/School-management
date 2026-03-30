@@ -54,7 +54,7 @@ export default function ResultsPage() {
             setIsLoading(true);
             const studentsRes = await getStudentsByClass(selectedClass);
 
-            if (studentsRes.success) {
+            if (studentsRes.success && studentsRes.data) {
                 // Fetch all results for these students in this exam type
                 const allResults = await Promise.all(
                     subjects.map(sub => getResults(selectedClass, sub, examType))
@@ -64,8 +64,8 @@ export default function ResultsPage() {
                     const marks: Record<string, any> = {};
                     subjects.forEach((sub, index) => {
                         const subResult = allResults[index];
-                        if (subResult.success) {
-                            const studentResult = (subResult.data || []).find((r: any) => r.studentId === student.id);
+                        if (subResult.success && subResult.data) {
+                            const studentResult = subResult.data.find((r: any) => r.studentId === student.id);
                             marks[sub] = studentResult ? studentResult.marks : "";
                         } else {
                             marks[sub] = "";
@@ -133,7 +133,7 @@ export default function ResultsPage() {
 
         const numValue = parseInt(value);
         if (isNaN(numValue)) return;
-        
+
         // Ensure mark is between 1 and 100
         const sanitizedValue = Math.min(100, Math.max(1, numValue));
 

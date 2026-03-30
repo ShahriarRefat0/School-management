@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   TrendingUp,
@@ -7,6 +7,7 @@ import {
   Wallet,
   Receipt,
   Users,
+  BookOpen,
   Calendar,
   AlertCircle,
   DollarSign,
@@ -16,7 +17,10 @@ import {
   MoreVertical,
   Clock,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
+import { getAccountantDashboardStats, getRecentAccountantTransactions } from "@/app/actions/accountant/dashboard";
+import toast from "react-hot-toast";
 
 // Simple className merger
 const cn = (...classes: (string | boolean | undefined)[]) => {
@@ -55,147 +59,157 @@ const StatCard = ({
   iconColor,
   subtitle,
   badge,
-  index,
+  isLoading
 }: any) => (
   <Card
     className="relative p-6 rounded-2xl border border-border-light shadow-sm hover:shadow-md transition-all duration-200"
   >
-
-    <div className="flex flex-col gap-4 relative z-10">
-      {/* Icon */}
-      <div
-        className={cn(
-          "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-          iconBg
-        )}
-      >
-        <Icon className={iconColor} size={20} />
+    {isLoading ? (
+      <div className="flex flex-col gap-4 animate-pulse">
+        <div className="w-10 h-10 bg-slate-200 rounded-xl" />
+        <div className="space-y-2">
+          <div className="h-2 w-20 bg-slate-200 rounded" />
+          <div className="h-6 w-32 bg-slate-200 rounded" />
+        </div>
       </div>
+    ) : (
+      <div className="flex flex-col gap-4 relative z-10">
+        {/* Icon */}
+        <div
+          className={cn(
+            "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+            iconBg
+          )}
+        >
+          <Icon className={iconColor} size={20} />
+        </div>
 
-      {/* Content */}
-      <div>
-        <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
-          {title}
-        </p>
+        {/* Content */}
+        <div>
+          <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+            {title}
+          </p>
 
-        <div className="flex items-baseline gap-2 mt-1">
-          <h3 className="text-2xl font-bold text-text-primary">{value}</h3>
+          <div className="flex items-baseline gap-2 mt-1">
+            <h3 className="text-2xl font-bold text-text-primary">{value}</h3>
 
-          {change && (
-            <span
-              className={cn(
-                "text-[10px] font-bold flex items-center gap-0.5",
-                changeType === "up" ? "text-emerald-500" : "text-red-500"
-              )}
-            >
-              {changeType === "up" ? (
-                <TrendingUp size={10} />
-              ) : (
-                <TrendingDown size={10} />
-              )}
-              {change}
-            </span>
+            {change && change !== "0%" && (
+              <span
+                className={cn(
+                  "text-[10px] font-bold flex items-center gap-0.5",
+                  changeType === "up" ? "text-emerald-500" : "text-red-500"
+                )}
+              >
+                {changeType === "up" ? (
+                  <TrendingUp size={10} />
+                ) : (
+                  <TrendingDown size={10} />
+                )}
+                {change}
+              </span>
+            )}
+          </div>
+
+          {subtitle && (
+            <p className="text-xs text-text-muted mt-1">{subtitle}</p>
           )}
         </div>
 
-        {subtitle && (
-          <p className="text-xs text-text-muted mt-1">{subtitle}</p>
+        {badge && (
+          <span className="absolute top-4 right-4 text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+            {badge}
+          </span>
         )}
       </div>
-
-      {badge && (
-        <span className="absolute top-4 right-4 text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
-          {badge}
-        </span>
-      )}
-    </div>
+    )}
   </Card>
 );
 
 export default function AccountantOverview() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [statsData, setStatsData] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    const [statsRes, transRes] = await Promise.all([
+      getAccountantDashboardStats(),
+      getRecentAccountantTransactions()
+    ]);
+
+    if (statsRes.success) {
+      setStatsData(statsRes.data);
+    } else {
+      toast.error(statsRes.error || "Failed to load stats");
+    }
+
+    if (transRes.success) {
+      setTransactions(transRes.data || []);
+    }
+
+    setIsLoading(false);
+  };
+
   const stats = [
     {
       title: "Today's Total Collection",
-      value: "৳ 1,25,000",
-      change: "+18%",
-      changeType: "up",
+      value: `Tk ${statsData?.today.value.toLocaleString() || 0}`,
+      change: statsData?.today.change,
+      changeType: statsData?.today.changeType,
       subtitle: "vs yesterday",
       icon: DollarSign,
-      iconBg: "bg-blue-500/10 to-indigo-600 shadow-blue-500/30",
+      iconBg: "bg-blue-500/10 shadow-blue-500/30",
       iconColor: "text-blue-500",
       badge: "Today",
     },
     {
       title: "Monthly Collection",
-      value: "৳ 8,50,000",
-      change: "+12%",
-      changeType: "up",
+      value: `Tk ${statsData?.monthly.value.toLocaleString() || 0}`,
+      change: statsData?.monthly.change,
+      changeType: statsData?.monthly.changeType,
       subtitle: "vs last month",
       icon: Calendar,
-      iconBg: "bg-indigo-600/10 to-indigo-500 shadow-blue-500/30",
+      iconBg: "bg-indigo-600/10 shadow-blue-500/30",
       iconColor: "text-indigo-600",
     },
     {
       title: "Total Salary Paid",
-      value: "৳ 4,20,000",
+      value: `Tk ${statsData?.salary.value.toLocaleString() || 0}`,
       icon: Wallet,
-      iconBg: "bg-indigo-500/10 to-blue-600 shadow-indigo-500/30",
+      iconBg: "bg-indigo-500/10 shadow-indigo-500/30",
       iconColor: "text-indigo-500",
-      subtitle: "32 teachers",
+      subtitle: "Current Month",
     },
     {
       title: "Total Expenses",
-      value: "৳ 1,85,000",
-      change: "-8%",
-      changeType: "down",
+      value: `Tk ${statsData?.expenses.value.toLocaleString() || 0}`,
+      change: statsData?.expenses.change,
+      changeType: statsData?.expenses.changeType,
       subtitle: "vs last month",
       icon: TrendingDown,
-      iconBg: "bg-orange-600/10 to-orange-500 shadow-amber-500/30",
+      iconBg: "bg-orange-600/10 shadow-amber-500/30",
       iconColor: "text-amber-500",
     },
     {
       title: "Due Fees",
-      value: "Tk 3,25,000",
+      value: `Tk ${statsData?.dues.value.toLocaleString() || 0}`,
       icon: AlertCircle,
-      iconBg: "bg-red-500/10 to-pink-500 shadow-red-500/30",
+      iconBg: "bg-red-500/10 shadow-red-500/30",
       iconColor: "text-red-500",
-      subtitle: "48 students",
-      badge: "Urgent",
+      subtitle: `${statsData?.dues.count || 0} students`,
+      badge: "Pending",
     },
     {
       title: "Net Balance",
-      value: "Tk 2,45,000",
-      change: "+22%",
-      changeType: "up",
+      value: `Tk ${statsData?.netBalance.toLocaleString() || 0}`,
       icon: TrendingUp,
-      iconBg: "bg-green-600/10 to-green-700 shadow-green-600/30",
+      iconBg: "bg-green-600/10 shadow-green-600/30",
       iconColor: "text-green-600",
-      subtitle: "Profit",
-    },
-  ];
-
-  const recentTransactions = [
-    {
-      id: 1,
-      date: "17 Feb, 2026",
-      time: "10:30 AM",
-      name: "Mohammad Rafiq",
-      type: "Monthly Fee",
-      amount: "+ Tk 5,000",
-      status: "Completed",
-      statusColor: "emerald",
-      icon: Receipt,
-    },
-    {
-      id: 2,
-      date: "17 Feb, 2026",
-      time: "09:15 AM",
-      name: "Mr. Alam",
-      type: "Salary",
-      amount: "- Tk 15,000",
-      status: "Paid",
-      statusColor: "blue",
-      icon: Wallet,
+      subtitle: "Total Savings",
     },
   ];
 
@@ -210,14 +224,18 @@ export default function AccountantOverview() {
           </h1>
           <p className="text-sm text-text-muted flex items-center gap-2">
             <Calendar size={14} />
-            Today's Date: 17 February, 2026 • Tuesday
+            Today's Date: {new Date().toLocaleDateString('default', { day: 'numeric', month: 'long', year: 'numeric' })} • {new Date().toLocaleDateString('default', { weekday: 'long' })}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2.5 bg-bg-card border border-border-light text-text-secondary hover:bg-bg-page rounded-xl  transition-all duration-300 flex items-center gap-2">
-            <Filter size={18} />
-            <span className="text-sm font-medium">Filter</span>
+          <button 
+            onClick={loadDashboardData}
+            disabled={isLoading}
+            className="px-4 py-2.5 bg-bg-card border border-border-light text-text-secondary hover:bg-bg-page rounded-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
+          >
+            {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Filter size={18} />}
+            <span className="text-sm font-medium">Refresh</span>
           </button>
 
           <Link href="/dashboard/accountant/fee-collection" className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:shadow-blue-600/30 transition-all duration-300 flex items-center gap-2">
@@ -230,31 +248,40 @@ export default function AccountantOverview() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
-          <StatCard key={index} {...stat} index={index} />
+          <StatCard key={index} {...stat} isLoading={isLoading} />
         ))}
       </div>
 
-      {/* Quick Banner */}
-      <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { label: "Total Students", value: "320", icon: Users },
-              { label: "Payments Updated", value: "272", icon: CheckCircle2 },
-              { label: "Partial Payments", value: "15", icon: Clock },
-              { label: "This Week", value: "89", icon: TrendingUp },
-            ].map((item, idx) => (
-              <div key={idx} className="text-center space-y-2">
-                <div className="flex items-center justify-center gap-2">
-                  <item.icon className="text-white/80" size={18} />
-                  <p className="text-xs text-white/80 uppercase">{item.label}</p>
-                </div>
-                <p className="text-3xl font-bold text-white">{item.value}</p>
-              </div>
-            ))}
+      {/* Quick Insights Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-6 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2rem] text-white shadow-lg overflow-hidden relative group">
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-blue-100 text-xs font-bold uppercase tracking-widest">Total Students</p>
+              <h3 className="text-4xl font-black">{statsData?.totalStudents || 0}</h3>
+              <p className="text-blue-100/80 text-[10px] font-medium italic">Enrolled in school</p>
+            </div>
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+              <Users size={32} />
+            </div>
           </div>
         </div>
-      </Card>
+
+        <div className="p-6 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[2rem] text-white shadow-lg overflow-hidden relative group">
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+          <div className="relative z-10 flex items-center justify-between">
+             <div className="space-y-1">
+              <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest">Total Teachers</p>
+              <h3 className="text-4xl font-black">{statsData?.totalTeachers || 0}</h3>
+              <p className="text-emerald-100/80 text-[10px] font-medium italic">Active staff members</p>
+            </div>
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+              <BookOpen size={32} />
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Recent Transactions */}
       <Card>
@@ -290,10 +317,10 @@ export default function AccountantOverview() {
             <thead>
               <tr className="bg-bg-page text-text-muted">
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Date & Time
+                  Date
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Person / Organization
+                  Description
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Type
@@ -311,101 +338,104 @@ export default function AccountantOverview() {
             </thead>
 
             <tbody className="divide-y divide-border-light">
-              {recentTransactions.map((transaction, idx) => {
-                const Icon = transaction.icon;
-
-                return (
-                  <tr
-                    key={transaction.id}
-                    className="hover:bg-bg-page transition-all duration-300 group animate-fadeInSlide cursor-pointer"
-                    style={{ animationDelay: `${idx * 50}ms` }}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-text-muted">
+                    <Loader2 className="animate-spin inline mr-2" /> Loading transactions...
+                  </td>
+                </tr>
+              ) : transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-text-muted">
+                    No recent transactions found.
+                  </td>
+                </tr>
+              ) : (
+                transactions.map((transaction, idx) => {
+                  return (
+                    <tr
+                      key={transaction.id}
+                      className="hover:bg-bg-page transition-all duration-300 group animate-fadeInSlide cursor-pointer"
+                      style={{ animationDelay: `${idx * 50}ms` }}
+                    >
+                      <td className="px-6 py-4">
                         <span className="text-sm font-medium text-text-primary">
-                          {transaction.date}
+                          {new Date(transaction.date).toLocaleDateString()}
                         </span>
-                        <span className="text-xs text-text-muted flex items-center gap-1">
-                          <Clock size={12} />
-                          {transaction.time}
-                        </span>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <Icon className="text-blue-600" size={18} />
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300",
+                            transaction.iconType === "payment" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
+                          )}>
+                             {transaction.iconType === "payment" ? <Receipt size={18} /> : <Wallet size={18} />}
+                          </div>
+                          <span className="text-sm font-medium text-text-primary ">
+                            {transaction.name}
+                          </span>
                         </div>
-                        <span className="text-sm font-medium text-text-primary ">
-                          {transaction.name}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-medium text-text-muted">
+                          {transaction.type}
                         </span>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <span className="text-sm ">
-                        {transaction.type}
-                      </span>
-                    </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={cn(
+                            "text-sm font-bold",
+                            transaction.amount.includes("+")
+                              ? "text-emerald-600"
+                              : "text-red-600"
+                          )}
+                        >
+                          {transaction.amount}
+                        </span>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <span
-                        className={cn(
-                          "text-sm font-bold",
-                          transaction.amount.startsWith("+")
-                            ? "text-emerald-600"
-                            : "text-red-600"
-                        )}
-                      >
-                        {transaction.amount}
-                      </span>
-                    </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={cn(
+                            "px-3 py-1.5 text-xs font-bold rounded-full border",
+                            transaction.statusColor === "emerald" && "bg-emerald-100 text-emerald-700 border-emerald-200",
+                            transaction.statusColor === "orange" && "bg-orange-100 text-orange-700 border-orange-200",
+                            transaction.statusColor === "blue" && "bg-blue-100 text-blue-700 border-blue-200",
+                            transaction.statusColor === "red" && "bg-red-100 text-red-700 border-red-200"
+                          )}
+                        >
+                          {transaction.status}
+                        </span>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <span
-                        className={cn(
-                          "px-3 py-1.5 text-xs font-bold rounded-full",
-                          transaction.statusColor === "emerald" &&
-                          "bg-emerald-100 text-emerald-700 border border-emerald-200",
-                          transaction.statusColor === "blue" &&
-                          "bg-blue-100 text-blue-700 border border-blue-200",
-                          transaction.statusColor === "orange" &&
-                          "bg-orange-100 text-orange-700 border border-orange-200",
-                          transaction.statusColor === "red" &&
-                          "bg-red-100 text-red-700 border border-red-200"
-                        )}
-                      >
-                        {transaction.status}
-                      </span>
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <button className="p-2 bg-gray-500/10 rounded-lg transition-colors ">
-                        <MoreVertical className="" size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      <td className="px-6 py-4">
+                        <button className="p-2 bg-gray-500/10 rounded-lg transition-colors ">
+                          <MoreVertical className="" size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
-        <div className="p-6 border-t border-border-light border-border-light bg-bg-page
-text-text-secondary">
+        <div className="p-6 border-t border-border-light bg-bg-page text-text-secondary">
           <div className="flex items-center justify-between">
             <p className="text-sm ">
-              Total <span className="font-bold text-text-primary">128</span> transactions
+              Recent <span className="font-bold text-text-primary">{transactions.length}</span> transactions
             </p>
 
-            <button className="px-4 py-2 text-sm font-semibold text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-300">
-              View All →
-            </button>
+            <Link href="/dashboard/accountant/history" className="px-4 py-2 text-sm font-semibold text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-300">
+              View History →
+            </Link>
           </div>
         </div>
       </Card>
-
 
     </div>
   );
