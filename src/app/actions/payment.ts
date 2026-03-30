@@ -97,7 +97,7 @@ export async function initiatePayment(data: {
             await prisma.payment.create({
                 data: {
                     transactionId: transactionId,
-                    amount: typeof amount === 'string' ? parseFloat(amount) : amount,
+                    amount: typeof amount === 'string' ? parseFloat(amount) : Number(amount),
                     status: 'PENDING',
                     studentId: studentId,
                     schoolId: schoolId,
