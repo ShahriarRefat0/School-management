@@ -61,11 +61,13 @@ const Navbar = () => {
 
           {/* CENTER: Desktop nav links */}
           <div className="hidden md:flex items-center gap-10">
+      
             {[
               { label: "Why Choose Us", href: "/why-choose-us" },
               { label: "Pricing", href: "/pricing" },
-              { label: "Support", href: "/Support" },
-              { label: "Privacy", href: "/privacy" }
+              { label: "Support", href: "/support" },
+              { label: "Privacy", href: "/privacy" },
+              { label: "Contact", href: "/contact" }
             ].map((item) => (
               <Link
                 key={item.label}
@@ -160,7 +162,8 @@ const Navbar = () => {
                 { label: "Why Choose Us", href: "/why-choose-us" },
                 { label: "Pricing", href: "/pricing" },
                 { label: "Support", href: "/support" },
-                { label: "Privacy", href: "/privacy" }
+                { label: "Privacy", href: "/privacy" },
+                { label: "Contact", href: "/contact" }
               ].map((item) => (
                 <Link
                   key={item.label}

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 import {
     UserPlus, Save, ChevronLeft, User, GraduationCap,
     Users, MapPin, CheckCircle2, AlertCircle,
@@ -134,11 +135,23 @@ export default function StudentForm() {
                                 Session 2024-25 • Admission Management
                             </p>
                         </div>
+
+
+
                     </div>
                     <Button variant="ghost" onClick={() => router.back()} className="w-fit text-[10px] font-black uppercase tracking-widest dark:text-slate-300 dark:hover:bg-slate-900">
                         <ChevronLeft className="mr-2" size={14} /> Back
                     </Button>
+
+
                 </div>
+
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" onClick={() => router.push("/dashboard/principal/students/bulk-add")} className="w-fit text-[10px] font-black uppercase tracking-widest dark:text-slate-300 dark:hover:bg-slate-900">
+                        <UserPlus className="mr-2" size={14} /> Add Bulk Students
+                    </Button>
+                </div>
+
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Side: All Forms */}

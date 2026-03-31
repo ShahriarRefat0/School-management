@@ -199,6 +199,7 @@ model User {
   updatedAt      DateTime        @updatedAt
   email          String          @unique
   name           String
+  notifications  Notification[]  @relation("UserNotifications")
   announcements  Announcement[]  @relation("AuthorAnnouncements")
   teacherNotices TeacherNotice[] @relation("AuthorTeacherNotices")
   school         School?         @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
@@ -498,6 +499,21 @@ model Feedback {
   @@index([studentId])
   @@index([teacherId])
   @@index([schoolId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   @default("system") // academic, system, payment, alert
+  userId    String
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  isRead    Boolean  @default(false)
+  link      String?  // Optional target URL (e.g., /dashboard/student/result)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // Global configuration for the system (used by super admin dashboard)
