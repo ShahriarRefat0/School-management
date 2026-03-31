@@ -20,15 +20,12 @@ import {
   FileText,
   History,
   Settings,
-  UserCheck as UserCheckIcon,
   LineChart,
   ClipboardList,
-  MessageCircle,
   LayoutDashboard as LayoutDashboardIcon,
   Users2,
 } from 'lucide-react';
 import { DashboardMenuItem } from './types';
-import { profile } from 'console';
 
 export const studentMenuItems: DashboardMenuItem[] = [
   { title: 'Dashboard', url: '/dashboard/student', icon: LayoutDashboard },
@@ -43,6 +40,21 @@ export const studentMenuItems: DashboardMenuItem[] = [
     url: '/dashboard/student/notices',
     icon: Bell,
     badge: '3',
+  },
+  {
+    title: 'Take Exam',
+    url: '/dashboard/student/take-exam',
+    icon: ClipboardList,
+  },
+  {
+    title: 'My Exams',
+    url: '/dashboard/student/my-exams',
+    icon: FileText,
+  },
+  {
+    title: 'Progress',
+    url: '/dashboard/student/progress',
+    icon: LineChart,
   },
   { title: 'Payments', url: '/dashboard/student/payments', icon: CreditCard },
   { title: 'Profile', url: '/dashboard/student/profile', icon: User },
@@ -66,6 +78,16 @@ export const teacherMenuItems: DashboardMenuItem[] = [
     title: 'Enter Results',
     url: '/dashboard/teacher/results',
     icon: GraduationCap,
+  },
+  {
+    title: 'Create Exam',
+    url: '/dashboard/teacher/create-exam',
+    icon: ClipboardList,
+  },
+  {
+    title: 'My Exams',
+    url: '/dashboard/teacher/my-exams',
+    icon: FileText,
   },
   {
     title: 'Study Materials',
