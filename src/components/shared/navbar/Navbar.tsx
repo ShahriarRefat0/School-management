@@ -37,6 +37,7 @@ const Navbar = () => {
   };
 
   return (
+    <>
     <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-card/70 backdrop-blur-xl border-b border-border-light transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-22">
@@ -66,10 +67,10 @@ const Navbar = () => {
 
           {/* CENTER: Desktop nav links */}
           <div className="hidden md:flex items-center gap-10">
-            {["Features", "Pricing", "support", "Privacy"].map((item) => (
+            {["Home", "Features", "Pricing", "Support", "Privacy"].map((item) => (
               <Link
                 key={item}
-                href={`/${item.toLowerCase()}`}
+                href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
                 className="text-text-secondary text-sm font-bold hover:text-primary transition-all relative group"
               >
                 {item}
@@ -143,10 +144,10 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-bg-card border-b border-border-light shadow-xl animate-in slide-in-from-top duration-300">
           <div className="px-4 pt-2 pb-6 space-y-2">
-            {["Features", "Pricing", "support", "Privacy"].map((item) => (
+            {["Home", "Features", "Pricing", "Support", "Privacy"].map((item) => (
               <Link
                 key={item}
-                href={`/${item.toLowerCase()}`}
+                href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
                 className="block text-text-secondary font-semibold hover:text-primary transition-colors py-2"
               >
                 {item}
@@ -171,6 +172,8 @@ const Navbar = () => {
           </div>
         </div>
       )}
+
+    </nav>
 
       {/* Logout Modal */}
       <AnimatePresence>
@@ -220,7 +223,7 @@ const Navbar = () => {
           </div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 };
 
