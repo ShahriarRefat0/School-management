@@ -86,8 +86,8 @@ const HeroSection = () => {
             >
               <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] tracking-tight">
                 <span className="text-blue-400">Schoology</span>BD <br />
-                <span className="text-white/90">Smart School</span> <br />
-                <span className="text-white">Management</span>
+                <span className="">Smart School</span> <br />
+                <span className="">Management</span>
               </h1>
               <p className="text-lg text-blue-100/70 max-w-xl font-medium leading-relaxed">
                 Empower your educational institution with <span className="text-white font-bold underline decoration-blue-500 decoration-2 underline-offset-4">Schoology BD</span>.
