@@ -25,16 +25,20 @@ const getStatus = (score) => {
     return {
       label: 'Excellent',
       comment: 'Outstanding',
-      color: 'text-emerald-600',
+      color: 'text-emerald-600 dark:text-emerald-300',
     };
   }
   if (score >= 60) {
-    return { label: 'Good Job', comment: 'Improving', color: 'text-amber-600' };
+    return {
+      label: 'Good Job',
+      comment: 'Improving',
+      color: 'text-amber-600 dark:text-amber-300',
+    };
   }
   return {
     label: 'Keep Practicing',
     comment: 'Needs Effort',
-    color: 'text-rose-600',
+    color: 'text-rose-600 dark:text-rose-300',
   };
 };
 
@@ -118,7 +122,10 @@ const StudentProgressClient = () => {
   if (results.length === 0) {
     return (
       <div className="bg-bg-card rounded-4xl border border-border-light p-12 text-center">
-        <BookOpen size={36} className="text-slate-300 mx-auto mb-3" />
+        <BookOpen
+          size={36}
+          className="text-slate-300 dark:text-slate-500 mx-auto mb-3"
+        />
         <p className="text-text-primary font-bold mb-1">No exam data yet</p>
         <p className="text-text-secondary text-sm">
           Complete at least one exam to see your performance analytics.
@@ -218,7 +225,7 @@ const StudentProgressClient = () => {
           {results.slice(0, 5).map((item) => (
             <div
               key={`${item.name}-${item.submittedAt}`}
-              className="flex items-center justify-between rounded-2xl bg-slate-50/80 px-4 py-3"
+              className="flex items-center justify-between rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-transparent dark:border-slate-700/60 px-4 py-3"
             >
               <div>
                 <p className="font-bold text-text-primary text-sm">

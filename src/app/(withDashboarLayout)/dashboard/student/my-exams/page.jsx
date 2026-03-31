@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Loader2,
-  BookOpen,
   CheckCircle2,
   Clock,
   User,
@@ -88,11 +87,11 @@ const StudentExams = () => {
                 {joinedExams.length}
               </p>
             </div>
-            <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100 min-w-32">
-              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700/80">
+            <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800/40 min-w-32">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700/80 dark:text-emerald-300/90">
                 Avg. Score
               </p>
-              <p className="text-2xl font-black text-emerald-700">
+              <p className="text-2xl font-black text-emerald-700 dark:text-emerald-300">
                 {averageScore}%
               </p>
             </div>
@@ -130,7 +129,7 @@ const StudentExams = () => {
         <div className="overflow-x-auto">
           {activeTab === 'all' ? (
             <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50/70">
+              <thead className="bg-slate-50/70 dark:bg-slate-800/60">
                 <tr className="border-b border-border-light">
                   <th className="p-5 text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">
                     Exam Title
@@ -153,7 +152,7 @@ const StudentExams = () => {
                 {allExams.map((exam) => (
                   <tr
                     key={exam._id}
-                    className="border-b border-slate-50 last:border-0 hover:bg-[#f0fdf4]/30 transition-colors group"
+                    className="border-b border-border-light last:border-0 hover:bg-[#f0fdf4]/30 dark:hover:bg-slate-800/50 transition-colors group"
                   >
                     <td className="p-5">
                       <div className="font-bold text-text-primary group-hover:text-primary transition-colors">
@@ -161,19 +160,25 @@ const StudentExams = () => {
                       </div>
                     </td>
                     <td className="p-5">
-                      <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[11px] font-bold">
+                      <span className="px-3 py-1 bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-200 rounded-lg text-[11px] font-bold">
                         {exam.category || 'Science'}
                       </span>
                     </td>
-                    <td className="p-5 text-sm text-slate-600 font-medium">
+                    <td className="p-5 text-sm text-text-secondary font-medium">
                       <div className="flex items-center gap-2">
-                        <Clock size={14} className="text-slate-300" />{' '}
+                        <Clock
+                          size={14}
+                          className="text-slate-300 dark:text-slate-500"
+                        />{' '}
                         {exam.duration}
                       </div>
                     </td>
-                    <td className="p-5 text-sm text-slate-500 font-medium">
+                    <td className="p-5 text-sm text-text-secondary font-medium">
                       <div className="flex items-center gap-2">
-                        <CalendarDays size={14} className="text-slate-300" />
+                        <CalendarDays
+                          size={14}
+                          className="text-slate-300 dark:text-slate-500"
+                        />
                         {new Date(exam.createdAt).toLocaleDateString('en-GB', {
                           day: 'numeric',
                           month: 'short',
@@ -195,7 +200,7 @@ const StudentExams = () => {
             </table>
           ) : (
             <table className="w-full text-left border-collapse">
-              <thead className="bg-slate-50/70">
+              <thead className="bg-slate-50/70 dark:bg-slate-800/60">
                 <tr className="border-b border-border-light">
                   <th className="p-5 text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">
                     Exam Subject
@@ -216,7 +221,7 @@ const StudentExams = () => {
                 {joinedExams.map((result) => (
                   <tr
                     key={result._id}
-                    className="border-b border-slate-50 last:border-0 hover:bg-[#f0fdf4]/30 transition-colors group"
+                    className="border-b border-border-light last:border-0 hover:bg-[#f0fdf4]/30 dark:hover:bg-slate-800/50 transition-colors group"
                   >
                     <td className="p-5">
                       <div className="font-bold text-text-primary">
@@ -224,17 +229,20 @@ const StudentExams = () => {
                       </div>
                     </td>
                     <td className="p-5">
-                      <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                        <User size={14} className="text-slate-300" />{' '}
+                      <div className="flex items-center gap-2 text-sm text-text-secondary font-medium">
+                        <User
+                          size={14}
+                          className="text-slate-300 dark:text-slate-500"
+                        />{' '}
                         {result.teacherEmail}
                       </div>
                     </td>
 
                     <td className="p-5">
-                      <div className="flex items-center gap-2 font-black text-slate-800">
+                      <div className="flex items-center gap-2 font-black text-text-primary">
                         <Trophy size={16} className="text-primary" />
                         {result.totalMark}{' '}
-                        <span className="text-slate-300 font-bold">
+                        <span className="text-slate-300 dark:text-slate-500 font-bold">
                           / {result.totalQuestions}
                         </span>
                       </div>
@@ -255,8 +263,8 @@ const StudentExams = () => {
       {((activeTab === 'all' && allExams.length === 0) ||
         (activeTab === 'joined' && joinedExams.length === 0)) && (
         <div className="text-center py-20 bg-bg-card border border-dashed border-border-light rounded-4xl">
-          <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Hash className="text-slate-200" size={30} />
+          <div className="bg-slate-50 dark:bg-slate-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Hash className="text-slate-300 dark:text-slate-500" size={30} />
           </div>
           <p className="text-text-secondary font-bold uppercase tracking-widest text-xs">
             No data recorded yet
