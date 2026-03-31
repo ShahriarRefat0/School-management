@@ -22,22 +22,41 @@ const HeroSection = () => {
     users: 0
   });
   const [period, setPeriod] = useState<keyof RevenueData>('allTime');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const res = await getHeroStats();
-      if (res.success) {
-        setStats({
-          revenue: res.revenue,
-          schools: res.schools,
-          users: res.users
-        });
+      try {
+        const res = await getHeroStats();
+        if (res.success) {
+          setStats({
+            revenue: res.revenue,
+            schools: res.schools,
+            users: res.users
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchStats();
   }, []);
 
   const currentRevenue = stats.revenue[period];
+
+  if (isLoading) {
+    return (
+      <section id="home" className="relative pt-32 pb-24 overflow-hidden bg-[#1e1e62] min-h-screen flex items-center justify-center">
+        <Herobackground />
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
+          <p className="text-blue-200 font-bold uppercase tracking-widest text-sm animate-pulse">Loading Schoology BD...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="home" className="relative pt-32 pb-24 overflow-hidden bg-[#1e1e62]">
@@ -87,7 +106,7 @@ const HeroSection = () => {
                 href="/login"
                 className="px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-black text-lg transition-all shadow-2xl shadow-blue-900/40 flex items-center gap-2 group hover:scale-105"
               >
-                Get Started
+                Get Started, <span className="opacity-80 font-bold">It's Free</span>
                 <ChevronRight className="group-hover:translate-x-1 transition-transform" />
               </Link>
 
@@ -96,8 +115,13 @@ const HeroSection = () => {
                   <PlayCircle size={24} />
                 </div>
                 <div>
-                  <p className="font-bold text-sm">Watch 2-min Demo</p>
-                  <p className="text-blue-400 font-bold text-xs mt-0.5">See how to automate your school</p>
+                  <p className="font-bold text-sm">Trusted by 125,000+ schools</p>
+                  <div className="flex items-center gap-1">
+                    <span className="text-blue-400 font-black text-xs">Rated 4.6</span>
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={10} fill={i < 4 ? "currentColor" : "none"} className="text-amber-400" />
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
