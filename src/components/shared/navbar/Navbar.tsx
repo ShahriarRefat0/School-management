@@ -1,17 +1,27 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import Logo from "@/components/shared/logo/logo";
-import { LogIn, LucideLayoutDashboard, Menu, X, Bell, ChevronDown, LogOut, AlertCircle, User } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import ThemeToggle from "@/components/theme/ThemeToggle";
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/useAuth"
+'use client';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Logo from '@/components/shared/logo/logo';
+import {
+  LogIn,
+  LucideLayoutDashboard,
+  Menu,
+  X,
+  Bell,
+  ChevronDown,
+  LogOut,
+  AlertCircle,
+  User,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ThemeToggle from '@/components/theme/ThemeToggle';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { user, role, signOut } = useAuth()
+  const { user, role, signOut } = useAuth();
   const router = useRouter();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -19,18 +29,18 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await signOut();
-    setShowLogoutModal(false)
-    router.replace("/")
-  }
+    setShowLogoutModal(false);
+    router.replace('/');
+  };
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const handleClickLogo = (e: React.MouseEvent) => {
-    if (window.location.pathname === "/") {
+    if (window.location.pathname === '/') {
       e.preventDefault();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -43,7 +53,6 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-card/70 backdrop-blur-xl border-b border-border-light transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-
           {/* LEFT: Hamburger (mobile) + Logo */}
           <div className="flex items-center gap-3">
             {/* Mobile hamburger - LEFT side */}
@@ -54,20 +63,23 @@ const Navbar = () => {
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
-            <Link href="/" onClick={handleClickLogo} className="hover:opacity-90 transition-opacity">
+            <Link
+              href="/"
+              onClick={handleClickLogo}
+              className="hover:opacity-90 transition-opacity"
+            >
               <Logo variant="dark" />
             </Link>
           </div>
 
           {/* CENTER: Desktop nav links */}
           <div className="hidden md:flex items-center gap-10">
-      
             {[
-              { label: "Why Choose Us", href: "/why-choose-us" },
-              { label: "Pricing", href: "/pricing" },
-              { label: "Support", href: "/support" },
-              { label: "Privacy", href: "/privacy" },
-              { label: "Contact", href: "/contact" }
+              { label: 'Why Choose Us', href: '/why-choose-us' },
+              { label: 'Pricing', href: '/pricing' },
+              { label: 'Support', href: '/support' },
+              { label: 'Privacy', href: '/privacy' },
+              { label: 'Contact', href: '/contact' },
             ].map((item) => (
               <Link
                 key={item.label}
@@ -112,28 +124,50 @@ const Navbar = () => {
                   <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
                     SR
                   </div>
-                  <ChevronDown className={`h-3 w-3 text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-3 w-3 text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}
+                  />
                 </button>
 
                 <AnimatePresence>
                   {isProfileOpen && (
                     <>
-                      <div className="fixed inset-0 z-[60]" onClick={() => setIsProfileOpen(false)} />
+                      <div
+                        className="fixed inset-0 z-[60]"
+                        onClick={() => setIsProfileOpen(false)}
+                      />
                       <motion.div
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         className="absolute right-0 mt-2 w-52 rounded-2xl border border-border-light bg-bg-card p-2 shadow-2xl z-[70]"
                       >
-                        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-border-light mb-1">Account</div>
+                        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-border-light mb-1">
+                          Account
+                        </div>
                         <Link
-                          href={role === "parent" ? "/dashboard/parent" : role === "student" ? "/dashboard/student" : role === "teacher" ? "/dashboard/teacher" : "/dashboard/principal"}
+                          href={
+                            role === 'parent'
+                              ? '/dashboard/parent'
+                              : role === 'student'
+                                ? '/dashboard/student'
+                                : role === 'teacher'
+                                  ? '/dashboard/teacher'
+                                  : '/dashboard'
+                          }
                           className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-text-primary hover:bg-secondary/30 rounded-xl transition-all"
                         >
-                          <LucideLayoutDashboard size={18} className="text-primary" /> Dashboard
+                          <LucideLayoutDashboard
+                            size={18}
+                            className="text-primary"
+                          />{' '}
+                          Dashboard
                         </Link>
                         <button
-                          onClick={() => { setShowLogoutModal(true); setIsProfileOpen(false); }}
+                          onClick={() => {
+                            setShowLogoutModal(true);
+                            setIsProfileOpen(false);
+                          }}
                           className="flex items-center gap-3 w-full px-3 py-3 text-sm font-black text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"
                         >
                           <LogOut size={18} /> Log out
@@ -159,11 +193,11 @@ const Navbar = () => {
           >
             <div className="px-4 pt-2 pb-6 space-y-2">
               {[
-                { label: "Why Choose Us", href: "/why-choose-us" },
-                { label: "Pricing", href: "/pricing" },
-                { label: "Support", href: "/support" },
-                { label: "Privacy", href: "/privacy" },
-                { label: "Contact", href: "/contact" }
+                { label: 'Why Choose Us', href: '/why-choose-us' },
+                { label: 'Pricing', href: '/pricing' },
+                { label: 'Support', href: '/support' },
+                { label: 'Privacy', href: '/privacy' },
+                { label: 'Contact', href: '/contact' },
               ].map((item) => (
                 <Link
                   key={item.label}
@@ -176,11 +210,23 @@ const Navbar = () => {
               ))}
               {mounted && !user && (
                 <div className="pt-4 flex flex-col gap-3">
-                  <Link href="/login" onClick={() => setIsOpen(false)} className="w-full">
-                    <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">Login</button>
+                  <Link
+                    href="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full"
+                  >
+                    <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">
+                      Login
+                    </button>
                   </Link>
-                  <Link href="/live-demo" onClick={() => setIsOpen(false)} className="w-full">
-                    <button className="w-full bg-primary text-white py-3 rounded-xl font-bold">Live Demo</button>
+                  <Link
+                    href="/live-demo"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full"
+                  >
+                    <button className="w-full bg-primary text-white py-3 rounded-xl font-bold">
+                      Live Demo
+                    </button>
                   </Link>
                 </div>
               )}
@@ -194,7 +240,9 @@ const Navbar = () => {
         {showLogoutModal && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setShowLogoutModal(false)}
               className="absolute inset-0 bg-slate-900/70 backdrop-blur-md"
             />
@@ -214,9 +262,12 @@ const Navbar = () => {
                 <div className="h-20 w-20 bg-red-100 dark:bg-red-950/30 rounded-full flex items-center justify-center mb-6 text-red-500">
                   <AlertCircle size={40} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-2xl font-black text-text-primary tracking-tight">Confirm Logout</h3>
+                <h3 className="text-2xl font-black text-text-primary tracking-tight">
+                  Confirm Logout
+                </h3>
                 <p className="text-text-muted mt-3 font-medium text-base px-2">
-                  Are you sure you want to sign out from <span className="text-primary font-bold">Schoology BD</span>?
+                  Are you sure you want to sign out from{' '}
+                  <span className="text-primary font-bold">Schoology BD</span>?
                 </p>
                 <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 w-full mt-10">
                   <button

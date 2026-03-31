@@ -1,12 +1,43 @@
-"use client";
+'use client';
 
-import {
-  createContext,
-  useEffect,
-  useState,
-} from "react";
-import { supabase } from "@/lib/supabase/client";
-import { UserRole } from "@/types/roles";
+import { createContext, useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase/client';
+import { UserRole } from '@/types/roles';
+
+const VALID_ROLES: UserRole[] = [
+  'super_admin',
+  'admin',
+  'teacher',
+  'student',
+  'parent',
+  'accountant',
+];
+
+function normalizeRole(role?: string | null): UserRole | null {
+  if (!role) return null;
+
+  const cleanedRole = role.trim().toLowerCase();
+  return VALID_ROLES.includes(cleanedRole as UserRole)
+    ? (cleanedRole as UserRole)
+    : null;
+}
+
+async function fetchRoleFromDb(): Promise<UserRole | null> {
+  try {
+    const res = await fetch('/api/auth/role', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return normalizeRole(data?.role);
+  } catch {
+    return null;
+  }
+}
 
 type AuthContextType = {
   user: any;
@@ -15,37 +46,35 @@ type AuthContextType = {
 
   signIn: (
     email: string,
-    password: string
-  ) => Promise<{ error: any; role:UserRole | null }>;
+    password: string,
+  ) => Promise<{ error: any; role: UserRole | null }>;
 
   signOut: () => Promise<void>;
 
-  resetPassword: (
-    email: string
-  ) => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
 
-  updatePassword: (
-    password: string
-  ) => Promise<{ error: any }>;
+  updatePassword: (password: string) => Promise<{ error: any }>;
 
-signUp: (
-  email: string,
-  password: string,
-  role?: UserRole
-) => Promise<{ data: any; error: any }>;
+  signUp: (
+    email: string,
+    password: string,
+    role?: UserRole,
+  ) => Promise<{ data: any; error: any }>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const resolveRole = async (rawRole?: string | null) => {
+    const dbRole = await fetchRoleFromDb();
+    if (dbRole) return dbRole;
+
+    return normalizeRole(rawRole);
+  };
 
   // SESSION CHECK
 
@@ -58,12 +87,13 @@ export function AuthProvider({
 
         if (session) {
           setUser(session.user);
-          setRole(
-            (session.user.user_metadata?.role as UserRole) ?? null
+          const resolvedRole = await resolveRole(
+            session.user.user_metadata?.role,
           );
+          setRole(resolvedRole);
         }
       } catch (err) {
-        console.error("Session check error:", err);
+        console.error('Session check error:', err);
       } finally {
         setLoading(false);
       }
@@ -76,9 +106,12 @@ export function AuthProvider({
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setUser(session.user);
-        setRole(
-          (session.user.user_metadata?.role as UserRole) ?? null
-        );
+        void (async () => {
+          const resolvedRole = await resolveRole(
+            session.user.user_metadata?.role,
+          );
+          setRole(resolvedRole);
+        })();
       } else {
         setUser(null);
         setRole(null);
@@ -92,29 +125,23 @@ export function AuthProvider({
   }, []);
 
   //signUP
-const signUp = async (
-  email: string,
-  password: string,
-  role?: UserRole
-) => {
-  const redirectUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/login`
-      : "";
+  const signUp = async (email: string, password: string, role?: UserRole) => {
+    const redirectUrl =
+      typeof window !== 'undefined' ? `${window.location.origin}/login` : '';
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: redirectUrl,
-      data: {
-        role: role ?? "pending_admin",
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          role: role ?? 'pending_admin',
+        },
       },
-    },
-  });
+    });
 
-  return { data, error };
-};
+    return { data, error };
+  };
 
   // ========================
   // SIGN IN
@@ -124,10 +151,10 @@ const signUp = async (
       email,
       password,
     });
-    
-    const  role = (data?.user?.user_metadata?.role as UserRole) ?? null;
 
-    return { error , role};
+    const role = await resolveRole(data?.user?.user_metadata?.role);
+
+    return { error, role };
   };
 
   // ========================
@@ -138,16 +165,15 @@ const signUp = async (
     setUser(null);
     setRole(null);
   };
-  
 
   // ========================
   // FORGOT PASSWORD
   // ========================
-const resetPassword = async (email: string) => {
-  return await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/login/reset-password`,
-  });
-};
+  const resetPassword = async (email: string) => {
+    return await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login/reset-password`,
+    });
+  };
 
   // ========================
   // UPDATE PASSWORD
@@ -171,7 +197,7 @@ const resetPassword = async (email: string) => {
         signOut,
         resetPassword,
         updatePassword,
-        signUp
+        signUp,
       }}
     >
       {children}
