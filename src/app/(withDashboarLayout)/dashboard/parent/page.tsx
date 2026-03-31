@@ -11,7 +11,7 @@ import {
   Info,
   ShieldCheck,
   Heart,
-  Loader2, // নতুন আইকন
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRoleGuard } from '@/hooks/useRoleGurad';
@@ -21,7 +21,6 @@ const cn = (...classes: (string | boolean | undefined)[]) => {
   return classes.filter(Boolean).join(' ');
 };
 
-// Card Component
 const Card = ({
   children,
   className = '',
@@ -39,7 +38,6 @@ const Card = ({
   </div>
 );
 
-// Feature Card Component
 const FeatureCard = ({
   title,
   desc,
@@ -74,7 +72,6 @@ const FeatureCard = ({
 export default function ParentDashboard() {
   const { user, role, loading } = useRoleGuard('parent');
 
-  // --- লোডিং কম্পোনেন্ট ---
   if (loading) {
     return (
       <div className="h-[80vh] w-full flex flex-col items-center justify-center gap-4">
@@ -94,7 +91,6 @@ export default function ParentDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 p-4 md:p-8 animate-fadeIn">
-      {/* Welcome Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10">
           <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">
@@ -145,7 +141,6 @@ export default function ParentDashboard() {
         />
       </div>
 
-      {/* Information Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 p-8 bg-gray-50 border-none">
           <div className="flex items-center gap-3 mb-6">
@@ -181,7 +176,6 @@ export default function ParentDashboard() {
           </div>
         </Card>
 
-        {/* Quick Links/Call to Action */}
         <div className="space-y-6">
           <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
             <h4 className="font-bold text-blue-800 mb-2">Need Assistance?</h4>
