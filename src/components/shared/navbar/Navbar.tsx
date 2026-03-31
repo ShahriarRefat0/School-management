@@ -34,7 +34,10 @@ const Navbar = () => {
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted) {
+    // We only skip rendering the dynamic interactive bits to avoid layout shift.
+    // The main nav bar skeleton will still render SSR.
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-card/70 backdrop-blur-xl border-b border-border-light transition-all duration-300">
@@ -81,7 +84,12 @@ const Navbar = () => {
           <div className="flex items-center gap-3 sm:gap-5">
             <ThemeToggle />
 
-            {!user ? (
+            {!mounted ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:block w-12 h-8 bg-border-light/30 animate-pulse rounded-lg"></div>
+                <div className="hidden md:block w-24 h-9 bg-border-light/30 animate-pulse rounded-full"></div>
+              </div>
+            ) : !user ? (
               <>
                 <Link
                   href="/login"
@@ -166,7 +174,7 @@ const Navbar = () => {
                   {item.label}
                 </Link>
               ))}
-              {!user && (
+              {mounted && !user && (
                 <div className="pt-4 flex flex-col gap-3">
                   <Link href="/login" onClick={() => setIsOpen(false)} className="w-full">
                     <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">Login</button>

@@ -5,6 +5,7 @@ import HowItWorks from "@/components/home/howitWorks/howitWorks";
 import FAQ from "@/components/home/FAQ/FAQ";
 import BlogSection from "@/components/home/blogSection/blog";
 import WhyChooseUs from "@/components/home/WhyChooseUs/WhyChooseUs";
+import ExploreOurDashboardFeatures from "@/components/home/ExploreOurDashboardFeatures/ExploreOurDashboardFeatures";
 import { FloatingClock } from "@/components/shared/FloatingClock";
 
 const HomePage = () => {
@@ -12,6 +13,8 @@ const HomePage = () => {
     <div className="space-y-10">
       <HeroSection></HeroSection>
       <WhyChooseUs />
+      <ExploreOurDashboardFeatures />
+      {/* <PrincipalMessage /> */}
       <Features />
       <HowItWorks></HowItWorks>
       <TestimonialsSection></TestimonialsSection>

@@ -8,7 +8,7 @@ import {
   BusFront,
   ArrowRight,
 } from 'lucide-react';
-import { motion } from 'framer-motion'; 
+import { motion } from 'framer-motion';
 import DefaultWeight from '@/components/shared/defaultWeight/DefaultWeight';
 
 const featuresData = [
@@ -60,7 +60,7 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2, 
+      staggerChildren: 0.2,
     },
   },
 };

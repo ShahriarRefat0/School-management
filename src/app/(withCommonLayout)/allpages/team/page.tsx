@@ -11,6 +11,9 @@ interface TeamMember {
   bio: string;
 }
 
+
+
+
 const teamData: TeamMember[] = [
   {
     id: 1,
@@ -92,9 +95,9 @@ const Teampage: React.FC = () => {
           >
             {/* Image Section with Animation */}
             <div className="relative w-24 h-24 mb-6 overflow-hidden rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-500">
-              <img 
-                src={member.image} 
-                alt={member.name} 
+              <img
+                src={member.image}
+                alt={member.name}
                 className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
               />
             </div>
@@ -106,20 +109,19 @@ const Teampage: React.FC = () => {
               {member.bio}
             </p>
 
-            {/* Links */}
             <div className="flex gap-4 border-t border-border-light pt-6">
-              <a 
-                href={member.github} 
+              <a
+                href={member.github}
                 className="p-2 rounded-full hover:bg-primary/10 text-text-muted hover:text-primary transition-colors"
-                target="_blank" 
+                target="_blank"
                 rel="noreferrer"
               >
                 <Github size={20} />
               </a>
-              <a 
-                href={member.portfolio} 
+              <a
+                href={member.portfolio}
                 className="p-2 rounded-full hover:bg-primary/10 text-text-muted hover:text-primary transition-colors"
-                target="_blank" 
+                target="_blank"
                 rel="noreferrer"
               >
                 <Globe size={20} />
