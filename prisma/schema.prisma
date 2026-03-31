@@ -199,6 +199,7 @@ model User {
   updatedAt      DateTime        @updatedAt
   email          String          @unique
   name           String
+  profileImage   String?
   announcements  Announcement[]  @relation("AuthorAnnouncements")
   teacherNotices TeacherNotice[] @relation("AuthorTeacherNotices")
   school         School?         @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
@@ -509,3 +510,6 @@ model SystemConfig {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+
+
