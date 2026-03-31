@@ -11,7 +11,8 @@ export default async function DashboardRootPage() {
   switch (currentUser.role) {
     case 'super_admin':
       redirect('/dashboard/super-admin');
-    case 'admin':
+      case 'admin':
+          
       redirect('/dashboard/principal');
     case 'teacher':
       redirect('/dashboard/teacher');
