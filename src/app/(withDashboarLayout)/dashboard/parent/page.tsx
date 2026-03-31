@@ -44,6 +44,7 @@ const FeatureCard = ({
   icon: Icon,
   iconBg,
   iconColor,
+
   link,
 }: any) => (
   <Link href={link || '#'}>
@@ -86,6 +87,8 @@ export default function ParentDashboard() {
         </div>
         <GraduationCap className="absolute right-[-20px] bottom-[-20px] text-white/10 w-64 h-64 -rotate-12" />
       </div>
+
+      
 
       {/* Main Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
