@@ -14,7 +14,8 @@ export default async function DashboardRootPage() {
       case 'admin':
           
       redirect('/dashboard/principal');
-    case 'teacher':
+      case 'teacher':
+          
       redirect('/dashboard/teacher');
     case 'parent':
       redirect('/dashboard/parent');
