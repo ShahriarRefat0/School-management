@@ -22,22 +22,41 @@ const HeroSection = () => {
     users: 0
   });
   const [period, setPeriod] = useState<keyof RevenueData>('allTime');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const res = await getHeroStats();
-      if (res.success) {
-        setStats({
-          revenue: res.revenue,
-          schools: res.schools,
-          users: res.users
-        });
+      try {
+        const res = await getHeroStats();
+        if (res.success) {
+          setStats({
+            revenue: res.revenue,
+            schools: res.schools,
+            users: res.users
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchStats();
   }, []);
 
   const currentRevenue = stats.revenue[period];
+
+  if (isLoading) {
+    return (
+      <section id="home" className="relative pt-32 pb-24 overflow-hidden bg-[#1e1e62] min-h-screen flex items-center justify-center">
+        <Herobackground />
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
+          <p className="text-blue-200 font-bold uppercase tracking-widest text-sm animate-pulse">Loading Schoology BD...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="home" className="relative pt-32 pb-24 overflow-hidden bg-[#1e1e62]">
