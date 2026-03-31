@@ -239,6 +239,12 @@ export default function TeacherOverview() {
             </div>
             <span className="text-xs font-bold text-text-secondary group-hover:text-primary">Post Assignment</span>
           </Link>
+          <Link href="/dashboard/teacher/schedule" className="flex flex-col items-center justify-center p-4 bg-bg-page border border-border-light rounded-2xl hover:border-primary/40 hover:bg-primary/[0.02] transition-all group">
+            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-3 group-hover:scale-110 transition-transform">
+              <Calendar size={24} />
+            </div>
+            <span className="text-xs font-bold text-text-secondary group-hover:text-primary">Manage Schedule</span>
+          </Link>
         </div>
       </div>
 
