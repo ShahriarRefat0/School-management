@@ -13,6 +13,7 @@ import {
   Heart,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRoleGuard } from '@/hooks/useRoleGurad';
 
 // Simple className merger
 const cn = (...classes: (string | boolean | undefined)[]) => {
@@ -71,6 +72,7 @@ const FeatureCard = ({
 );
 
 export default function ParentDashboard() {
+  const { user, role, loading } = useRoleGuard("parent");
   return (
     <div className="max-w-7xl mx-auto space-y-10 p-4 md:p-8 animate-fadeIn">
       {/* Welcome Header */}
