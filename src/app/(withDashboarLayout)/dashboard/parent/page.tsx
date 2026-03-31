@@ -11,6 +11,7 @@ import {
   Info,
   ShieldCheck,
   Heart,
+  Loader2, // নতুন আইকন
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRoleGuard } from '@/hooks/useRoleGurad';
@@ -45,7 +46,6 @@ const FeatureCard = ({
   icon: Icon,
   iconBg,
   iconColor,
-
   link,
 }: any) => (
   <Link href={link || '#'}>
@@ -72,14 +72,33 @@ const FeatureCard = ({
 );
 
 export default function ParentDashboard() {
-  const { user, role, loading } = useRoleGuard("parent");
+  const { user, role, loading } = useRoleGuard('parent');
+
+  // --- লোডিং কম্পোনেন্ট ---
+  if (loading) {
+    return (
+      <div className="h-[80vh] w-full flex flex-col items-center justify-center gap-4">
+        <div className="relative flex items-center justify-center">
+          <Loader2 className="animate-spin text-blue-600" size={48} />
+          <GraduationCap className="absolute text-blue-200" size={20} />
+        </div>
+        <div className="text-center">
+          <h3 className="text-lg font-bold text-gray-800 animate-pulse">
+            Verifying Access...
+          </h3>
+          <p className="text-sm text-gray-500">Preparing your dashboard</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-10 p-4 md:p-8 animate-fadeIn">
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10">
           <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">
-            Welcome, Parent! 👋
+            Welcome, {user?.name || 'Parent'}! 👋
           </h2>
           <p className="text-blue-100 max-w-xl text-lg font-medium opacity-90 leading-relaxed">
             Stay connected with your child's education and progress. Our portal
@@ -89,8 +108,6 @@ export default function ParentDashboard() {
         </div>
         <GraduationCap className="absolute right-[-20px] bottom-[-20px] text-white/10 w-64 h-64 -rotate-12" />
       </div>
-
-      
 
       {/* Main Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
