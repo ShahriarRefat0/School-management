@@ -3,7 +3,6 @@ import { Inter } from "next/font/google"; // ১. ইমপোর্ট চে�
 import "./globals.css";
 import SmoothScroll from "@/components/ui/SmoothScroll";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import Herobackground from "@/components/home/heroSection/Herobackground";
 import { AuthProvider } from "@/context/AuthProvider";
 import { Toaster } from "react-hot-toast";
 
@@ -47,8 +46,8 @@ export default function RootLayout({
         />
       </head>
       {/* ৩. এখানে className={`${inter.className}`} ব্যবহার করো */}
-      <body
-        className={`${inter.className} antialiased flex flex-col min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]`}
+      <body 
+        className={`${inter.className} antialiased flex flex-col min-h-screen bg-[var(--color-bg-page)] text-[var(--color-text-secondary)]`} suppressHydrationWarning={true}
       >
         <ThemeProvider>
           <SmoothScroll>
