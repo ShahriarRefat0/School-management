@@ -9,6 +9,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
+import { NotificationDropdown } from "./NotificationDropdown"
+import { getNotifications, markAllAsRead, markAsRead } from "@/app/actions/notification"
+import { toast } from "sonner"
 
 export function DashboardHeader({ onMenuClick }: any) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -16,14 +19,50 @@ export function DashboardHeader({ onMenuClick }: any) {
     const [isMounted, setIsMounted] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
 
+    // Notification State
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
     useEffect(() => {
         setIsMounted(true);
         const timer = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
 
+        fetchInitialNotifications();
+
         return () => clearInterval(timer);
     }, []);
+
+    const fetchInitialNotifications = async () => {
+        const res = await getNotifications(5);
+        if (res.success) {
+            setNotifications(res.data);
+            setUnreadCount(res.unreadCount);
+        }
+    };
+
+    const handleMarkAsRead = async (id: string) => {
+        const res = await markAsRead(id);
+        if (res.success) {
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } else {
+            toast.error("Failed to mark as read");
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        const res = await markAllAsRead();
+        if (res.success) {
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+            setUnreadCount(0);
+            toast.success("All caught up!");
+        } else {
+            toast.error("Failed to mark all as read");
+        }
+    };
 const router  = useRouter()
 const {user, signOut } = useAuth()
 
@@ -65,10 +104,27 @@ const {user, signOut } = useAuth()
 
                     <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                         <ThemeToggle />
-                        <button className="relative p-2 text-slate-500 rounded-xl hover:bg-secondary/30">
-                            <Bell className="h-5 w-5 md:h-6 md:w-6" />
-                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-bg-card"></span>
-                        </button>
+                        
+                        <div className="relative">
+                            <button 
+                                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                                className={`relative p-2 rounded-xl transition-all ${isNotificationsOpen ? 'bg-primary/10 text-primary' : 'text-slate-500 hover:bg-secondary/30'}`}
+                            >
+                                <Bell className="h-5 w-5 md:h-6 md:w-6" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-red-600 ring-2 ring-bg-card animate-pulse shadow-sm shadow-red-500"></span>
+                                )}
+                            </button>
+
+                            <NotificationDropdown
+                                isOpen={isNotificationsOpen}
+                                onClose={() => setIsNotificationsOpen(false)}
+                                notifications={notifications}
+                                unreadCount={unreadCount}
+                                onMarkAsRead={handleMarkAsRead}
+                                onMarkAllAsRead={handleMarkAllAsRead}
+                            />
+                        </div>
 
                         <div className="relative">
                             <button

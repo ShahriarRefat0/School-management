@@ -34,7 +34,10 @@ const Navbar = () => {
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted) {
+    // We only skip rendering the dynamic interactive bits to avoid layout shift.
+    // The main nav bar skeleton will still render SSR.
+  }
 
   return (
     <>
@@ -59,13 +62,20 @@ const Navbar = () => {
 
           {/* CENTER: Desktop nav links */}
           <div className="hidden md:flex items-center gap-10">
-            {["Home","Features", "Pricing", "Support", "Privacy"].map((item) => (
+      
+            {[
+              { label: "Why Choose Us", href: "/why-choose-us" },
+              { label: "Pricing", href: "/pricing" },
+              { label: "Support", href: "/support" },
+              { label: "Privacy", href: "/privacy" },
+              { label: "Contact", href: "/contact" }
+            ].map((item) => (
               <Link
-                key={item}
-                href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
+                key={item.label}
+                href={item.href}
                 className="text-text-secondary text-sm font-bold hover:text-primary transition-all relative group"
               >
-                {item}
+                {item.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
@@ -75,7 +85,12 @@ const Navbar = () => {
           <div className="flex items-center gap-3 sm:gap-5">
             <ThemeToggle />
 
-            {!user ? (
+            {!mounted ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:block w-12 h-8 bg-border-light/30 animate-pulse rounded-lg"></div>
+                <div className="hidden md:block w-24 h-9 bg-border-light/30 animate-pulse rounded-full"></div>
+              </div>
+            ) : !user ? (
               <>
                 <Link
                   href="/login"
@@ -144,17 +159,23 @@ const Navbar = () => {
             className="md:hidden bg-bg-card border-b border-border-light shadow-xl"
           >
             <div className="px-4 pt-2 pb-6 space-y-2">
-              {["Features", "Pricing", "Support", "Privacy"].map((item) => (
+              {[
+                { label: "Why Choose Us", href: "/why-choose-us" },
+                { label: "Pricing", href: "/pricing" },
+                { label: "Support", href: "/support" },
+                { label: "Privacy", href: "/privacy" },
+                { label: "Contact", href: "/contact" }
+              ].map((item) => (
                 <Link
-                  key={item}
-                  href={`/${item.toLowerCase()}`}
+                  key={item.label}
+                  href={item.href}
                   className="block text-text-secondary font-semibold hover:text-primary transition-colors py-2"
                   onClick={() => setIsOpen(false)}
                 >
-                  {item}
+                  {item.label}
                 </Link>
               ))}
-              {!user && (
+              {mounted && !user && (
                 <div className="pt-4 flex flex-col gap-3">
                   <Link href="/login" onClick={() => setIsOpen(false)} className="w-full">
                     <button className="w-full bg-secondary text-primary font-bold py-3 rounded-xl">Login</button>
@@ -168,8 +189,6 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-    </nav>
 
       {/* Logout Modal */}
       <AnimatePresence>
@@ -219,6 +238,7 @@ const Navbar = () => {
           </div>
         )}
       </AnimatePresence>
+      </nav>
     </>
   );
 };
