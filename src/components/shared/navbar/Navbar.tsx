@@ -66,7 +66,7 @@ const Navbar = () => {
 
           {/* CENTER: Desktop nav links */}
           <div className="hidden md:flex items-center gap-10">
-            {["Features", "Pricing", "support", "Privacy"].map((item) => (
+            {["", "Pricing", "support", "Privacy","contact"].map((item) => (
               <Link
                 key={item}
                 href={`/${item.toLowerCase()}`}
@@ -143,7 +143,7 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-bg-card border-b border-border-light shadow-xl animate-in slide-in-from-top duration-300">
           <div className="px-4 pt-2 pb-6 space-y-2">
-            {["Features", "Pricing", "support", "Privacy"].map((item) => (
+            {["", "Pricing", "support", "Privacy","contact"].map((item) => (
               <Link
                 key={item}
                 href={`/${item.toLowerCase()}`}
