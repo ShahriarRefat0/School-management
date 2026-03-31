@@ -199,27 +199,30 @@ export default function StudentDashboardPage() {
               desc: 'Enter teacher room code and start instantly',
               icon: ClipboardList,
               href: '/dashboard/student/take-exam',
-              accent: 'text-blue-600 bg-blue-50',
+              accent:
+                'text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30',
             },
             {
               title: 'My Exams',
               desc: 'See submitted exams and all published rooms',
               icon: FileText,
               href: '/dashboard/student/my-exams',
-              accent: 'text-emerald-600 bg-emerald-50',
+              accent:
+                'text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30',
             },
             {
               title: 'Progress',
               desc: 'View analytics of your exam performance',
               icon: LineChart,
               href: '/dashboard/student/progress',
-              accent: 'text-violet-600 bg-violet-50',
+              accent:
+                'text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/30',
             },
           ].map((item) => (
             <Link
               key={item.title}
               href={item.href}
-              className="rounded-3xl border border-border-light p-5 md:p-6 bg-white hover:shadow-md transition-all group"
+              className="rounded-3xl border border-border-light p-5 md:p-6 bg-bg-page dark:bg-slate-900/40 hover:shadow-md transition-all group"
             >
               <div
                 className={`w-12 h-12 rounded-2xl ${item.accent} flex items-center justify-center mb-4`}
