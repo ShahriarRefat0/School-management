@@ -12,12 +12,14 @@ import { FloatingClock } from "@/components/shared/FloatingClock";
 
 
 import WhyChooseUs from "@/components/home/WhyChooseUs/WhyChooseUs";
+import ExploreOurDashboardFeatures from "@/components/home/ExploreOurDashboardFeatures/ExploreOurDashboardFeatures";
 
 const HomePage = () => {
   return (
     <div className="space-y-10">
       <HeroSection></HeroSection>
       <WhyChooseUs />
+      <ExploreOurDashboardFeatures />
       <PrincipalMessage />
       <Features />
       <SchoolMarquee></SchoolMarquee>
