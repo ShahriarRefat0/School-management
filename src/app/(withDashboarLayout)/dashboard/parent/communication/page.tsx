@@ -1,193 +1,238 @@
 'use client';
 
-import { useState } from 'react';
-import { Mail, Send, Info, CheckCircle2, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { 
+  Mail, 
+  Send, 
+  CheckCircle2, 
+  UserCircle2, 
+  Plus, 
+  Loader2, 
+  ChevronDown,
+  GraduationCap
+} from 'lucide-react';
+import { getCommunicationData, sendMessage } from "@/app/actions/parent/communication";
+import { toast } from "react-hot-toast";
 
-const teacherData = [
-  {
-    id: 1,
-    name: 'মাহমুদুর রহমান',
-    role: 'শ্রেণি শিক্ষক (গণিত)',
-    email: 'mahmud.math@school.edu',
-  },
-  {
-    id: 2,
-    name: 'ফারজানা হক',
-    role: 'ইংরেজি শিক্ষিকা',
-    email: 'farzana.eng@school.edu',
-  },
-  {
-    id: 3,
-    name: 'আব্দুল করিম',
-    role: 'বিজ্ঞান শিক্ষক',
-    email: 'karim.science@school.edu',
-  },
-  {
-    id: 4,
-    name: 'মোছাঃ নাসরিন',
-    role: 'বাংলা শিক্ষিকা',
-    email: 'nasrin.bangla@school.edu',
-  },
-];
+// Simple className merger
+const cn = (...classes: (string | boolean | undefined)[]) => {
+  return classes.filter(Boolean).join(" ");
+};
+
+// Card Component
+const Card = ({
+  children,
+  className = "",
+  style = {}
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) => (
+  <div
+    className={cn(
+      "bg-bg-card rounded-2xl border border-border-light shadow-sm hover:shadow-xl hover:border-blue-200/60 transition-all duration-500",
+      className
+    )}
+    style={style}
+  >
+    {children}
+  </div>
+);
 
 export default function ContactTeacherPage() {
-  const [selectedTeacher, setSelectedTeacher] = useState(teacherData[0]);
-  const [subject, setSubject] = useState('');
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
   const [message, setMessage] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function loadData() {
+      const res = await getCommunicationData();
+      if (res.success && res.data) {
+        setTeachers(res.data.teachers || []);
+        if (res.data.teachers && res.data.teachers.length > 0) {
+          setSelectedTeacher(res.data.teachers[0]);
+        }
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('sending');
+    if (!selectedTeacher || !message.trim()) return;
 
-    setTimeout(() => {
-      setStatus('success');
-      setSubject('');
+    setSending(true);
+    const res = await sendMessage(selectedTeacher.id, message);
+    if (res.success) {
+      toast.success("Message sent successfully!");
       setMessage('');
-      setTimeout(() => setStatus('idle'), 2500);
-    }, 1200);
+    } else {
+      toast.error(res.error || "Failed to send message");
+    }
+    setSending(false);
   };
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-8 bg-bg-page min-h-screen p-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="w-14 h-14 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-3">
-          <Mail size={26} />
+  if (loading) {
+    return (
+      <div className="h-[70vh] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <Loader2 className="animate-spin text-blue-600" size={60} />
+          <GraduationCap className="absolute inset-0 m-auto text-blue-900/20" size={30} />
         </div>
-        <h1 className="text-2xl font-bold text-text-primary">
-          শিক্ষককে ইমেইল পাঠান
-        </h1>
-        <p className="text-text-muted text-sm">
-          শিক্ষক নির্বাচন করে আপনার বার্তা পাঠান
-        </p>
+        <div className="text-center space-y-2">
+          <p className="text-xl font-black text-text-primary tracking-tight animate-pulse">Initializing Communication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-10 animate-fadeIn p-2 md:p-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-6xl font-black text-text-primary tracking-tighter italic">
+            Direct <span className="text-blue-600">Gateway.</span>
+          </h1>
+          <p className="text-text-muted text-base md:text-lg font-medium max-w-lg leading-relaxed">
+            Communicate directly with your child's teachers. Get real-time updates and clarified academic support.
+          </p>
+        </div>
+
+        <Card className="p-4 bg-emerald-500/5 border-emerald-500/10 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+            <CheckCircle2 size={24} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">Response Time</p>
+            <p className="text-sm font-bold text-text-primary">Avg. 4-6 Hours</p>
+          </div>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Sidebar */}
         <div className="space-y-6">
-          <div className="bg-bg-card p-6 rounded-xl border border-border-light">
-            <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-              <Info size={16} className="text-primary" />
-              নিয়মাবলী
+          <Card className="p-6">
+            <h3 className="text-sm font-black text-text-primary uppercase tracking-widest mb-6 flex items-center gap-2">
+              <Mail size={16} className="text-blue-500" /> Messaging Ethics
             </h3>
-
-            <ul className="space-y-3 text-xs text-text-secondary">
-              <li>শিক্ষক সাধারণত ২-৩ কার্যদিবসে উত্তর দেন।</li>
-              <li>জরুরি হলে স্কুল অফিসে ফোন করুন।</li>
-              <li>শিক্ষার্থীর নাম ও রোল উল্লেখ করুন।</li>
+            <ul className="space-y-4">
+              {[
+                "Keep communications professional and concise.",
+                "Mention your child's name in subject if possible.",
+                "Expect responses during school working hours.",
+              ].map((tip, i) => (
+                <li key={i} className="flex gap-3 text-xs text-text-secondary font-medium leading-relaxed">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                  {tip}
+                </li>
+              ))}
             </ul>
-          </div>
+          </Card>
 
-          <div className="bg-primary/10 p-6 rounded-xl border border-border-light">
-            <p className="text-xs font-semibold text-text-muted uppercase mb-2">
-              নির্বাচিত শিক্ষক
-            </p>
+          {selectedTeacher && (
+            <Card className="p-6 border-blue-500/20 bg-blue-500/5 relative overflow-hidden group">
+              <div className="absolute -left-4 -bottom-4 w-20 h-20 bg-blue-500/5 rounded-full blur-xl group-hover:scale-110 transition-transform" />
+              <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 relative z-10">
+                Selected Recipient
+              </p>
 
-            <p className="text-sm font-semibold text-text-primary">
-              {selectedTeacher.name}
-            </p>
-            <p className="text-xs text-text-muted">{selectedTeacher.email}</p>
-          </div>
-        </div>
-
-        {/* Form */}
-        <div className="lg:col-span-2">
-          <form
-            onSubmit={handleSubmit}
-            className="bg-bg-card p-8 rounded-xl border border-border-light space-y-6 relative"
-          >
-            {status === 'success' && (
-              <div className="absolute inset-0 bg-bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
-                <div className="w-14 h-14 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle2 size={30} />
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600">
+                  <UserCircle2 size={24} />
                 </div>
-                <h3 className="text-lg font-semibold text-text-primary">
-                  ইমেইল পাঠানো হয়েছে!
-                </h3>
-                <p className="text-sm text-text-muted mt-2">
-                  বার্তাটি সফলভাবে পাঠানো হয়েছে।
-                </p>
+                <div>
+                  <p className="text-sm font-bold text-text-primary">
+                    {selectedTeacher.name}
+                  </p>
+                  <p className="text-[10px] text-text-muted font-medium mt-0.5">{selectedTeacher.role}</p>
+                </div>
               </div>
-            )}
-
-            {/* Teacher Select */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-text-muted uppercase">
-                শিক্ষক নির্বাচন
-              </label>
-
-              <div className="relative">
-                <select
-                  className="w-full bg-bg-page border border-border-light rounded-lg px-4 py-3 text-sm outline-none focus:border-primary appearance-none"
-                  onChange={(e) =>
-                    setSelectedTeacher(
-                      teacherData.find((t) => t.id === Number(e.target.value))!,
-                    )
-                  }
-                >
-                  {teacherData.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} — ({t.role})
-                    </option>
-                  ))}
-                </select>
-
-                <ChevronDown
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
-                  size={16}
-                />
-              </div>
-            </div>
-
-            {/* Subject */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-text-muted uppercase">
-                বিষয়
-              </label>
-
-              <input
-                required
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="ইমেইলের বিষয় লিখুন..."
-                className="w-full bg-bg-page border border-border-light rounded-lg px-4 py-3 text-sm outline-none focus:border-primary"
-              />
-            </div>
-
-            {/* Message */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-text-muted uppercase">
-                বার্তা
-              </label>
-
-              <textarea
-                required
-                rows={6}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="আপনার বার্তা লিখুন..."
-                className="w-full bg-bg-page border border-border-light rounded-lg px-4 py-4 text-sm outline-none focus:border-primary resize-none"
-              ></textarea>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={status === 'sending'}
-              className="w-full bg-primary text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition hover:opacity-90 disabled:opacity-70"
-            >
-              {status === 'sending' ? (
-                'পাঠানো হচ্ছে...'
-              ) : (
-                <>
-                  মেসেজ পাঠান <Send size={16} />
-                </>
-              )}
-            </button>
-          </form>
+            </Card>
+          )}
         </div>
+
+        {/* Message Form */}
+        <form onSubmit={handleSendMessage} className="lg:col-span-2 space-y-6">
+          <Card className="p-0 overflow-hidden">
+            <div className="p-8 border-b border-border-light">
+              <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
+                <Plus size={20} className="text-blue-500" /> New Message
+              </h2>
+            </div>
+
+            <div className="p-8 space-y-8">
+              {/* Teacher Select */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">
+                  Recipient Teacher
+                </label>
+
+                <div className="relative group/select">
+                  <select
+                    className="w-full bg-bg-page/50 border border-border-light rounded-2xl px-5 py-4 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 appearance-none transition-all cursor-pointer font-bold text-text-primary"
+                    value={selectedTeacher?.id || ""}
+                    onChange={(e) =>
+                      setSelectedTeacher(
+                        teachers.find((t) => t.id === e.target.value) || teachers[0]
+                      )
+                    }
+                  >
+                    {teachers.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} — {t.role}
+                      </option>
+                    ))}
+                  </select>
+
+                  <ChevronDown
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none group-hover/select:text-blue-500 transition-colors"
+                    size={18}
+                  />
+                </div>
+              </div>
+
+              {/* Message */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">
+                  Your Message
+                </label>
+
+                <textarea
+                  required
+                  rows={8}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Write your message here... Be specific to get a faster response."
+                  className="w-full bg-bg-page/50 border border-border-light rounded-2xl px-5 py-5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 appearance-none transition-all resize-none leading-relaxed font-medium text-text-primary h-48"
+                ></textarea>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={sending || !selectedTeacher || !message.trim()}
+                className="w-full bg-linear-to-br from-blue-600 to-indigo-700 text-white p-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all hover:shadow-xl hover:shadow-blue-600/30 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 group"
+              >
+                {sending ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    Delivering...
+                  </>
+                ) : (
+                  <>
+                    Deliver Message <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </div>
+          </Card>
+        </form>
       </div>
     </div>
   );

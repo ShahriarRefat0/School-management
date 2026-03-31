@@ -11,7 +11,6 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState({
     fullName: "",
     email: "",
-    phone: "",
     role: "",
   });
 
@@ -24,7 +23,6 @@ export default function SettingsPage() {
         setProfile({
           fullName: res.data.name || "",
           email: res.data.email || "",
-          phone: res.data.phone || "",
           role: res.data.role || "",
         });
       }
@@ -38,7 +36,6 @@ export default function SettingsPage() {
     setUpdating(true);
     const res = await updateMyProfileData({
       fullName: profile.fullName,
-      phone: profile.phone,
     });
     setUpdating(false);
 
@@ -72,12 +69,6 @@ export default function SettingsPage() {
                   onChange={(e) => setProfile({...profile, fullName: e.target.value})} 
                 />
                 <Input label="Email" value={profile.email} disabled />
-                <Input 
-                  label="Phone" 
-                  name="phone" 
-                  value={profile.phone} 
-                  onChange={(e) => setProfile({...profile, phone: e.target.value})} 
-                />
                 <Input label="Role" value={profile.role} disabled />
             </div>
 

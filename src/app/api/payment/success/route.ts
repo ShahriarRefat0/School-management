@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-const SSLCommerzPayment = require('sslcommerz-lts');
 
 /**
  * Senior Developer Note: SSLCommerz Success Callback

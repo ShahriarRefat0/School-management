@@ -39,7 +39,7 @@ export default function FeedbackPage() {
         const fetchClasses = async () => {
             setIsLoading(true);
             const res = await getTeacherDashboardData();
-            if (res.success) {
+            if (res.success && res.data) {
                 setAssignedClasses(res.data.assignedClasses || []);
                 if (res.data.assignedClasses?.length > 0) {
                     setSelectedClass(res.data.assignedClasses[0].id);

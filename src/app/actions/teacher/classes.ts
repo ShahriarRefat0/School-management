@@ -19,18 +19,20 @@ export async function getClassStudents(classId: string) {
 
         const students = await prisma.student.findMany({
             where: {
-                section: {
-                    classId: classId
-                }
+                OR: [
+                    { section: { classId: classId } },
+                    { 
+                        schoolId: classData.schoolId,
+                        currentClass: classData.name
+                    }
+                ]
             },
             orderBy: { rollNo: 'asc' },
             include: {
                 attendance: {
-                    take: 5,
                     orderBy: { date: 'desc' }
                 },
                 results: {
-                    take: 5,
                     orderBy: { createdAt: 'desc' }
                 }
             }

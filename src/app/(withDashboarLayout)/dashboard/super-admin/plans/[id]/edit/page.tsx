@@ -1,16 +1,44 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Save, Users, UserRound, HardDrive, LayoutGrid, ArrowLeft, Loader2 } from 'lucide-react';
+import { 
+  Save, Zap, Users, UserRound, HardDrive, 
+  ArrowLeft, Loader2, Shield, Crown, 
+  Star, Rocket, Gem, Sparkles, Globe
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getPlan, updatePlan } from '@/app/actions/plans';
 import Swal from 'sweetalert2';
 
+const ICONS = [
+  { id: 'Zap', icon: Zap, label: 'Lightning' },
+  { id: 'Shield', icon: Shield, label: 'Security' },
+  { id: 'Crown', icon: Crown, label: 'Premium' },
+  { id: 'Star', icon: Star, label: 'Essential' },
+  { id: 'Rocket', icon: Rocket, label: 'Fast' },
+  { id: 'Gem', icon: Gem, label: 'Luxury' },
+  { id: 'Sparkles', icon: Sparkles, label: 'Magic' },
+  { id: 'Globe', icon: Globe, label: 'Global' },
+];
+
+const COLORS = [
+  { id: 'blue', value: 'bg-blue-500', border: 'border-blue-200' },
+  { id: 'purple', value: 'bg-purple-500', border: 'border-purple-200' },
+  { id: 'orange', value: 'bg-orange-500', border: 'border-orange-200' },
+  { id: 'emerald', value: 'bg-emerald-500', border: 'border-emerald-200' },
+  { id: 'rose', value: 'bg-rose-500', border: 'border-rose-200' },
+  { id: 'indigo', value: 'bg-indigo-500', border: 'border-indigo-200' },
+  { id: 'amber', value: 'bg-amber-500', border: 'border-amber-200' },
+];
+
+const iconMap: Record<string, React.ElementType> = {
+  Zap, Shield, Crown, Star, Rocket, Gem, Sparkles, Globe
+};
+
 export default function EditPlan({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const { id } = React.use(params);
 
-    const modulesList = ["Attendance", "Exams", "Finance", "SMS", "Library", "Inventory", "Staff Management"];
 
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -20,11 +48,10 @@ export default function EditPlan({ params }: { params: Promise<{ id: string }> }
         price: '',
         duration: '',
         icon: 'Zap',
-        color: 'text-blue-500',
+        color: 'blue',
         students: '',
         teachers: '',
-        storage: '',
-        modules: [] as string[]
+        storage: ''
     });
 
     useEffect(() => {
@@ -32,16 +59,23 @@ export default function EditPlan({ params }: { params: Promise<{ id: string }> }
             try {
                 const res = await getPlan(id);
                 if (res.success && res.data) {
+                    
+                    // Map legacy tailwind string values to pure colors
+                    let initialColor = res.data.color || 'blue';
+                    if (initialColor === 'text-blue-500') initialColor = 'blue';
+                    if (initialColor === 'text-purple-500') initialColor = 'purple';
+                    if (initialColor === 'text-yellow-500') initialColor = 'orange';
+                    if (initialColor === 'text-emerald-500') initialColor = 'emerald';
+
                     setFormData({
                         name: res.data.name || '',
                         price: res.data.price || '',
                         duration: res.data.duration || '',
                         icon: res.data.icon || 'Zap',
-                        color: res.data.color || 'text-blue-500',
+                        color: initialColor,
                         students: res.data.students || '',
                         teachers: res.data.teachers || '',
-                        storage: res.data.storage || '',
-                        modules: res.data.modules || []
+                        storage: res.data.storage || ''
                     });
                 } else {
                     alert('Failed to load plan details');
@@ -58,249 +92,252 @@ export default function EditPlan({ params }: { params: Promise<{ id: string }> }
         fetchPlanData();
     }, [id, router]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleModuleToggle = (mod: string) => {
-        setFormData(prev => {
-            if (prev.modules.includes(mod)) {
-                return { ...prev, modules: prev.modules.filter(m => m !== mod) };
-            }
-            return { ...prev, modules: [...prev.modules, mod] };
-        });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setLoading(true);
+
+      try {
+        const res = await updatePlan(id, formData);
+        if (res.success) {
+          await Swal.fire({
+            icon: "success",
+            title: "Updated!",
+            text: "Plan updated successfully.",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+          router.push("/dashboard/super-admin/plans");
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Update Failed",
+            text: res.error || "Failed to update plan",
+          });
+        }
+      } catch (error) {
+        Swal.fire({ icon: "error", title: "Error", text: "Something went wrong" });
+      } finally {
+        setLoading(false);
+      }
     };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-
-  try {
-    const res = await updatePlan(id, formData);
-
-    if (res.success) {
-
-      await Swal.fire({
-        icon: "success",
-        title: "Updated!",
-        text: "Plan updated successfully.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
-      router.push("/dashboard/super-admin/plans");
-
-    } else {
-
-      Swal.fire({
-        icon: "error",
-        title: "Update Failed",
-        text: res.error || "Failed to update plan",
-      });
-
-    }
-
-  } catch (error) {
-    console.error("Submission error:", error);
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "An error occurred while updating the plan.",
-    });
-
-  } finally {
-    setLoading(false);
-  }
-};
+    const ActiveIcon = iconMap[formData.icon] || Zap;
 
     if (initialLoading) {
         return (
             <div className="flex justify-center items-center py-40">
-                <Loader2 className="animate-spin h-12 w-12 text-[var(--color-primary)]" />
+                <Loader2 className="animate-spin h-12 w-12 text-blue-600" />
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up pb-12">
-            <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <Link href="/dashboard/super-admin/plans" className="p-2 bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-primary)]">
-                        <ArrowLeft size={20} />
-                    </Link>
-                    <div>
-                        <h2 className="text-2xl font-black text-[var(--color-text-primary)]">Edit Subscription Plan</h2>
-                        <p className="text-sm text-[var(--color-text-muted)]">Update pricing, limits, and features for this plan.</p>
-                    </div>
-                </div>
+      <div className="max-w-7xl mx-auto space-y-8 animate-fade-in-up pb-12 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard/super-admin/plans" className="p-2 bg-white border rounded-xl hover:bg-gray-50 transition-colors">
+              <ArrowLeft size={20} />
+            </Link>
+            <div>
+              <h2 className="text-2xl font-black text-gray-900">Edit Subscription Plan</h2>
+              <p className="text-sm text-gray-500">Refine the pricing and features of this plan</p>
             </div>
-
-            <div className="bg-[var(--color-bg-card)] p-8 rounded-3xl border border-[var(--color-border-light)] shadow-xl">
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                    {/* Basic Info */}
-                    <div className="space-y-4">
-                        <h3 className="font-black text-[var(--color-primary)] uppercase text-xs tracking-widest border-b pb-2">Basic Info</h3>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)]">Plan Name (Required)</label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                required
-                                placeholder="e.g. Pro Plan"
-                                className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)]"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)]">Price String (Required)</label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-3.5 text-[var(--color-text-muted)] text-xs font-bold">৳</span>
-                                <input
-                                    type="text"
-                                    name="price"
-                                    value={formData.price}
-                                    onChange={handleInputChange}
-                                    required
-                                    placeholder="e.g. 5,000 / month"
-                                    className="w-full pl-8 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-primary)]"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)]">Duration String (Required)</label>
-                            <input
-                                type="text"
-                                name="duration"
-                                value={formData.duration}
-                                onChange={handleInputChange}
-                                required
-                                placeholder="e.g. 1 Month or 1 Year"
-                                className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)]"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)]">Icon Selection</label>
-                            <select
-                                name="icon"
-                                value={formData.icon}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)] appearance-none cursor-pointer"
-                            >
-                                <option value="Zap">Zap (Lightning)</option>
-                                <option value="Shield">Shield</option>
-                                <option value="Crown">Crown</option>
-                            </select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)]">Color Class</label>
-                            <select
-                                name="color"
-                                value={formData.color}
-                                onChange={handleInputChange}
-                                className="w-full px-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)] appearance-none cursor-pointer"
-                            >
-                                <option value="text-blue-500">Blue (Basic)</option>
-                                <option value="text-purple-500">Purple (Pro)</option>
-                                <option value="text-yellow-500">Yellow (Premium)</option>
-                                <option value="text-emerald-500">Emerald</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* System Limits */}
-                    <div className="space-y-4">
-                        <h3 className="font-black text-[var(--color-primary)] uppercase text-xs tracking-widest border-b pb-2">System Limits & Perks</h3>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)]">Student Limit (Required)</label>
-                                <div className="relative">
-                                    <Users className="absolute left-3 top-3.5 text-gray-400" size={16} />
-                                    <input
-                                        type="text"
-                                        name="students"
-                                        value={formData.students}
-                                        onChange={handleInputChange}
-                                        required
-                                        placeholder="e.g. 500"
-                                        className="w-full pl-10 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)]"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)]">Teacher Limit (Required)</label>
-                                <div className="relative">
-                                    <UserRound className="absolute left-3 top-3.5 text-gray-400" size={16} />
-                                    <input
-                                        type="text"
-                                        name="teachers"
-                                        value={formData.teachers}
-                                        onChange={handleInputChange}
-                                        required
-                                        placeholder="e.g. 50"
-                                        className="w-full pl-10 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)]"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-[var(--color-text-muted)]">Storage Limit String (Required)</label>
-                            <div className="relative">
-                                <HardDrive className="absolute left-3 top-3.5 text-gray-400" size={16} />
-                                <input
-                                    type="text"
-                                    name="storage"
-                                    value={formData.storage}
-                                    onChange={handleInputChange}
-                                    required
-                                    placeholder="e.g. 10GB or Unlimited"
-                                    className="w-full pl-10 pr-4 py-3 bg-[var(--color-bg-page)] border border-[var(--color-border-light)] rounded-xl outline-none text-[var(--color-text-primary)]"
-                                />
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {/* Modules Selection */}
-                    <div className="md:col-span-2 space-y-4 pt-4 border-t">
-                        <h3 className="font-black text-[var(--color-primary)] uppercase text-xs tracking-widest flex items-center gap-2">
-                            <LayoutGrid size={16} /> Included Modules
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {modulesList.map((mod) => (
-                                <label key={mod} className={`flex items-center gap-3 p-3 bg-[var(--color-bg-page)] border ${formData.modules.includes(mod) ? 'border-[var(--color-primary)]' : 'border-[var(--color-border-light)]'} rounded-xl cursor-pointer hover:border-[var(--color-primary)] transition-all`}>
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.modules.includes(mod)}
-                                        onChange={() => handleModuleToggle(mod)}
-                                        className="w-4 h-4 accent-[var(--color-primary)]"
-                                    />
-                                    <span className="text-xs font-bold text-[var(--color-text-secondary)]">{mod}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="md:col-span-2 mt-6 w-full bg-[var(--color-primary)] text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-600/30 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
-                        {loading ? 'Updating...' : 'Update Subscription Plan'}
-                    </button>
-                </form>
-            </div>
+          </div>
         </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="space-y-8">
+            {/* Section 1: Basic Identity */}
+            <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
+              <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Sparkles size={18}/></div>
+                <h3 className="font-bold text-gray-800">Identity & Branding</h3>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider ml-1">Plan Display Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. Standard"
+                      className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider ml-1">Price (৳)</label>
+                    <input
+                      type="text"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g. 2500"
+                      className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider ml-1">Duration Cycle</label>
+                  <input
+                    type="text"
+                    name="duration"
+                    value={formData.duration}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="e.g. 6 Months"
+                    className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-blue-500 outline-none transition-all font-medium"
+                  />
+                </div>
+
+                {/* Visual Icon Picker */}
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider ml-1">Pick an Icon</label>
+                  <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+                    {ICONS.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setFormData(p => ({ ...p, icon: item.id }))}
+                        className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition-all ${formData.icon === item.id ? 'bg-blue-600 text-white border-blue-600 scale-105' : 'bg-gray-50 text-gray-500 border-transparent hover:border-gray-200'}`}
+                      >
+                        <item.icon size={20} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Visual Color Picker */}
+                <div className="space-y-3">
+                  <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider ml-1">Accent Theme</label>
+                  <div className="flex flex-wrap gap-3">
+                    {COLORS.map((color) => (
+                      <button
+                        key={color.id}
+                        type="button"
+                        onClick={() => setFormData(p => ({ ...p, color: color.id }))}
+                        className={`w-10 h-10 rounded-full border-4 transition-all ${color.value} ${formData.color === color.id ? 'border-gray-900 scale-110' : 'border-white hover:scale-105'}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Quotas & Limits */}
+            <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
+              <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
+                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Users size={18}/></div>
+                <h3 className="font-bold text-gray-800">System Quotas</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider ml-1">Students</label>
+                  <input name="students" value={formData.students} onChange={handleInputChange} required placeholder="500" className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-purple-500 outline-none transition-all font-medium text-center" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider ml-1">Teachers</label>
+                  <input name="teachers" value={formData.teachers} onChange={handleInputChange} required placeholder="50" className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-purple-500 outline-none transition-all font-medium text-center" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black uppercase text-gray-400 tracking-wider ml-1">Storage</label>
+                  <input name="storage" value={formData.storage} onChange={handleInputChange} required placeholder="10GB" className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-purple-500 outline-none transition-all font-medium text-center" />
+                </div>
+              </div>
+            </div>
+
+
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full py-5 bg-gray-900 text-white rounded-[2rem] font-black text-lg shadow-2xl shadow-gray-400 flex items-center justify-center gap-3 hover:bg-gray-800 transition-all disabled:opacity-50 active:scale-[0.98]"
+            >
+              {loading ? <Loader2 className="animate-spin" size={24} /> : <Save size={24} />}
+              {loading ? 'Saving Changes...' : 'Update & Sync Plan'}
+            </button>
+          </div>
+
+          {/* Live Preview Column Scrollable */}
+          <div className="sticky top-8 flex flex-col items-center">
+            <div className="px-6 py-2 bg-gray-100 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-8">
+              Live Preview (Admin Dashboard View)
+            </div>
+            
+            <div className="relative bg-white p-10 rounded-[3rem] border-2 border-gray-900 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] w-full max-w-sm overflow-hidden">
+              <div className={`absolute -right-12 -top-12 w-40 h-40 rounded-full blur-3xl opacity-20 
+                ${formData.color === 'blue' ? 'bg-blue-500' : ''}
+                ${formData.color === 'purple' ? 'bg-purple-500' : ''}
+                ${formData.color === 'orange' ? 'bg-orange-500' : ''}
+                ${formData.color === 'emerald' ? 'bg-emerald-500' : ''}
+                ${formData.color === 'rose' ? 'bg-rose-500' : ''}
+                ${formData.color === 'indigo' ? 'bg-indigo-500' : ''}
+                ${formData.color === 'amber' ? 'bg-amber-500' : ''}
+              `} />
+
+              <div 
+                className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-inner transition-colors
+                  ${formData.color === 'blue' ? 'bg-blue-50 text-blue-600' : ''}
+                  ${formData.color === 'purple' ? 'bg-purple-50 text-purple-600' : ''}
+                  ${formData.color === 'orange' ? 'bg-orange-50 text-orange-600' : ''}
+                  ${formData.color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : ''}
+                  ${formData.color === 'rose' ? 'bg-rose-50 text-rose-600' : ''}
+                  ${formData.color === 'indigo' ? 'bg-indigo-50 text-indigo-600' : ''}
+                  ${formData.color === 'amber' ? 'bg-amber-50 text-amber-600' : ''}
+                `}
+              >
+                <ActiveIcon size={32} />
+              </div>
+
+              <h3 className="text-3xl font-black text-gray-900 leading-tight">
+                {formData.name || 'Plan Name'}
+              </h3>
+              
+              <div className="mt-6 flex flex-col">
+                <span className="text-5xl font-black text-gray-900">
+                  ৳{formData.price || '0'}
+                </span>
+                <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-2">
+                  per {formData.duration || 'period'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 my-8 py-6 border-y border-gray-50">
+                <div className="text-center">
+                  <Users size={20} className="mx-auto text-gray-300 mb-1" />
+                  <p className="text-[12px] font-black text-gray-900">{formData.students || '0'}</p>
+                  <p className="text-[9px] text-gray-400 font-bold uppercase">Students</p>
+                </div>
+                <div className="text-center border-x border-gray-50">
+                  <UserRound size={20} className="mx-auto text-gray-300 mb-1" />
+                  <p className="text-[12px] font-black text-gray-900">{formData.teachers || '0'}</p>
+                  <p className="text-[9px] text-gray-400 font-bold uppercase">Teachers</p>
+                </div>
+                <div className="text-center">
+                  <HardDrive size={20} className="mx-auto text-gray-300 mb-1" />
+                  <p className="text-[12px] font-black text-gray-900">{formData.storage || '0'}</p>
+                  <p className="text-[9px] text-gray-400 font-bold uppercase">Cloud</p>
+                </div>
+              </div>
+
+
+              <div className="mt-10 h-16 w-full rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 font-bold uppercase tracking-widest text-xs italic">
+                Checkout Preview
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
 }

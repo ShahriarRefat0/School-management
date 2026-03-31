@@ -82,13 +82,13 @@ export default function MyClassesPage() {
                                                 <BookOpen size={20} />
                                             </div>
                                             <Link href={`/dashboard/teacher/my-classes/${cls.id}`} className="font-bold text-text-primary group-hover:text-primary transition-colors">
-                                                {cls.name.split(' - ')[0]}
+                                                {cls.name.includes(' - ') ? cls.name.split(' - ')[0] : cls.name}
                                             </Link>
                                         </div>
                                     </td>
                                     <td className="py-6 px-4">
                                         <span className="px-3 py-1 bg-bg-page border border-border-light rounded-lg text-xs font-black text-text-secondary uppercase">
-                                            {cls.name.split(' - ')[1] || "A"}
+                                            {cls.name.includes(' - ') ? cls.name.split(' - ')[1] : "A"}
                                         </span>
                                     </td>
                                     <td className="py-6 px-4">
@@ -97,7 +97,7 @@ export default function MyClassesPage() {
                                     <td className="py-6 px-4 text-center">
                                         <div className="flex items-center gap-2">
                                             <Users size={14} className="text-primary/60" />
-                                            <span className="text-sm font-bold text-text-primary tabular-nums">Many</span>
+                                            <span className="text-sm font-bold text-text-primary tabular-nums">Active</span>
                                         </div>
                                     </td>
                                     <td className="py-6 px-8 text-right flex items-center justify-end gap-3">

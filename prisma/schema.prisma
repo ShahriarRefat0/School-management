@@ -39,6 +39,32 @@ model School {
   students         Student[]
   teachers         Teacher[]
   expenses         Expense[]
+  subscriptions    Subscription[]
+}
+
+
+
+model Subscription {
+  id            String    @id @default(cuid())
+  transactionId String    @unique
+  amount        Float
+  currency      String    @default("BDT")
+  status        String    @default("PENDING") // PENDING, SUCCESS, FAIL, CANCEL
+  planName      String
+  duration      String
+  schoolId      String
+  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  method        String?
+  valId         String?
+  customerName  String
+  customerEmail String
+  customerPhone String?
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([schoolId])
 }
 
 model Announcement {
@@ -133,7 +159,7 @@ model SupportTicket {
 model Teacher {
   id               String           @id @default(uuid())
   teacherId        String           @unique
-  phone            String
+  phone            String?
   dateOfBirth      DateTime
   gender           String
   bloodGroup       String?
@@ -173,11 +199,13 @@ model User {
   updatedAt      DateTime        @updatedAt
   email          String          @unique
   name           String
+  notifications  Notification[]  @relation("UserNotifications")
   announcements  Announcement[]  @relation("AuthorAnnouncements")
   teacherNotices TeacherNotice[] @relation("AuthorTeacherNotices")
-  school         School          @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
+  school         School?         @relation("SchoolUsers", fields: [schoolId], references: [id], onDelete: Cascade)
   student        Student?        @relation("UserStudent")
   teacher        Teacher?        @relation("UserTeacher")
+  parent         Parent?         @relation("UserParent")
 
   @@map("User")
 }
@@ -320,9 +348,6 @@ model Payment {
   @@index([studentId])
 }
 
-<<<<<<< HEAD
-/// supportoption
-
 model SupportOption {
   id           String   @id @default(cuid())
   title        String
@@ -342,7 +367,8 @@ model SupportFAQ {
   question String
   answer   String @db.Text
   order    Int    @default(0)
-=======
+}
+
 model Subject {
   id        String           @id @default(cuid())
   name      String
@@ -389,7 +415,7 @@ model Fee {
   schoolId  String
   createdAt DateTime  @default(now())
   class     Class?    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school    School?   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   payments  Payment[]
 }
 
@@ -409,11 +435,13 @@ model ClassSchedule {
 model Parent {
   id        String   @id @default(cuid())
   name      String
-  phone     String
+  phone     String?
   email     String?
   studentId String
+  userId    String?  @unique
   createdAt DateTime @default(now())
   student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user      User?    @relation("UserParent", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
@@ -432,7 +460,6 @@ model Expense {
   updatedAt     DateTime @updatedAt
 
   @@index([schoolId, transactionAt])
->>>>>>> 73803563999074f3d3f890e0efcaf4d67154d01d
 }
 
 enum AttendanceStatus {
@@ -472,4 +499,29 @@ model Feedback {
   @@index([studentId])
   @@index([teacherId])
   @@index([schoolId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   @default("system") // academic, system, payment, alert
+  userId    String
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  isRead    Boolean  @default(false)
+  link      String?  // Optional target URL (e.g., /dashboard/student/result)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Global configuration for the system (used by super admin dashboard)
+model SystemConfig {
+  id          String   @id @default("system_config")
+  siteName    String?
+  siteSubtitle String?
+  siteLogo    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

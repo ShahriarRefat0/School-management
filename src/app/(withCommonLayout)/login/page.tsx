@@ -62,7 +62,7 @@ const UnifiedLoginPage = () => {
     router.replace("/dashboard/super-admin");
     break;
   case "parent":
-    router.replace("/dashboard/parents");
+    router.replace("/dashboard/parent");
     break;
   case "accountant":
     router.replace("/dashboard/accountant");

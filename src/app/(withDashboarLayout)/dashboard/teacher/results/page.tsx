@@ -35,9 +35,10 @@ export default function ResultsPage() {
         const fetchClasses = async () => {
             setIsLoading(true);
             const res = await getClasses();
-            if (res.success) {
+            if (res.success && res.data) {
                 setClasses(res.data);
             } else {
+                setClasses([]);
                 toast.error(res.error || "Failed to load classes");
             }
             setIsLoading(false);
@@ -53,21 +54,21 @@ export default function ResultsPage() {
             setIsLoading(true);
             const studentsRes = await getStudentsByClass(selectedClass);
 
-            if (studentsRes.success) {
+            if (studentsRes.success && studentsRes.data) {
                 // Fetch all results for these students in this exam type
                 const allResults = await Promise.all(
                     subjects.map(sub => getResults(selectedClass, sub, examType))
                 );
 
-                const studentMap = studentsRes.data.map((student: any) => {
-                    const marks: Record<string, number> = {};
+                const studentMap = (studentsRes.data || []).map((student: any) => {
+                    const marks: Record<string, any> = {};
                     subjects.forEach((sub, index) => {
                         const subResult = allResults[index];
-                        if (subResult.success) {
+                        if (subResult.success && subResult.data) {
                             const studentResult = subResult.data.find((r: any) => r.studentId === student.id);
-                            marks[sub] = studentResult ? studentResult.marks : 0;
+                            marks[sub] = studentResult ? studentResult.marks : "";
                         } else {
-                            marks[sub] = 0;
+                            marks[sub] = "";
                         }
                     });
 
@@ -87,28 +88,62 @@ export default function ResultsPage() {
         fetchData();
     }, [selectedClass, examType]);
 
-    const handleAddSubject = () => {
-        const subjectName = prompt("Enter new subject name:");
-        if (subjectName && !subjects.includes(subjectName)) {
-            setSubjects(prev => [...prev, subjectName]);
+    const handleAddSubject = async () => {
+        const { value: subjectName } = await Swal.fire({
+            title: 'New Subject',
+            text: 'Enter a subject name to add it to the gradebook.',
+            input: 'text',
+            inputPlaceholder: 'e.g. History',
+            showCancelButton: true,
+            confirmButtonText: 'Add',
+            cancelButtonText: 'Cancel',
+            inputValidator: (value) => {
+                if (!value || !value.trim()) return 'Please enter a subject name.';
+                if (subjects.includes(value.trim())) return 'This subject is already added.';
+                return null;
+            }
+        });
+
+        if (subjectName && !subjects.includes(subjectName.trim())) {
+            const trimmed = subjectName.trim();
+            setSubjects(prev => [...prev, trimmed]);
             setStudentsData(prev => prev.map(student => ({
                 ...student,
                 marks: {
                     ...student.marks,
-                    [subjectName]: 0
+                    [trimmed]: ""
                 }
             })));
         }
     };
 
     const handleMarkChange = (studentId: string, subject: string, value: string) => {
+        if (value === "") {
+            setStudentsData(prev => prev.map(student => {
+                if (student.id === studentId) {
+                    return {
+                        ...student,
+                        marks: { ...student.marks, [subject]: "" }
+                    };
+                }
+                return student;
+            }));
+            return;
+        }
+
+        const numValue = parseInt(value);
+        if (isNaN(numValue)) return;
+
+        // Ensure mark is between 1 and 100
+        const sanitizedValue = Math.min(100, Math.max(1, numValue));
+
         setStudentsData(prev => prev.map(student => {
             if (student.id === studentId) {
                 return {
                     ...student,
                     marks: {
                         ...student.marks,
-                        [subject]: parseInt(value) || 0
+                        [subject]: sanitizedValue
                     }
                 };
             }
@@ -126,7 +161,7 @@ export default function ResultsPage() {
                 subjects.forEach(subject => {
                     resultsToSave.push({
                         studentId: student.id,
-                        marks: student.marks[subject] || 0,
+                        marks: Number(student.marks[subject]) || 0,
                         subject,
                         examType,
                         classId: selectedClass
@@ -268,7 +303,7 @@ export default function ResultsPage() {
                                 >
                                     <option value="Final Term">Final Term</option>
                                     <option value="Mid Term">Mid Term</option>
-                                    <option value="First Terminal">First Terminal</option>
+                                    <option value="First Term">First Term</option>
                                 </select>
                             </div>
                         </div>
@@ -385,10 +420,11 @@ export default function ResultsPage() {
                                                                         <div className="relative">
                                                                             <input
                                                                                 type="number"
-                                                                                value={student.marks[subject] || 0}
+                                                                                value={student.marks[subject]}
                                                                                 onChange={(e) => handleMarkChange(student.id, subject, e.target.value)}
                                                                                 onClick={(e) => e.stopPropagation()}
-                                                                                min="0"
+                                                                                placeholder="-"
+                                                                                min="1"
                                                                                 max="100"
                                                                                 className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-border-light rounded-xl text-sm font-black text-center focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary shadow-sm transition-all hover:border-primary/40 focus:scale-[1.02]"
                                                                             />

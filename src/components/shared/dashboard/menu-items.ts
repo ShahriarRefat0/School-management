@@ -119,6 +119,11 @@ export const superAdminMenuItems: DashboardMenuItem[] = [
 export const accountantMenuItems: DashboardMenuItem[] = [
   { title: 'Dashboard', url: '/dashboard/accountant', icon: LayoutDashboard },
   {
+    title: 'Assign Fee',
+    url: '/dashboard/accountant/fee-collection',
+    icon: CreditCard,
+  },
+  {
     title: 'Student Due List',
     url: '/dashboard/accountant/due-list',
     icon: Receipt,
@@ -154,15 +159,14 @@ export const parentMenuItems: DashboardMenuItem[] = [
     icon: LayoutDashboardIcon,
   },
   {
-    title: 'Children',
-    url: '/dashboard/parent/children', // আপনার কাঙ্ক্ষিত রুট
-    icon: Users2,
+    title: 'About Website',
+    url: '/dashboard/parent/about',
+    icon: BookOpen,
   },
   {
-    title: 'Attendance',
-    url: '/dashboard/parent/attendance',
-    icon: UserCheckIcon,
-    badge: 'Today',
+    title: 'Website Benefits',
+    url: '/dashboard/parent/benefits',
+    icon: LifeBuoy,
   },
   {
     title: 'Results',
@@ -171,36 +175,9 @@ export const parentMenuItems: DashboardMenuItem[] = [
     badge: 'New',
   },
   {
-    title: 'Fees Status',
-    url: '/dashboard/parent/fees',
-    icon: CreditCard,
-    badge: 'Due',
-  },
-  {
-    title: 'Notices',
-    url: '/dashboard/parent/notices',
-    icon: ClipboardList,
-    badge: '3',
-  },
-  {
-    title: 'Communication',
-    url: '/dashboard/parent/communication',
-    icon: MessageCircle,
-  },
-  {
-    title: 'Reports',
-    url: '/dashboard/parent/reports',
-    icon: FileText,
-  },
-  {
     title: 'Profile',
     url: '/dashboard/parent/profile',
     icon: User,
-  },
-  {
-    title: 'Settings',
-    url: '/dashboard/parent/settings',
-    icon: Settings,
   },
 ];
 
@@ -229,6 +206,12 @@ export const principalMenuItems: DashboardMenuItem[] = [
     title: 'Support Tickets',
     url: '/dashboard/principal/addsupport',
     icon: LifeBuoy,
+  },
+  {
+    title: 'Subscription',
+    url: '/dashboard/principal/subscription',
+    icon: CreditCard,
+    badge: 'Pro',
   },
   {
     title: 'Settings',
