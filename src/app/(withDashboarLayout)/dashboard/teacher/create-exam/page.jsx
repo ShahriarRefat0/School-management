@@ -131,14 +131,14 @@ const CreateExam = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 w-full bg-[#f8fafc] min-h-screen space-y-6">
+    <div className="p-4 md:p-8 w-full bg-bg-page min-h-screen space-y-6">
       {/* Header */}
       <div className="pb-4 flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-black text-slate-800 tracking-tight italic">
+          <h1 className="text-xl font-black text-text-primary tracking-tight italic">
             Create Exam Room
           </h1>
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+          <p className="text-xs text-text-muted font-bold uppercase tracking-wider">
             Setup questions and access code
           </p>
         </div>
@@ -146,15 +146,15 @@ const CreateExam = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Settings Card */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border-none space-y-6">
+        <div className="lg:col-span-2 bg-bg-card p-6 rounded-2xl shadow-sm border border-border-light space-y-6">
           <div>
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 block">
               Room Title
             </label>
             <input
               value={roomTitle}
               onChange={(e) => setRoomTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 focus:bg-white focus:shadow-md focus:shadow-primary/5 outline-none transition-all font-bold text-slate-800 border-none"
+              className="w-full px-4 py-3 rounded-xl bg-bg-page focus:bg-bg-card focus:shadow-md focus:shadow-primary/10 outline-none transition-all font-bold text-text-primary border border-border-light"
               placeholder="e.g. Science Midterm 2026"
             />
           </div>
@@ -178,26 +178,26 @@ const CreateExam = () => {
             </div>
 
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+              <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 block">
                 Category
               </label>
               <input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 focus:bg-white focus:shadow-md focus:shadow-primary/5 outline-none transition-all font-bold text-slate-800 border-none"
+                className="w-full px-4 py-3 rounded-xl bg-bg-page focus:bg-bg-card focus:shadow-md focus:shadow-primary/10 outline-none transition-all font-bold text-text-primary border border-border-light"
                 placeholder="ICT/Math"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">
+              <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 block">
                 Class
               </label>
               <div className="relative">
                 <select
                   value={currentClass}
                   onChange={(e) => setCurrentClass(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 outline-none appearance-none font-black text-slate-700 cursor-pointer border-none"
+                  className="w-full px-4 py-3 rounded-xl bg-bg-page outline-none appearance-none font-black text-text-primary cursor-pointer border border-border-light"
                 >
                   {[...Array(12)].map((_, i) => (
                     <option key={i} value={i + 1}>
@@ -206,7 +206,7 @@ const CreateExam = () => {
                   ))}
                 </select>
                 <ChevronDown
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
                   size={14}
                 />
               </div>
@@ -247,10 +247,10 @@ const CreateExam = () => {
       {/* Questions Section */}
       <div className="space-y-6 mt-8">
         <div className="flex items-center justify-between px-1">
-          <h2 className="font-black text-slate-800 flex items-center gap-2 text-lg italic">
+          <h2 className="font-black text-text-primary flex items-center gap-2 text-lg italic">
             <CheckCircle2 className="text-primary" size={24} /> Questions
           </h2>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-3 py-1 rounded-lg shadow-sm">
+          <span className="text-[10px] font-black text-text-muted uppercase tracking-widest bg-bg-card px-3 py-1 rounded-lg shadow-sm border border-border-light">
             Total: {questions.length}
           </span>
         </div>
@@ -258,7 +258,7 @@ const CreateExam = () => {
         {questions.map((q, index) => (
           <div
             key={q.id}
-            className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border-none overflow-hidden"
+            className="bg-bg-card rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-border-light overflow-hidden"
           >
             <div className="p-6 space-y-6">
               <div className="flex justify-between items-center">
@@ -270,7 +270,7 @@ const CreateExam = () => {
                     questions.length > 1 &&
                     setQuestions(questions.filter((item) => item.id !== q.id))
                   }
-                  className="text-slate-300 hover:text-red-500 transition-all p-1"
+                  className="text-text-muted hover:text-red-500 transition-all p-1"
                 >
                   <Trash2 size={18} />
                 </button>
@@ -286,7 +286,7 @@ const CreateExam = () => {
                     ),
                   )
                 }
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 focus:bg-white focus:shadow-inner outline-none font-bold text-slate-800 text-sm border-none resize-none"
+                className="w-full px-4 py-3 rounded-xl bg-bg-page focus:bg-bg-card focus:shadow-inner outline-none font-bold text-text-primary text-sm border border-border-light resize-none"
                 placeholder="Type your question here..."
                 rows="2"
               ></textarea>
@@ -295,7 +295,7 @@ const CreateExam = () => {
                 {['A', 'B', 'C', 'D'].map((label) => (
                   <div
                     key={label}
-                    className={`flex items-center rounded-xl px-4 py-2 transition-all ${q.correctAnswer === label ? 'bg-primary/10 shadow-sm' : 'bg-slate-50'}`}
+                    className={`flex items-center rounded-xl px-4 py-2 transition-all ${q.correctAnswer === label ? 'bg-primary/10 shadow-sm' : 'bg-bg-page border border-border-light'}`}
                   >
                     <button
                       onClick={() =>
@@ -307,7 +307,7 @@ const CreateExam = () => {
                           ),
                         )
                       }
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black mr-3 transition-all ${q.correctAnswer === label ? 'bg-primary text-white shadow-lg' : 'bg-white text-slate-400 shadow-sm'}`}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black mr-3 transition-all ${q.correctAnswer === label ? 'bg-primary text-white shadow-lg' : 'bg-bg-card text-text-muted shadow-sm border border-border-light'}`}
                     >
                       {label}
                     </button>
@@ -330,7 +330,7 @@ const CreateExam = () => {
                       }
                       type="text"
                       placeholder={`Option ${label}`}
-                      className="bg-transparent outline-none text-xs w-full font-bold text-slate-700 border-none"
+                      className="bg-transparent outline-none text-xs w-full font-bold text-text-secondary border-none"
                     />
                   </div>
                 ))}
@@ -347,7 +347,7 @@ const CreateExam = () => {
             ]);
             setNextQuestionId((prev) => prev + 1);
           }}
-          className="w-full py-4 bg-white  border-dashed border-slate-200 rounded-2xl flex items-center justify-center gap-2 text-primary font-black text-[10px] uppercase hover:bg-primary/5 hover:border-primary transition-all shadow-sm"
+          className="w-full py-4 bg-bg-card border border-dashed border-border-light rounded-2xl flex items-center justify-center gap-2 text-primary font-black text-[10px] uppercase hover:bg-primary/5 hover:border-primary transition-all shadow-sm"
         >
           <PlusCircle size={18} /> Add Next Question
         </button>
