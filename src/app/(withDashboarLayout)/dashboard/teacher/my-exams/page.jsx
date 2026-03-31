@@ -10,6 +10,7 @@ import {
   Hash,
   Users,
   Clock,
+  GraduationCap,
   PlayCircle,
   PauseCircle,
 } from 'lucide-react';
@@ -188,6 +189,12 @@ const AllExamsByTheTeacher = () => {
               <div className="flex justify-between items-center text-text-muted border-t border-border-light pt-4">
                 <div className="flex items-center gap-1.5 text-xs font-bold">
                   <Users size={14} /> {exam.questions?.length || 0} Qs
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-bold">
+                  <GraduationCap size={14} />
+                  {exam.currentClass
+                    ? `Class ${exam.currentClass}`
+                    : 'Class N/A'}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs font-bold">
                   <Clock size={14} /> {exam.duration}
