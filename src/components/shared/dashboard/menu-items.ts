@@ -41,6 +41,21 @@ export const studentMenuItems: DashboardMenuItem[] = [
     icon: Bell,
     badge: '3',
   },
+  {
+    title: 'Take Exam',
+    url: '/dashboard/student/take-exam',
+    icon: ClipboardList,
+  },
+  {
+    title: 'My Exams',
+    url: '/dashboard/student/my-exams',
+    icon: FileText,
+  },
+  {
+    title: 'Progress',
+    url: '/dashboard/student/progress',
+    icon: LineChart,
+  },
   { title: 'Payments', url: '/dashboard/student/payments', icon: CreditCard },
   { title: 'Profile', url: '/dashboard/student/profile', icon: User },
 ];
