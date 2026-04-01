@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { TeacherHeader } from "../TeacherHeader";
 import {
     MessageSquare,
-    Search,
+
     Send,
     User,
     Star,
     BookOpen,
-    Filter,
+  
     CheckCircle2,
     Users,
     Loader2
