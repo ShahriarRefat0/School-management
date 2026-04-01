@@ -4,7 +4,7 @@ import Link from 'next/link';
 import {
     BookOpen,
     Users,
-    Search,
+  
     ChevronRight,
     Loader2
 } from 'lucide-react';
