@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -229,7 +230,7 @@ export default function AccountantOverview() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={loadDashboardData}
             disabled={isLoading}
             className="px-4 py-2.5 bg-bg-card border border-border-light text-text-secondary hover:bg-bg-page rounded-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
@@ -271,7 +272,7 @@ export default function AccountantOverview() {
         <div className="p-6 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[2rem] text-white shadow-lg overflow-hidden relative group">
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
           <div className="relative z-10 flex items-center justify-between">
-             <div className="space-y-1">
+            <div className="space-y-1">
               <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest">Total Teachers</p>
               <h3 className="text-4xl font-black">{statsData?.totalTeachers || 0}</h3>
               <p className="text-emerald-100/80 text-[10px] font-medium italic">Active staff members</p>
@@ -370,7 +371,7 @@ export default function AccountantOverview() {
                             "w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300",
                             transaction.iconType === "payment" ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"
                           )}>
-                             {transaction.iconType === "payment" ? <Receipt size={18} /> : <Wallet size={18} />}
+                            {transaction.iconType === "payment" ? <Receipt size={18} /> : <Wallet size={18} />}
                           </div>
                           <span className="text-sm font-medium text-text-primary ">
                             {transaction.name}

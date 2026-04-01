@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
 import { Search, Wallet, CheckCircle2, Clock, Loader2 } from "lucide-react";
@@ -73,27 +74,27 @@ export default function SalaryManagementPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-text-primary">
             Salary Management
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-text-muted">
             Manage teacher salaries and payment history ({filteredTeachers.length})
           </p>
         </div>
         <button 
           onClick={loadTeachers}
           disabled={isLoading}
-          className="p-2 hover:bg-slate-100 rounded-xl transition-all"
+          className="p-2 hover:bg-bg-page rounded-xl transition-all"
         >
-          {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Wallet size={20} className="text-slate-600" />}
+          {isLoading ? <Loader2 size={20} className="animate-spin text-text-muted" /> : <Wallet size={20} className="text-text-secondary" />}
         </button>
       </div>
 
       {/* Search */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+      <div className="bg-bg-card border border-border-light rounded-2xl p-4 shadow-sm">
         <div className="relative">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
             size={18}
           />
           <input
@@ -101,42 +102,42 @@ export default function SalaryManagementPage() {
             placeholder="Search teacher by name or ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2 bg-bg-page border border-border-light rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           />
         </div>
       </div>
 
       {/* Salary Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-bg-card border border-border-light rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
 
             {/* Table Header */}
             <thead>
-              <tr className="bg-gradient-to-r from-slate-50 to-blue-50/40">
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">
+              <tr className="bg-bg-page border-b border-border-light">
+                <th className="px-6 py-4 text-left text-xs font-bold text-text-secondary uppercase">
                   Teacher
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">
+                <th className="px-6 py-4 text-left text-xs font-bold text-text-secondary uppercase">
                   Subject / Dept
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">
+                <th className="px-6 py-4 text-left text-xs font-bold text-text-secondary uppercase">
                   Monthly Salary
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">
+                <th className="px-6 py-4 text-left text-xs font-bold text-text-secondary uppercase">
                   Last Payment
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">
+                <th className="px-6 py-4 text-left text-xs font-bold text-text-secondary uppercase">
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-bold text-slate-700 uppercase">
+                <th className="px-6 py-4 text-left text-xs font-bold text-text-secondary uppercase">
                   Action
                 </th>
               </tr>
             </thead>
 
             {/* Table Body */}
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border-light">
               {isLoading ? (
                   <tr>
                       <td colSpan={6} className="px-6 py-10 text-center text-slate-400">
@@ -153,37 +154,37 @@ export default function SalaryManagementPage() {
                 filteredTeachers.map((teacher) => (
                   <tr
                     key={teacher.id}
-                    className="hover:bg-blue-50/30 transition-all duration-300"
+                    className="hover:bg-bg-page/50 transition-all duration-300"
                   >
                     <td className="px-6 py-4">
-                      <p className="text-sm font-bold text-slate-900">
+                      <p className="text-sm font-bold text-text-primary">
                         {teacher.name}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-text-muted">
                         ID: {teacher.id}
                       </p>
                     </td>
 
-                    <td className="px-6 py-4 text-sm text-slate-700">
+                    <td className="px-6 py-4 text-sm text-text-secondary">
                       {teacher.subject}
                     </td>
 
-                    <td className="px-6 py-4 text-sm font-bold text-slate-900">
+                    <td className="px-6 py-4 text-sm font-bold text-text-primary">
                       Tk {teacher.monthlySalary.toLocaleString()}
                     </td>
 
-                    <td className="px-6 py-4 text-sm text-slate-700">
+                    <td className="px-6 py-4 text-sm text-text-secondary">
                       {teacher.paymentDate}
                     </td>
 
                     <td className="px-6 py-4">
                       {teacher.status === "Paid" ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-500/20">
                           <CheckCircle2 size={12} />
                           Paid
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-orange-50 text-orange-700 rounded-full border border-orange-100">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-orange-500/10 text-orange-600 dark:text-orange-400 rounded-full border border-orange-500/20">
                           <Clock size={12} />
                           Unpaid
                         </span>
@@ -201,7 +202,7 @@ export default function SalaryManagementPage() {
                           Pay Salary
                         </button>
                       ) : (
-                        <button className="px-3 py-1.5 border border-slate-200 text-xs font-semibold rounded-lg text-slate-400 cursor-not-allowed">
+                        <button className="px-3 py-1.5 border border-border-light text-xs font-semibold rounded-lg text-text-muted cursor-not-allowed">
                           Paid
                         </button>
                       )}

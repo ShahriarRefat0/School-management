@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowRight, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 const blogData = [
   {
@@ -67,9 +68,12 @@ const BlogSection = () => {
               Stay Updated with Our <br /> Latest Blog Posts
             </h2>
           </div>
-          <button className="group flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider hover:gap-3 transition-all duration-300 bg-primary/5 px-6 py-3 rounded-full border border-primary/10">
+          <Link
+            href="/blogs"
+            className="group flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider hover:gap-3 transition-all duration-300 bg-primary/5 px-6 py-3 rounded-full border border-primary/10"
+          >
             View All Posts <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
+          </Link>
         </motion.div>
 
         {/* Blog Grid */}

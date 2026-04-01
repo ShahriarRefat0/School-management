@@ -145,16 +145,23 @@ const Footer = () => {
                 "Exam Suite",
                 "Portal Login",
                 "Contact Us",
-              ].map((item) => (
+              ].map((item) => {
+                let linkHref = "#";
+                if (item === "About Schoology") linkHref = "/about";
+                if (item === "Blogs & News") linkHref = "/blogs";
+                if (item === "Success Stories") linkHref = "/testimonials";
+                if (item === "Portal Login") linkHref = "/login";
+
+                return (
                 <li key={item}>
                   <Link
-                    href={item === "Portal Login" ? "/login" : "#"}
+                    href={linkHref}
                     className="text-text-secondary font-medium hover:text-primary transition-colors flex items-center gap-2 group">
                     <span className="w-1 h-1 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-all" />
                     {item}
                   </Link>
                 </li>
-              ))}
+              )})}
             </ul>
           </div>
 

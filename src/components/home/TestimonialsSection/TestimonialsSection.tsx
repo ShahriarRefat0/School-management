@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const testimonials = [
   {
@@ -99,9 +100,9 @@ const TestimonialsSection = () => {
 
         {/* View All Button - matching other sections */}
         <div className="mt-12 text-center">
-          <button className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/10">
+          <Link href="/testimonials" className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 transition-all active:scale-95 shadow-lg shadow-primary/10">
             Read More Testimonials
-          </button>
+          </Link>
         </div>
       </div>
     </section>
