@@ -22,6 +22,7 @@ import {
   Settings,
   LineChart,
   ClipboardList,
+  BarChart3,
   LayoutDashboard as LayoutDashboardIcon,
   Users2,
 } from 'lucide-react';
@@ -88,6 +89,11 @@ export const teacherMenuItems: DashboardMenuItem[] = [
     title: 'My Exams',
     url: '/dashboard/teacher/my-exams',
     icon: FileText,
+  },
+  {
+    title: 'MCQ Results',
+    url: '/dashboard/teacher/mcq-results',
+    icon: BarChart3,
   },
   {
     title: 'Study Materials',
