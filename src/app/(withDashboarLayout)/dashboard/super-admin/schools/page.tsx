@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
-  Search, Plus, ShieldCheck, ShieldAlert, Edit, Trash2, Globe, Phone, GraduationCap 
+  Search, Plus, ShieldCheck, ShieldAlert, Edit, Trash2,  Phone, GraduationCap 
 } from 'lucide-react'
 import { getAllSchools, deleteSchool } from '@/app/actions/school' 
 import Swal from 'sweetalert2'
