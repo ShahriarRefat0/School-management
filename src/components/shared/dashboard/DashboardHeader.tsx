@@ -11,6 +11,7 @@ import {
   AlertCircle,
   User,
 } from 'lucide-react';
+import { UserProfile } from './types';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -25,6 +26,8 @@ import { toast } from 'sonner';
 
 type DashboardHeaderProps = {
   onMenuClick: () => void;
+  title?: string;
+  user?: UserProfile;
 };
 
 type NotificationItem = {
@@ -37,7 +40,7 @@ type NotificationItem = {
   createdAt: Date;
 };
 
-export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
+export function DashboardHeader({ onMenuClick, title, user: userProfile }: DashboardHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
