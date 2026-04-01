@@ -10,8 +10,6 @@ export interface DashboardMenuItem {
 }
 
 
-
-
 export interface UserProfile {
     name: string;
     role: string;
