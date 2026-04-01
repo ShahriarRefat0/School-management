@@ -9,8 +9,6 @@ import {
   Bell,
   Calendar,
   Clock,
-  MapPin,
-  ArrowRight,
   Loader2,
   Users,
   X,
@@ -26,7 +24,6 @@ import {
   saveAttendance,
 } from '@/app/actions/teacher/attendance';
 import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
 
 export default function TeacherOverview() {
   const [data, setData] = useState<any>(null);
