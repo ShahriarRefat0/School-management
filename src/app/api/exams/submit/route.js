@@ -81,6 +81,7 @@ export async function GET(request) {
         const teacherEmail = searchParams.get("teacherEmail"); // টিচার ইমেইল
         const questionID = searchParams.get("questionID");
         const roomCode = searchParams.get("roomCode");
+        const scope = searchParams.get("scope");
 
         const resultsCollection = await getCollection("results");
 
@@ -89,6 +90,21 @@ export async function GET(request) {
         if (teacherEmail) query.teacherEmail = teacherEmail.toLowerCase();
         if (questionID) query.questionID = questionID;
         if (roomCode) query.roomCode = roomCode;
+
+        // Teacher dashboard MCQ Results: only show results from the teacher's school.
+        if (scope === "teacherSchool") {
+            const currentUser = await getCurrentUser();
+
+            if (!currentUser) {
+                return NextResponse.json({ success: false, message: "Authentication required" }, { status: 401 });
+            }
+
+            if (!currentUser.schoolId) {
+                return NextResponse.json({ success: false, message: "Teacher school is not configured" }, { status: 400 });
+            }
+
+            query.schoolId = currentUser.schoolId;
+        }
 
         const results = await resultsCollection.find(query).sort({ submittedAt: -1 }).toArray();
 
