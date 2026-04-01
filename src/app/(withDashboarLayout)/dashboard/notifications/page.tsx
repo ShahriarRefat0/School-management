@@ -53,7 +53,7 @@ export default function NotificationsPage() {
         setLoading(true)
         const res = await getAllNotifications()
         if (res.success) {
-            setNotifications(res.data)
+            setNotifications(res.data || [])
         } else {
             toast.error("Failed to load notifications")
         }
