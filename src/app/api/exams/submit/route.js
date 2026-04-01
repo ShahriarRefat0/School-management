@@ -1,12 +1,13 @@
-import { getCollection } from "@/lib/mongodb";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/getCurrentUser";
-import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
 const serializeResult = (result) => ({
     ...result,
-    _id: result?._id?.toString?.() ?? result?._id,
+    _id: result?.id,
 });
+
+const toQuestionArray = (value) => (Array.isArray(value) ? value : []);
 
 export async function POST(request) {
     try {
@@ -16,19 +17,22 @@ export async function POST(request) {
             return NextResponse.json({ success: false, message: "roomCode, studentAnswers, studentEmail and studentName are required" }, { status: 400 });
         }
 
-        const examsCollection = await getCollection("questions");
-        const resultsCollection = await getCollection("results");
         const currentUser = await getCurrentUser();
 
         // ডাটাবেস থেকে আসল উত্তরসহ এক্সাম ডাটা আনা
-        const exam = await examsCollection.findOne({ roomCode: roomCode });
+        const exam = await prisma.quizRoom.findUnique({ where: { roomCode } });
 
         if (!exam) return NextResponse.json({ success: false, message: "Exam room not found" }, { status: 404 });
 
-        const examQuestionId = questionID || exam?._id?.toString?.();
-        const alreadySubmitted = await resultsCollection.findOne({
-            roomCode,
-            studentEmail,
+        const examQuestionId = questionID || exam.id;
+        const alreadySubmitted = await prisma.quizSubmission.findUnique({
+            where: {
+                roomCode_studentEmail: {
+                    roomCode,
+                    studentEmail,
+                },
+            },
+            select: { id: true },
         });
 
         if (alreadySubmitted) {
@@ -37,7 +41,8 @@ export async function POST(request) {
 
         // সঠিক উত্তরের সাথে স্টুডেন্টের উত্তরের তুলনা (Mark calculation)
         let totalMark = 0;
-        exam.questions.forEach((q) => {
+        const questions = toQuestionArray(exam.questions);
+        questions.forEach((q) => {
             if (studentAnswers[q.id] === q.correctAnswer) {
                 totalMark += 1;
             }
@@ -48,22 +53,23 @@ export async function POST(request) {
             questionID: examQuestionId,
             studentName,
             studentEmail,
-            schoolId: currentUser?.schoolId ?? schoolId ?? exam?.schoolId ?? null,
+            schoolId: currentUser?.schoolId ?? schoolId ?? exam.schoolId ?? null,
             examSubject: exam.roomTitle,
             teacherEmail: exam.teacherEmail,
             roomCode,
             totalMark,
-            totalQuestions: exam.questions.length,
+            totalQuestions: questions.length,
+            studentAnswers,
             submittedAt: new Date()
         };
 
         // ডাটাবেসে সেভ করা
-        await resultsCollection.insertOne(resultDoc);
+        await prisma.quizSubmission.create({ data: resultDoc });
 
         return NextResponse.json({
             success: true,
             score: totalMark,
-            total: exam.questions.length
+            total: questions.length
         });
 
     } catch (error) {
@@ -83,9 +89,7 @@ export async function GET(request) {
         const roomCode = searchParams.get("roomCode");
         const scope = searchParams.get("scope");
 
-        const resultsCollection = await getCollection("results");
-
-        let query = {};
+        const query = {};
         if (email) query.studentEmail = email;
         if (teacherEmail) query.teacherEmail = teacherEmail.toLowerCase();
         if (questionID) query.questionID = questionID;
@@ -106,7 +110,10 @@ export async function GET(request) {
             query.schoolId = currentUser.schoolId;
         }
 
-        const results = await resultsCollection.find(query).sort({ submittedAt: -1 }).toArray();
+        const results = await prisma.quizSubmission.findMany({
+            where: query,
+            orderBy: { submittedAt: "desc" },
+        });
 
         return NextResponse.json({ success: true, data: results.map(serializeResult) });
     } catch (error) {
@@ -124,18 +131,16 @@ export async function DELETE(request) {
         const id = searchParams.get("id");
         const deleteAll = searchParams.get("all");
 
-        const resultsCollection = await getCollection("results");
-
         // সব রেজাল্ট ডিলিট করার জন্য
         if (deleteAll === "true") {
-            await resultsCollection.deleteMany({});
+            await prisma.quizSubmission.deleteMany({});
             return NextResponse.json({ success: true, message: "All results cleared" });
         }
 
         // সিঙ্গেল রেজাল্ট ডিলিট করার জন্য
         if (!id) return NextResponse.json({ success: false, message: "ID is required" }, { status: 400 });
 
-        await resultsCollection.deleteOne({ _id: new ObjectId(id) });
+        await prisma.quizSubmission.deleteMany({ where: { id } });
         return NextResponse.json({ success: true, message: "Result deleted successfully" });
 
     } catch (error) {
