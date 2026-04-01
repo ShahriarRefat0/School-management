@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Logo from '@/components/shared/logo/logo';
 import {
@@ -19,6 +19,10 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, role, signOut } = useAuth();
   const router = useRouter();
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement | null>(null);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const profileToggleRef = useRef<HTMLButtonElement | null>(null);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -60,6 +64,45 @@ const Navbar = () => {
   const textMain = 'text-white';
   const textMuted = 'text-slate-400';
 
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+
+      if (
+        isOpen &&
+        !mobileMenuRef.current?.contains(target) &&
+        !mobileToggleRef.current?.contains(target)
+      ) {
+        setIsOpen(false);
+      }
+
+      if (
+        isProfileOpen &&
+        !profileMenuRef.current?.contains(target) &&
+        !profileToggleRef.current?.contains(target)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, isProfileOpen]);
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 ${navBg}/80 backdrop-blur-xl border-b ${borderCol} transition-all duration-300`}
@@ -69,6 +112,7 @@ const Navbar = () => {
           {/* LEFT: Hamburger (mobile) + Logo */}
           <div className="flex items-center gap-3">
             <button
+              ref={mobileToggleRef}
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 rounded-lg bg-slate-800 text-blue-400 transition-all"
             >
@@ -126,6 +170,7 @@ const Navbar = () => {
             ) : (
               <div className="relative">
                 <button
+                  ref={profileToggleRef}
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className={`flex items-center gap-2 p-1 pr-2 rounded-xl border-2 border-blue-500/20 bg-slate-900 shadow-sm min-w-[75px] justify-center hover:border-blue-500/40 transition-all`}
                 >
@@ -147,11 +192,7 @@ const Navbar = () => {
 
                 <AnimatePresence>
                   {isProfileOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-[60]"
-                        onClick={() => setIsProfileOpen(false)}
-                      />
+                    <div ref={profileMenuRef}>
                       <motion.div
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -201,7 +242,7 @@ const Navbar = () => {
                           <LogOut size={18} /> Log out
                         </button>
                       </motion.div>
-                    </>
+                    </div>
                   )}
                 </AnimatePresence>
               </div>
@@ -213,45 +254,49 @@ const Navbar = () => {
       {/* Mobile Dropdown */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`md:hidden ${navBg} border-b ${borderCol} shadow-xl`}
-          >
-            <div className="px-4 pt-2 pb-6 space-y-2">
-              {[
-                { label: 'Why Choose Us', href: '/why-choose-us' },
-                { label: 'Pricing', href: '/pricing' },
-                { label: 'Support', href: '/support' },
-                { label: 'Privacy', href: '/privacy' },
-                { label: 'Contact', href: '/contact' },
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`block ${textMuted} font-semibold hover:text-blue-400 transition-colors py-2`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              {!user && (
-                <div className="pt-4 flex flex-col gap-3">
-                  <Link href="/login" onClick={() => setIsOpen(false)}>
-                    <button className="w-full bg-slate-800 text-blue-400 font-bold py-3 rounded-xl">
-                      Login
-                    </button>
+          <div className="md:hidden relative z-40">
+            <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" />
+            <motion.div
+              ref={mobileMenuRef}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={`relative z-50 ${navBg} border-b ${borderCol} shadow-xl`}
+            >
+              <div className="px-4 pt-2 pb-6 space-y-2">
+                {[
+                  { label: 'Why Choose Us', href: '/why-choose-us' },
+                  { label: 'Pricing', href: '/pricing' },
+                  { label: 'Support', href: '/support' },
+                  { label: 'Privacy', href: '/privacy' },
+                  { label: 'Contact', href: '/contact' },
+                ].map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`block ${textMuted} font-semibold hover:text-blue-400 transition-colors py-2`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.label}
                   </Link>
-                  <Link href="/live-demo" onClick={() => setIsOpen(false)}>
-                    <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">
-                      Live Demo
-                    </button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          </motion.div>
+                ))}
+                {!user && (
+                  <div className="pt-4 flex flex-col gap-3">
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      <button className="w-full bg-slate-800 text-blue-400 font-bold py-3 rounded-xl">
+                        Login
+                      </button>
+                    </Link>
+                    <Link href="/live-demo" onClick={() => setIsOpen(false)}>
+                      <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">
+                        Live Demo
+                      </button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+              </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
