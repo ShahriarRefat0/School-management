@@ -244,10 +244,10 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
                 onClick={() => setIsProfileOpen(true)}
                 className="flex items-center gap-2 p-1 pr-2 rounded-xl border-2 border-primary/20 bg-bg-page shadow-sm min-w-[75px] justify-center hover:border-primary/40 transition-all"
               >
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
+                <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
                   {initials}
                 </div>
-                <div className="hidden md:flex flex-col items-start leading-tight max-w-[180px]">
+                <div className="hidden md:flex flex-col items-start leading-tight max-w-45">
                   <span className="text-xs font-bold text-text-primary truncate w-full">
                     {userName}
                   </span>
