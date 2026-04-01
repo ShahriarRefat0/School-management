@@ -17,6 +17,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  CartesianGrid,
+  LabelList,
 } from 'recharts';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -40,6 +42,39 @@ const getStatus = (score) => {
     comment: 'Needs Effort',
     color: 'text-rose-600 dark:text-rose-300',
   };
+};
+
+const tooltipScoreStyle = {
+  Excellent: 'text-emerald-600 dark:text-emerald-300',
+  'Good Job': 'text-amber-600 dark:text-amber-300',
+  'Keep Practicing': 'text-rose-600 dark:text-rose-300',
+};
+
+const CustomProgressTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const score = payload[0]?.value ?? 0;
+  const subject = payload[0]?.payload?.subject || 'Exam';
+  const state = getStatus(score);
+
+  return (
+    <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/95 px-3.5 py-2.5 shadow-xl backdrop-blur-sm">
+      <p className="text-[10px] uppercase tracking-[0.16em] font-black text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className="text-xs font-bold text-text-secondary mt-0.5">{subject}</p>
+      <div className="flex items-end gap-2 mt-1.5">
+        <p
+          className={`text-lg leading-none font-black ${tooltipScoreStyle[state.label]}`}
+        >
+          {score}%
+        </p>
+        <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 pb-0.5">
+          {state.comment}
+        </p>
+      </div>
+    </div>
+  );
 };
 
 const StudentProgressClient = () => {
@@ -180,46 +215,59 @@ const StudentProgressClient = () => {
 
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={results} barCategoryGap="35%">
+            <BarChart
+              data={results}
+              barCategoryGap="30%"
+              margin={{ top: 18, right: 8, left: 0, bottom: 4 }}
+            >
+              <CartesianGrid
+                vertical={false}
+                strokeDasharray="4 4"
+                stroke="rgba(148, 163, 184, 0.22)"
+              />
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#64748b', fontSize: 11 }}
+                tickMargin={8}
+                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }}
               />
               <YAxis
                 domain={[0, 100]}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 700 }}
                 tickFormatter={(value) => `${value}%`}
                 width={36}
               />
-              <Tooltip
-                formatter={(value) => [`${value}%`, 'Score']}
-                labelFormatter={(label, payload) =>
-                  `${label} - ${payload?.[0]?.payload?.subject || 'Exam'}`
-                }
-                cursor={false}
-                contentStyle={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  boxShadow: 'none',
-                }}
-              />
+              <Tooltip cursor={false} content={<CustomProgressTooltip />} />
               <Bar
                 dataKey="score"
-                radius={[8, 8, 4, 4]}
-                barSize={26}
+                radius={[12, 12, 6, 6]}
+                barSize={30}
                 activeBar={false}
               >
+                <LabelList
+                  dataKey="score"
+                  position="top"
+                  formatter={(value) => `${value}%`}
+                  style={{
+                    fill: '#475569',
+                    fontSize: 11,
+                    fontWeight: 800,
+                  }}
+                />
                 {results.map((entry) => (
                   <Cell
                     key={entry.name}
-                    fill="#2563eb"
-                    fillOpacity={
-                      entry.score >= 80 ? 1 : entry.score >= 60 ? 0.75 : 0.5
+                    fill={
+                      entry.score >= 80
+                        ? '#10b981'
+                        : entry.score >= 60
+                          ? '#f59e0b'
+                          : '#f43f5e'
                     }
+                    fillOpacity={0.88}
                   />
                 ))}
               </Bar>
