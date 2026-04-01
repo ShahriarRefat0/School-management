@@ -224,6 +224,8 @@ const Navbar = () => {
                                   ? '/dashboard/teacher'
                                   : '/dashboard'
                           }
+                            
+                            
                           className={`flex items-center gap-3 w-full px-3 py-3 text-sm font-bold ${textMain} hover:bg-slate-800 rounded-xl transition-all`}
                         >
                           <LucideLayoutDashboard
@@ -240,7 +242,8 @@ const Navbar = () => {
                           className="flex items-center gap-3 w-full px-3 py-3 text-sm font-black text-red-400 hover:bg-red-950/30 rounded-xl transition-all"
                         >
                           <LogOut size={18} /> Log out
-                        </button>
+                          </button>
+                          
                       </motion.div>
                     </div>
                   )}
