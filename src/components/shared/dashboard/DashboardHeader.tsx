@@ -307,7 +307,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
       {/* ২. লগ-আউট মোডাল (মোবাইলে বড় এবং ফিক্সড করা হয়েছে) */}
       <AnimatePresence>
         {showLogoutModal && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -319,8 +319,8 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-[92%] max-w-[400px] bg-bg-card rounded-[32px] p-8 shadow-2xl border border-border-light overflow-hidden"
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              className="relative w-[92%] max-w-[400px] bg-bg-card rounded-4xl p-8 shadow-2xl border border-border-light overflow-hidden"
             >
               <button
                 onClick={() => setShowLogoutModal(false)}
