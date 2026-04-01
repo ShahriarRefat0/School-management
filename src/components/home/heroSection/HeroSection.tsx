@@ -22,41 +22,22 @@ const HeroSection = () => {
     users: 0
   });
   const [period, setPeriod] = useState<keyof RevenueData>('allTime');
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
-      try {
-        const res = await getHeroStats();
-        if (res.success) {
-          setStats({
-            revenue: res.revenue,
-            schools: res.schools,
-            users: res.users
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch stats", error);
-      } finally {
-        setIsLoading(false);
+      const res = await getHeroStats();
+      if (res.success) {
+        setStats({
+          revenue: res.revenue,
+          schools: res.schools,
+          users: res.users
+        });
       }
     };
     fetchStats();
   }, []);
 
   const currentRevenue = stats.revenue[period];
-
-  if (isLoading) {
-    return (
-      <section id="home" className="relative pt-32 pb-24 overflow-hidden bg-[#1e1e62] min-h-screen flex items-center justify-center">
-        <Herobackground />
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
-          <p className="text-blue-200 font-bold uppercase tracking-widest text-sm animate-pulse">Loading Schoology BD...</p>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section id="home" className="relative pt-32 pb-24 overflow-hidden bg-[#1e1e62]">
@@ -86,8 +67,8 @@ const HeroSection = () => {
             >
               <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] tracking-tight">
                 <span className="text-blue-400">Schoology</span>BD <br />
-                <span className="">Smart School</span> <br />
-                <span className="">Management</span>
+                <span className="text-white/90">Smart School</span> <br />
+                <span className="text-white">Management</span>
               </h1>
               <p className="text-lg text-blue-100/70 max-w-xl font-medium leading-relaxed">
                 Empower your educational institution with <span className="text-white font-bold underline decoration-blue-500 decoration-2 underline-offset-4">Schoology BD</span>.

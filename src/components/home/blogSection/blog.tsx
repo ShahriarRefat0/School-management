@@ -37,7 +37,7 @@ const blogData = [
   },
 ];
 
-const fadeInUp = {
+const fadeInUp: any = {
   hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,

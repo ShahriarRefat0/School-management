@@ -30,6 +30,9 @@ export default function PageLoader() {
                 pointerEvents: "none",
             }} />
 
+
+
+
             {/* Subtle grid */}
             <div style={{
                 position: "absolute", inset: 0, pointerEvents: "none",

@@ -107,6 +107,11 @@ export const teacherMenuItems: DashboardMenuItem[] = [
     badge: 'new',
   },
   { title: 'Feedback', url: '/dashboard/teacher/feedback', icon: Users },
+  {
+    title: 'Class Schedule',
+    url: '/dashboard/teacher/schedule',
+    icon: CalendarCheck,
+  },
   { title: 'profile', url: '/dashboard/teacher/profile', icon: Users },
 ];
 
