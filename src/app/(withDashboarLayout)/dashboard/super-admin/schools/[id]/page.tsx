@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { 
-  Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
-  Layers, Users, FileText, Facebook, Layout, Languages, CreditCard, Trash2, ShieldAlert, Phone, MapPin
+  Building, Globe,  ShieldCheck, Users, CreditCard, Trash2, ShieldAlert
 } from 'lucide-react'
 import { getSchoolById, updateSchool } from '@/app/actions/school'
 
