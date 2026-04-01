@@ -95,6 +95,10 @@ const ExamHall = ({ examData, user, result, setResult, clearSession }) => {
           roomCode: examData.roomCode,
           studentAnswers: finalAnswers,
           studentEmail: currentUser?.email,
+          schoolId:
+            currentUser?.user_metadata?.schoolId ||
+            currentUser?.user_metadata?.school_id ||
+            null,
           studentName:
             currentUser?.displayName || currentUser?.email?.split('@')[0],
           examSubject: examData.roomTitle,
