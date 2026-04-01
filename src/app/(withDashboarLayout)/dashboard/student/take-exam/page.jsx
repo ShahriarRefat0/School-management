@@ -122,15 +122,7 @@ const ExamsPage = () => {
               Enter Room Code
             </button>
           </div>
-          <div className="hidden md:flex">
-            <Image
-              src={'/mainLogo.png'}
-              alt="School logo"
-              width={300}
-              height={300}
-              className="opacity-30"
-            />
-          </div>
+          
         </div>
       </div>
 

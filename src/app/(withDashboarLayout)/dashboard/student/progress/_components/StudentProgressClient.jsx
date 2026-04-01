@@ -10,13 +10,15 @@ import {
   Target,
 } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
+  CartesianGrid,
+  ReferenceLine,
 } from 'recharts';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -40,6 +42,39 @@ const getStatus = (score) => {
     comment: 'Needs Effort',
     color: 'text-rose-600 dark:text-rose-300',
   };
+};
+
+const tooltipScoreStyle = {
+  Excellent: 'text-emerald-600 dark:text-emerald-300',
+  'Good Job': 'text-amber-600 dark:text-amber-300',
+  'Keep Practicing': 'text-rose-600 dark:text-rose-300',
+};
+
+const CustomProgressTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || payload.length === 0) return null;
+
+  const score = payload[0]?.value ?? 0;
+  const subject = payload[0]?.payload?.subject || 'Exam';
+  const state = getStatus(score);
+
+  return (
+    <div className="rounded-2xl border border-slate-200/70 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/95 px-3.5 py-2.5 shadow-xl backdrop-blur-sm">
+      <p className="text-[10px] uppercase tracking-[0.16em] font-black text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className="text-xs font-bold text-text-secondary mt-0.5">{subject}</p>
+      <div className="flex items-end gap-2 mt-1.5">
+        <p
+          className={`text-lg leading-none font-black ${tooltipScoreStyle[state.label]}`}
+        >
+          {score}%
+        </p>
+        <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 pb-0.5">
+          {state.comment}
+        </p>
+      </div>
+    </div>
+  );
 };
 
 const StudentProgressClient = () => {
@@ -180,39 +215,75 @@ const StudentProgressClient = () => {
 
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={results} barCategoryGap="35%">
+            <AreaChart
+              data={results}
+              margin={{ top: 18, right: 12, left: 2, bottom: 4 }}
+            >
+              <defs>
+                <linearGradient
+                  id="scoreAreaGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
+                  <stop offset="55%" stopColor="#2563eb" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                vertical={false}
+                strokeDasharray="4 4"
+                stroke="rgba(148, 163, 184, 0.22)"
+              />
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#64748b', fontSize: 11 }}
+                tickMargin={8}
+                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }}
               />
               <YAxis
                 domain={[0, 100]}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 700 }}
                 tickFormatter={(value) => `${value}%`}
                 width={36}
               />
-              <Tooltip
-                formatter={(value) => [`${value}%`, 'Score']}
-                labelFormatter={(label, payload) =>
-                  `${label} - ${payload?.[0]?.payload?.subject || 'Exam'}`
-                }
+              <ReferenceLine
+                y={averageScore}
+                stroke="#64748b"
+                strokeDasharray="5 5"
+                strokeOpacity={0.7}
               />
-              <Bar dataKey="score" radius={[8, 8, 4, 4]} barSize={26}>
-                {results.map((entry, index) => (
-                  <Cell
-                    key={entry.name}
-                    fill="#2563eb"
-                    fillOpacity={
-                      entry.score >= 80 ? 1 : entry.score >= 60 ? 0.75 : 0.5
-                    }
-                  />
-                ))}
-              </Bar>
-            </BarChart>
+              <Tooltip cursor={false} content={<CustomProgressTooltip />} />
+              <Area
+                dataKey="score"
+                type="monotone"
+                stroke="none"
+                fill="url(#scoreAreaGradient)"
+              />
+              <Line
+                dataKey="score"
+                type="monotone"
+                stroke="#2563eb"
+                strokeWidth={3}
+                dot={{
+                  r: 4,
+                  fill: '#ffffff',
+                  stroke: '#2563eb',
+                  strokeWidth: 2,
+                }}
+                activeDot={{
+                  r: 6,
+                  fill: '#2563eb',
+                  stroke: '#ffffff',
+                  strokeWidth: 2,
+                }}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>

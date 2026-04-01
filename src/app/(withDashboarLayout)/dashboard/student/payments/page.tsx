@@ -1,11 +1,11 @@
 "use client"
 
 import React, { useState, Suspense, useEffect } from "react"
-import { DollarSign, Clock, ArrowLeft } from "lucide-react"
+import { DollarSign, Clock, ArrowLeft, RefreshCw, CheckCircle2 } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import PaymentFlow from "@/components/payments/PaymentFlow"
 import PaymentDetails from "@/components/payments/PaymentDetails"
-import { getPayments } from "./actions"
+import { getPayments, getPendingFees, getStudentProfile } from "./actions"
 
 function PaymentsContent() {
     const searchParams = useSearchParams()
@@ -13,16 +13,31 @@ function PaymentsContent() {
     const transactionId = searchParams.get('transactionId')
 
     const [showPaymentFlow, setShowPaymentFlow] = useState(!!status)
+    const [paymentParams, setPaymentParams] = useState<{ amount: number; category: string } | null>(null)
     const [realPayments, setRealPayments] = useState<any[]>([])
+    const [pendingFees, setPendingFees] = useState<any[]>([])
+    const [studentProfile, setStudentProfile] = useState<{ name: string; email: string } | null>(null)
     const [loading, setLoading] = useState(true)
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null)
 
-    useEffect(() => {
-        async function loadPayments() {
-            const data = await getPayments()
-            setRealPayments(data)
+    const loadPayments = async () => {
+        setLoading(true)
+        try {
+            const historyData = await getPayments()
+            const pendingData = await getPendingFees()
+            const profileData = await getStudentProfile()
+            
+            setRealPayments(historyData)
+            setPendingFees(pendingData)
+            setStudentProfile(profileData)
+        } catch (error) {
+            console.error("Failed to load payments:", error)
+        } finally {
             setLoading(false)
         }
+    }
+
+    useEffect(() => {
         loadPayments()
     }, [showPaymentFlow]) // Refresh when returning from payment flow
 
@@ -31,110 +46,185 @@ function PaymentsContent() {
             <div className="relative">
                 {!status && (
                     <button
-                        onClick={() => setShowPaymentFlow(false)}
-                        className="absolute top-4 left-4 z-50 p-2 bg-white rounded-full shadow-md hover:bg-slate-50 transition-colors"
+                        onClick={() => {
+                            setShowPaymentFlow(false)
+                            setPaymentParams(null)
+                        }}
+                        className="fixed top-20 left-4 md:left-72 z-50 p-2 bg-[var(--color-bg-card)] rounded-xl shadow-lg border border-[var(--color-border-light)] hover:bg-[var(--color-bg-page)] transition-all transform active:scale-95"
                     >
-                        <ArrowLeft className="w-5 h-5 text-slate-600" />
+                        <ArrowLeft className="w-5 h-5 text-[var(--color-text-primary)]" />
                     </button>
                 )}
-                <PaymentFlow initialStatus={status} initialTxnId={transactionId} />
+                <PaymentFlow 
+                    initialStatus={status} 
+                    initialTxnId={transactionId} 
+                    defaultAmount={paymentParams?.amount}
+                    defaultCategory={paymentParams?.category}
+                    pendingFees={pendingFees}
+                    studentProfile={studentProfile}
+                />
             </div>
         )
     }
 
-    const pendingTotal = realPayments.filter(p => p.status === 'PENDING').reduce((acc, p) => acc + p.amount, 0)
+    const pendingTotal = pendingFees.reduce((acc, p) => acc + p.amount, 0)
+    const successTotal = realPayments.filter(p => p.status === 'SUCCESS').reduce((acc, p) => acc + p.amount, 0)
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8">
-            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Payments & Invoices</h1>
+        <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight">Payments & Invoices</h1>
+                {loading && (
+                    <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />
+                )}
+            </div>
 
-            {/* Total Due Card */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 relative overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                <div className="absolute top-0 right-0 p-8 opacity-10">
-                    <DollarSign size={120} className="text-emerald-500" />
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Total Due Card - Premium Redesign */}
+                <div className={`
+                    relative overflow-hidden shadow-2xl rounded-[2rem] p-8 flex-1 border transition-all duration-700
+                    ${pendingTotal > 0 
+                        ? "bg-linear-to-br from-slate-900 to-indigo-950 dark:from-indigo-950 dark:to-slate-950 border-slate-800 shadow-indigo-500/10" 
+                        : "bg-linear-to-br from-emerald-500/5 to-emerald-600/10 dark:from-emerald-500/10 dark:to-emerald-950/20 border-emerald-500/20 shadow-emerald-500/5"}
+                `}>
+                    <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12">
+                        {pendingTotal > 0 ? (
+                            <DollarSign size={120} className="text-emerald-400" />
+                        ) : (
+                            <CheckCircle2 size={120} className="text-emerald-500" />
+                        )}
+                    </div>
+                    
+                    <div className="relative z-10 flex flex-col justify-between h-full">
+                        <div>
+                            <p className={`font-bold uppercase tracking-widest text-[10px] mb-2 ${pendingTotal > 0 ? "text-blue-200/60" : "text-emerald-600 dark:text-emerald-400"}`}>
+                                {pendingTotal > 0 ? "Outstanding Dues (Pending)" : "All Dues Settled"}
+                            </p>
+                            <div className="flex items-baseline gap-1">
+                                <span className={`text-xl font-black ${pendingTotal > 0 ? "text-emerald-400" : "text-emerald-600 dark:text-emerald-500"}`}>Tk</span>
+                                <h3 className={`text-5xl font-black tracking-tighter ${pendingTotal > 0 ? "text-white" : "text-emerald-600 dark:text-emerald-400"}`}>
+                                    {pendingTotal.toLocaleString()}
+                                </h3>
+                            </div>
+                        </div>
+
+                        {pendingTotal > 0 ? (
+                            <button
+                                onClick={() => {
+                                    setPaymentParams({ amount: pendingTotal, category: 'All Outstanding Dues' })
+                                    setShowPaymentFlow(true)
+                                }}
+                                className="mt-8 bg-emerald-500 hover:bg-emerald-400 text-white font-black py-4 px-8 rounded-2xl shadow-xl shadow-emerald-500/30 transition-all transform hover:-translate-y-1 active:scale-95 text-base w-full md:w-max"
+                            >
+                                Pay All Now
+                            </button>
+                        ) : (
+                            <div className="mt-8 flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-bold text-sm bg-emerald-500/10 w-max px-4 py-2 rounded-xl border border-emerald-500/20">
+                                <CheckCircle2 className="w-4 h-4" /> You're all caught up!
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6 text-white">
-                    <div>
-                        <p className="text-slate-400 font-medium mb-1">Total Outstanding Dues (Pending)</p>
-                        <h3 className="text-5xl font-bold tracking-tight text-emerald-400">৳ {pendingTotal.toLocaleString()}</h3>
-                        <p className="text-slate-500 text-sm mt-2">Update based on your recent activity</p>
+                {/* Total Paid Card */}
+                <div className="bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-[2rem] p-8 relative overflow-hidden shadow-sm flex-1">
+                    <div className="absolute top-0 right-0 p-8 opacity-5">
+                        <RefreshCw size={120} className="text-blue-500" />
                     </div>
-
-                    <button
-                        onClick={() => setShowPaymentFlow(true)}
-                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-emerald-900/20 transition-all transform hover:-translate-y-0.5"
-                    >
-                        Pay Now via Online
-                    </button>
+                    
+                    <div className="relative z-10 flex flex-col justify-center h-full">
+                        <div>
+                            <p className="text-[var(--color-text-muted)] font-black uppercase tracking-widest text-[10px] mb-2">Total Payments Made</p>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-black text-blue-500">Tk</span>
+                                <h3 className="text-5xl font-black tracking-tighter text-[var(--color-text-primary)]">{successTotal.toLocaleString()}</h3>
+                            </div>
+                        </div>
+                        <p className="text-[var(--color-text-muted)] text-[11px] mt-6 font-bold flex items-center gap-2">
+                             <span className="w-2 h-2 bg-emerald-500 rounded-full" /> Lifetime successful transactions
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            {/* Payment History */}
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-slate-400" /> Real-time Payment History
+            {/* Payment History Table - Theme Optimized */}
+            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border-light)] rounded-[2rem] shadow-sm overflow-hidden">
+                <div className="px-8 py-6 border-b border-[var(--color-border-light)] flex justify-between items-center bg-[var(--color-bg-page)]/30 backdrop-blur-sm">
+                    <h3 className="font-black text-[var(--color-text-primary)] flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                            <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        Real-time Payment History
                     </h3>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={async () => {
-                                setLoading(true)
-                                const data = await getPayments()
-                                setRealPayments(data)
-                                setLoading(false)
-                            }}
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 border-blue-100 bg-blue-50 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors"
-                        >
-                            Refresh History
-                        </button>
-                    </div>
+                    <button
+                        onClick={loadPayments}
+                        disabled={loading}
+                        className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:opacity-80 border border-blue-500/20 bg-blue-50 dark:bg-blue-900/10 px-4 py-2 rounded-xl transition-all active:scale-95 disabled:opacity-50"
+                    >
+                        Refresh History
+                    </button>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left text-slate-600">
-                        <thead className="text-xs text-slate-500 uppercase bg-slate-50/50">
-                            <tr>
-                                <th className="px-6 py-4 font-semibold">Transaction ID</th>
-                                <th className="px-6 py-4 font-semibold">Date</th>
-                                <th className="px-6 py-4 font-semibold">Category</th>
-                                <th className="px-6 py-4 font-semibold">Amount</th>
-                                <th className="px-6 py-4 font-semibold">Status</th>
-                                <th className="px-6 py-4 font-semibold">Method</th>
-                                <th className="px-6 py-4 font-semibold text-right">Action</th>
+                <div className="overflow-x-auto p-4 md:p-6">
+                    <table className="w-full text-sm text-left">
+                        <thead>
+                            <tr className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest border-b border-[var(--color-border-light)]">
+                                <th className="px-4 py-3 font-black">Transaction ID</th>
+                                <th className="px-4 py-3 font-black text-center">Date</th>
+                                <th className="px-4 py-3 font-black">Category</th>
+                                <th className="px-4 py-3 font-black">Amount</th>
+                                <th className="px-4 py-3 font-black">Status</th>
+                                <th className="px-4 py-3 font-black text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {loading ? (
+                        <tbody className="divide-y divide-[var(--color-border-light)]">
+                            {loading && realPayments.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400">Loading payment history...</td>
+                                    <td colSpan={6} className="px-6 py-20 text-center text-[var(--color-text-muted)] italic font-medium">Looking for records...</td>
                                 </tr>
                             ) : realPayments.map((payment: any) => (
-                                <tr key={payment.id} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-6 py-4 font-mono font-medium text-slate-600 text-[10px]">{payment.transactionId}</td>
-                                    <td className="px-6 py-4 text-slate-500 text-[11px]">{new Date(payment.createdAt).toLocaleDateString()}</td>
-                                    <td className="px-6 py-4 font-medium text-slate-800">{payment.feeCategory}</td>
-                                    <td className="px-6 py-4 font-bold text-slate-800">৳ {payment.amount.toLocaleString()}</td>
-                                    <td className="px-6 py-4">
+                                <tr key={payment.id} className="hover:bg-[var(--color-bg-page)]/50 transition-all group">
+                                    <td className="px-4 py-5">
+                                        <span className="font-mono font-bold text-[11px] text-[var(--color-text-muted)] group-hover:text-blue-500 transition-colors">
+                                            #{payment.transactionId}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-5 text-center">
+                                        <div className="text-[var(--color-text-primary)] font-bold text-[11px]">
+                                            {new Date(payment.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-5">
+                                        <div className="font-black text-[var(--color-text-primary)] tracking-tight">
+                                            {payment.feeCategory}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-5">
+                                        <div className="font-black text-[var(--color-text-primary)] flex items-center gap-1">
+                                            <span className="text-[10px] text-[var(--color-text-muted)]">Tk</span>
+                                            {payment.amount.toLocaleString()}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-5">
                                         <span className={`
-                                            inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase
-                                            ${payment.status === "SUCCESS" ? "bg-emerald-100 text-emerald-700" :
-                                                payment.status === "PENDING" ? "bg-amber-100 text-amber-700" :
-                                                    "bg-red-100 text-red-700"}
+                                            inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-wide uppercase
+                                            ${payment.status === "SUCCESS" ? "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400" :
+                                                payment.status === "PENDING" ? "bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400" :
+                                                    "bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400"}
                                         `}>
                                             <span className={`w-1.5 h-1.5 rounded-full mr-2 
                                                 ${payment.status === "SUCCESS" ? "bg-emerald-500" :
                                                     payment.status === "PENDING" ? "bg-amber-500" :
-                                                        "bg-red-500"}
+                                                        "bg-rose-500"}
                                             `}></span>
                                             {payment.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-slate-500 text-xs">{payment.method || 'Online'}</td>
-                                    <td className="px-6 py-4 text-right">
+                                    <td className="px-4 py-5 text-right">
                                         <button
                                             onClick={() => setSelectedPayment(payment)}
-                                            className="text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-100 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                                            className="text-[var(--color-text-primary)] hover:text-blue-500 font-black text-[10px] uppercase tracking-widest border border-[var(--color-border-light)] bg-[var(--color-bg-card)] px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95"
                                         >
                                             Details
                                         </button>
@@ -146,8 +236,13 @@ function PaymentsContent() {
                 </div>
 
                 {!loading && realPayments.length === 0 && (
-                    <div className="p-12 text-center text-slate-500">
-                        No real-time payment history found in database.
+                    <div className="py-20 text-center flex flex-col items-center gap-4">
+                        <div className="w-16 h-16 bg-[var(--color-bg-page)] rounded-full flex items-center justify-center">
+                            <Clock className="w-8 h-8 text-[var(--color-text-muted)]" />
+                        </div>
+                        <p className="text-[var(--color-text-muted)] font-bold italic tracking-tight underline decoration-blue-500/20 underline-offset-8">
+                            No payment records found
+                        </p>
                     </div>
                 )}
             </div>
@@ -164,7 +259,7 @@ function PaymentsContent() {
 
 export default function PaymentsPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div className="p-20 text-center font-bold text-blue-500 animate-pulse">Initializing Financial Gateway...</div>}>
             <PaymentsContent />
         </Suspense>
     )
