@@ -42,8 +42,6 @@ model School {
   subscriptions    Subscription[]
 }
 
-
-
 model Subscription {
   id            String    @id @default(cuid())
   transactionId String    @unique
@@ -350,17 +348,17 @@ model Payment {
 }
 
 model SupportOption {
-  id           String   @id @default(cuid())
-  title        String
-  description  String   @db.Text
-  iconName     String   // Lucide আইকনের নাম (যেমন: 'MessageCircle', 'Mail')
-  status       String   // ডিজাইনের ব্যাজ (যেমন: 'Coming Soon', 'Active', '24/7', 'Urgent')
-  accentColor  String   // ডিজাইনের কালার কী (যেমন: 'blue', 'purple', 'emerald', 'amber')
-  actionLabel  String   @default("Contact Now")
-  link         String   @default("#")
-  order        Int      @default(0) // কার্ডের সিরিয়াল কন্ট্রোল করার জন্য
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  iconName    String // Lucide আইকনের নাম (যেমন: 'MessageCircle', 'Mail')
+  status      String // ডিজাইনের ব্যাজ (যেমন: 'Coming Soon', 'Active', '24/7', 'Urgent')
+  accentColor String // ডিজাইনের কালার কী (যেমন: 'blue', 'purple', 'emerald', 'amber')
+  actionLabel String   @default("Contact Now")
+  link        String   @default("#")
+  order       Int      @default(0) // কার্ডের সিরিয়াল কন্ট্রোল করার জন্য
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model SupportFAQ {
@@ -477,6 +475,7 @@ enum Role {
   parent
   accountant
 }
+
 enum UserStatus {
   active
   blocked
@@ -510,22 +509,61 @@ model Notification {
   userId    String
   user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
   isRead    Boolean  @default(false)
-  link      String?  // Optional target URL (e.g., /dashboard/student/result)
+  link      String? // Optional target URL (e.g., /dashboard/student/result)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
 }
 
-// Global configuration for the system (used by super admin dashboard)
-model SystemConfig {
-  id          String   @id @default("system_config")
-  siteName    String?
-  siteSubtitle String?
-  siteLogo    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model QuizRoom {
+  id           String   @id @default(cuid())
+  roomCode     String   @unique
+  roomTitle    String
+  teacherEmail String
+  category     String?
+  currentClass String?
+  duration     String?
+  exam         Boolean  @default(false)
+  schoolId     String?
+  questions    Json     @default("[]")
+  payload      Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([teacherEmail])
+  @@index([createdAt])
 }
 
+model QuizSubmission {
+  id             String   @id @default(cuid())
+  questionID     String
+  studentName    String
+  studentEmail   String
+  schoolId       String?
+  examSubject    String?
+  teacherEmail   String?
+  roomCode       String
+  totalMark      Int
+  totalQuestions Int
+  studentAnswers Json?
+  submittedAt    DateTime @default(now())
+  createdAt      DateTime @default(now())
 
+  @@unique([roomCode, studentEmail])
+  @@index([questionID])
+  @@index([studentEmail])
+  @@index([teacherEmail])
+  @@index([schoolId])
+  @@index([submittedAt])
+}
 
+// Global configuration for the system (used by super admin dashboard)
+model SystemConfig {
+  id           String   @id @default("system_config")
+  siteName     String?
+  siteSubtitle String?
+  siteLogo     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
