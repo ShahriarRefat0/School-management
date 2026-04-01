@@ -3,7 +3,7 @@ import { getAllSchools } from "@/app/actions/school"
 import React, { useEffect, useState } from 'react'
 import {
   Building2,
-  Users,
+ 
   Wallet,
   AlertTriangle,
   TrendingUp,
