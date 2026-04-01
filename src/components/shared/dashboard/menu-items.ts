@@ -143,9 +143,9 @@ export const superAdminMenuItems: DashboardMenuItem[] = [
     icon: LifeBuoy,
   },
   {
-    title: 'Add Users',
+    title: 'System Settings',
     url: '/dashboard/super-admin/add-users',
-    icon: Settings2,
+    icon: Settings,
   },
 ];
 

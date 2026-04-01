@@ -123,3 +123,85 @@ export async function updateSystemConfig(data: any) {
 
 
 
+
+// ৫. সুপার এডমিন ড্যাশবোর্ড ওভারভিউ ডাটা
+export async function getSuperAdminDashboardData() {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const [totalSchools, activeSubscriptions, monthlyRevenue, totalRevenue, expiringSoon, schoolsData] = await Promise.all([
+      prisma.school.count(),
+      prisma.subscription.count({
+        where: { status: "SUCCESS", endDate: { gte: now } }
+      }),
+      prisma.subscription.aggregate({
+        where: { status: "SUCCESS", createdAt: { gte: startOfMonth } },
+        _sum: { amount: true }
+      }),
+      prisma.subscription.aggregate({
+        where: { status: "SUCCESS" },
+        _sum: { amount: true }
+      }),
+      prisma.subscription.findMany({
+        where: { status: "SUCCESS", endDate: { gte: now, lte: in7Days } },
+        include: { school: true },
+        orderBy: { endDate: "asc" },
+        take: 5
+      }),
+      prisma.school.findMany({
+        select: { plan: true }
+      })
+    ]);
+
+    // Revenue Growth (Last 6 Months)
+    const revenueGrowth = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const monthRevenue = await prisma.subscription.aggregate({
+        where: { status: "SUCCESS", createdAt: { gte: d, lte: end } },
+        _sum: { amount: true }
+      });
+      revenueGrowth.push({
+        name: d.toLocaleString('default', { month: 'short' }),
+        amount: monthRevenue._sum.amount || 0
+      });
+    }
+
+    // Plan Distribution
+    const planCounts = schoolsData.reduce((acc: any, school: any) => {
+      acc[school.plan] = (acc[school.plan] || 0) + 1;
+      return acc;
+    }, {});
+
+    const total = schoolsData.length || 1;
+    const planDistribution = [
+      { name: "Basic", value: Math.round(((planCounts.basic || 0) / total) * 100), color: "#3b82f6" },
+      { name: "Premium", value: Math.round(((planCounts.premium || 0) / total) * 100), color: "#8b5cf6" },
+      { name: "Enterprise", value: Math.round(((planCounts.enterprise || 0) / total) * 100), color: "#10b981" }
+    ];
+
+    return {
+      success: true,
+      data: {
+        totalSchools,
+        activeSubscriptions,
+        monthlyRevenue: monthlyRevenue._sum.amount || 0,
+        totalRevenue: totalRevenue._sum.amount || 0,
+        expiringSoonCount: expiringSoon.length,
+        expiringSoonList: expiringSoon.map((s: any) => ({
+          schoolName: s.school.schoolName,
+          expiryDate: s.endDate,
+          plan: s.planName
+        })),
+        planDistribution,
+        revenueGrowth
+      }
+    };
+  } catch (error: any) {
+    console.error("Dashboard Stats Error:", error);
+    return { success: false, error: error.message };
+  }
+}
