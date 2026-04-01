@@ -300,7 +300,6 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      {/* Logout Modal - এটি সব সময় ডার্ক থাকবে */}
       <AnimatePresence>
         {showLogoutModal && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
