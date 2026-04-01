@@ -171,7 +171,7 @@ export default function AttendancePage() {
               </thead>
 
               <tbody className="divide-y divide-border-light">
-                {attendanceLog.map((log, idx) => (
+                {attendanceLog.map((log: any, idx: number) => (
                   <tr
                     key={idx}
                     className="hover:bg-bg-page/80 transition-colors group animate-fadeInSlide"

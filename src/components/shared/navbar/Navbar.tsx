@@ -21,6 +21,11 @@ const Navbar = () => {
   const { user, role, signOut } = useAuth();
   const router = useRouter();
 
+  const navBg = "bg-bg-page dark:bg-slate-900";
+  const borderCol = "border-border-light dark:border-slate-800";
+  const textMuted = "text-text-muted dark:text-slate-400";
+  const textMain = "text-text-primary dark:text-white";
+
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -48,7 +53,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50  backdrop-blur-xl border-b  transition-all duration-300`}
+      className={`fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80  backdrop-blur-xl shadow transition-all duration-300`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -138,7 +143,7 @@ const Navbar = () => {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className={`absolute right-0 mt-2 w-52 rounded-2xl border  p-2 shadow-2xl z-[70]`}
+                        className={`absolute right-0 mt-2 w-52 rounded-2xl border border-gray-300  p-2 shadow-2xl z-[70]`}
                       >
                         <div
                           className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest border-b  mb-1`}
