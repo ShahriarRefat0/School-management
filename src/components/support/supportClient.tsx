@@ -8,6 +8,7 @@ import { ChevronDown, ArrowRight, HelpCircle, MessageCircle, Book, Video, Shield
 
 const SupportClient = ({ initialOptions }: { initialOptions: any[] }) => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // FAQ Data - Aro ektu informative kora hoyeche
   const faqs = [
@@ -66,6 +67,10 @@ const SupportClient = ({ initialOptions }: { initialOptions: any[] }) => {
             
             return (
               <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
                 key={option.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
