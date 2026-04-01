@@ -1,6 +1,6 @@
 "use client"
 import React from 'react'
-import { Calendar, CheckCircle, Clock, Search, AlertCircle } from 'lucide-react'
+import { Calendar, CheckCircle, Clock} from 'lucide-react'
 
 const subscriptions = [
   { id: 1, school: "Ideal High School", plan: "Pro", expiry: "2023-11-15", status: "Active", payment: "Verified" },
