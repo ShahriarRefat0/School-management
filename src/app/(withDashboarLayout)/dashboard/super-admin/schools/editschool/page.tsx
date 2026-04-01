@@ -1,10 +1,10 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import { 
-  Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
-  Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon, Save, Trash2
+  Building, Globe, Mail, 
+  Facebook,Phone, MapPin, ArrowLeft, CreditCard,  Link as LinkIcon, Save
 } from 'lucide-react' // বা lucide-react
-import { updateSchool, deleteSchool } from '@/app/actions/school' 
+import { updateSchool } from '@/app/actions/school' 
 import { getPlans } from '@/app/actions/plans'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/navigation'
@@ -17,7 +17,6 @@ export default function EditSchool({ initialData }: EditSchoolProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  // ১. সব ফিল্ড স্টেট হিসেবে ডিফাইন করা
   const [formData, setFormData] = useState({
     schoolName: '',
     slug: '',

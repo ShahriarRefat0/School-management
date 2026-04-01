@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { 
   Save, Zap, Users, UserRound, HardDrive, 
   ArrowLeft, Loader2, Shield, Crown, 
-  Star, Rocket, Gem, Sparkles, Globe, Heart
+  Star, Rocket, Gem, Sparkles, Globe
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

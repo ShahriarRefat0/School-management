@@ -1,4 +1,5 @@
 import { getCollection } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
@@ -9,7 +10,7 @@ const serializeResult = (result) => ({
 
 export async function POST(request) {
     try {
-        const { roomCode, studentAnswers, studentEmail, studentName, questionID } = await request.json();
+        const { roomCode, studentAnswers, studentEmail, studentName, questionID, schoolId } = await request.json();
 
         if (!roomCode || !studentAnswers || !studentEmail || !studentName) {
             return NextResponse.json({ success: false, message: "roomCode, studentAnswers, studentEmail and studentName are required" }, { status: 400 });
@@ -17,6 +18,7 @@ export async function POST(request) {
 
         const examsCollection = await getCollection("questions");
         const resultsCollection = await getCollection("results");
+        const currentUser = await getCurrentUser();
 
         // ডাটাবেস থেকে আসল উত্তরসহ এক্সাম ডাটা আনা
         const exam = await examsCollection.findOne({ roomCode: roomCode });
@@ -46,6 +48,7 @@ export async function POST(request) {
             questionID: examQuestionId,
             studentName,
             studentEmail,
+            schoolId: currentUser?.schoolId ?? schoolId ?? exam?.schoolId ?? null,
             examSubject: exam.roomTitle,
             teacherEmail: exam.teacherEmail,
             roomCode,
@@ -78,6 +81,7 @@ export async function GET(request) {
         const teacherEmail = searchParams.get("teacherEmail"); // টিচার ইমেইল
         const questionID = searchParams.get("questionID");
         const roomCode = searchParams.get("roomCode");
+        const scope = searchParams.get("scope");
 
         const resultsCollection = await getCollection("results");
 
@@ -86,6 +90,21 @@ export async function GET(request) {
         if (teacherEmail) query.teacherEmail = teacherEmail.toLowerCase();
         if (questionID) query.questionID = questionID;
         if (roomCode) query.roomCode = roomCode;
+
+        // Teacher dashboard MCQ Results: only show results from the teacher's school.
+        if (scope === "teacherSchool") {
+            const currentUser = await getCurrentUser();
+
+            if (!currentUser) {
+                return NextResponse.json({ success: false, message: "Authentication required" }, { status: 401 });
+            }
+
+            if (!currentUser.schoolId) {
+                return NextResponse.json({ success: false, message: "Teacher school is not configured" }, { status: 400 });
+            }
+
+            query.schoolId = currentUser.schoolId;
+        }
 
         const results = await resultsCollection.find(query).sort({ submittedAt: -1 }).toArray();
 

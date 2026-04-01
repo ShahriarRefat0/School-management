@@ -1,8 +1,8 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import {
-    Building, Globe, Mail, ShieldCheck, User, Lock, AtSign, Plus,
-    Layers, Users, FileText, Facebook, Layout, Languages, Phone, MapPin, ArrowLeft, CreditCard, Calendar, Link as LinkIcon
+    Building, Globe, Mail, ShieldCheck, Lock, 
+     Users,  Facebook,  Phone, MapPin, ArrowLeft, CreditCard, Link as LinkIcon
 } from 'lucide-react'
 import { z } from 'zod'
 import { createSchool } from '@/app/actions/school'

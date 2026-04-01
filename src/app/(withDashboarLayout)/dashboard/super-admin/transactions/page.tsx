@@ -9,8 +9,7 @@ export default function SuperAdminTransactions() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Prisma থেকে ডাটা লোড করার জন্য এটি সাধারণত একটি সার্ভার একশন বা API থেকে হবে
-  // সহজ করার জন্য এখানে সরাসরি API কল বা ডেটা ফেচিং মেকানিজম সিমুলেট করছি
+ 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {

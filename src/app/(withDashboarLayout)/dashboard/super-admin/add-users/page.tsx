@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { UserCircle, Loader2, Plus, Trash2, X, Globe, Save, Upload, Link as LinkIcon } from 'lucide-react'
+import { Loader2, Plus, Trash2, X, Globe, Save, Link as LinkIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Swal from 'sweetalert2'
 import { 

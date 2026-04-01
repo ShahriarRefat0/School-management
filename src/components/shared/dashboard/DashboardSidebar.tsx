@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation"
 import Logo from "@/components/shared/logo/logo"
 import { LogOut } from "lucide-react"
 import { DashboardMenuItem } from "./types"
-import { motion } from "framer-motion"
 
 interface DashboardSidebarProps {
     menuItems: DashboardMenuItem[]

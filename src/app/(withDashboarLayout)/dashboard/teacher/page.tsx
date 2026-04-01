@@ -9,13 +9,12 @@ import {
   Bell,
   Calendar,
   Clock,
-  MapPin,
-  ArrowRight,
   Loader2,
   Users,
   X,
   CheckCircle2,
   XCircle,
+  BarChart3,
 } from 'lucide-react';
 import { TeacherHeader } from './TeacherHeader';
 import { getTeacherDashboardData } from '@/app/actions/teacher/dashboard';
@@ -25,7 +24,6 @@ import {
   saveAttendance,
 } from '@/app/actions/teacher/attendance';
 import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
 
 export default function TeacherOverview() {
   const [data, setData] = useState<any>(null);
@@ -252,7 +250,7 @@ export default function TeacherOverview() {
           <div className="w-1.5 h-6 bg-primary rounded-full"></div>
           Quick Actions
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
           <Link
             href="/dashboard/teacher/attendance"
             className="flex flex-col items-center justify-center p-4 bg-bg-page border border-border-light rounded-2xl hover:border-primary/40 hover:bg-primary/[0.02] transition-all group"
@@ -319,11 +317,16 @@ export default function TeacherOverview() {
               My Exams
             </span>
           </Link>
-          <Link href="/dashboard/teacher/schedule" className="flex flex-col items-center justify-center p-4 bg-bg-page border border-border-light rounded-2xl hover:border-primary/40 hover:bg-primary/[0.02] transition-all group">
-            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-3 group-hover:scale-110 transition-transform">
-              <Calendar size={24} />
+          <Link
+            href="/dashboard/teacher/mcq-results"
+            className="flex flex-col items-center justify-center p-4 bg-bg-page border border-border-light rounded-2xl hover:border-primary/40 hover:bg-primary/[0.02] transition-all group"
+          >
+            <div className="w-12 h-12 bg-sky-50 dark:bg-sky-900/20 rounded-xl flex items-center justify-center text-sky-600 dark:text-sky-400 mb-3 group-hover:scale-110 transition-transform">
+              <BarChart3 size={24} />
             </div>
-            <span className="text-xs font-bold text-text-secondary group-hover:text-primary">Manage Schedule</span>
+            <span className="text-xs font-bold text-text-secondary group-hover:text-primary text-center leading-tight">
+              MCQ Results
+            </span>
           </Link>
         </div>
       </div>

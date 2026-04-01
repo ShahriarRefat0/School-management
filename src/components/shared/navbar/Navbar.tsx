@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Logo from '@/components/shared/logo/logo';
 import {
@@ -17,9 +17,12 @@ import { useAuth } from '@/hooks/useAuth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const { user, role, signOut } = useAuth();
   const router = useRouter();
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement | null>(null);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const profileToggleRef = useRef<HTMLButtonElement | null>(null);
 
   const navBg = "bg-bg-page dark:bg-slate-900";
   const borderCol = "border-border-light dark:border-slate-800";
@@ -29,15 +32,29 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  const rawRole = (role || user?.user_metadata?.role || 'user') as string;
+  const displayRole = rawRole
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char: string) => char.toUpperCase());
+
+  const displayName =
+    user?.name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    (typeof user?.email === 'string' ? user.email.split('@')[0] : 'User');
+
+  const userInitials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase())
+    .join('');
+
   const handleLogout = async () => {
     await signOut();
     setShowLogoutModal(false);
     router.replace('/');
   };
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleClickLogo = (e: React.MouseEvent) => {
     if (window.location.pathname === '/') {
@@ -51,6 +68,45 @@ const Navbar = () => {
     // The main nav bar skeleton will still render SSR.
   }
 
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+
+      if (
+        isOpen &&
+        !mobileMenuRef.current?.contains(target) &&
+        !mobileToggleRef.current?.contains(target)
+      ) {
+        setIsOpen(false);
+      }
+
+      if (
+        isProfileOpen &&
+        !profileMenuRef.current?.contains(target) &&
+        !profileToggleRef.current?.contains(target)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, isProfileOpen]);
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80  backdrop-blur-xl shadow transition-all duration-300`}
@@ -60,6 +116,7 @@ const Navbar = () => {
           {/* LEFT: Hamburger (mobile) + Logo */}
           <div className="flex items-center gap-3">
             <button
+              ref={mobileToggleRef}
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 rounded-lg bg-slate-800 text-blue-400 transition-all"
             >
@@ -99,12 +156,7 @@ const Navbar = () => {
           <div className="flex items-center gap-3 sm:gap-5">
             <ThemeToggle />
 
-            {!mounted ? (
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:block w-12 h-8 bg-border-light/30 animate-pulse rounded-lg"></div>
-                <div className="hidden md:block w-24 h-9 bg-border-light/30 animate-pulse rounded-full"></div>
-              </div>
-            ) : !user ? (
+            {!user ? (
               <>
                 <Link
                   href="/login"
@@ -121,11 +173,20 @@ const Navbar = () => {
             ) : (
               <div className="relative">
                 <button
+                  ref={profileToggleRef}
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className={`flex items-center gap-2 p-1 pr-2 rounded-xl border-2 border-blue-500/20 bg-slate-900 shadow-sm min-w-[75px] justify-center hover:border-blue-500/40 transition-all`}
                 >
                   <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
-                    {user?.name?.substring(0, 2).toUpperCase() || 'SR'}
+                    {userInitials || 'SR'}
+                  </div>
+                  <div className="hidden md:flex flex-col items-start leading-tight pr-1">
+                    <span className="text-xs font-bold text-white max-w-[110px] truncate">
+                      {displayName}
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-blue-300">
+                      {displayRole}
+                    </span>
                   </div>
                   <ChevronDown
                     className={`h-3 w-3 text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}
@@ -134,11 +195,7 @@ const Navbar = () => {
 
                 <AnimatePresence>
                   {isProfileOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-[60]"
-                        onClick={() => setIsProfileOpen(false)}
-                      />
+                    <div ref={profileMenuRef}>
                       <motion.div
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -150,6 +207,16 @@ const Navbar = () => {
                         >
                           Account
                         </div>
+                        <div
+                          className={`px-3 py-2 mb-1 rounded-xl bg-slate-800/60 border ${borderCol}`}
+                        >
+                          <p className="text-sm font-bold text-white truncate">
+                            {displayName}
+                          </p>
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5">
+                            {displayRole}
+                          </p>
+                        </div>
                         <Link
                           href={
                             role === 'parent'
@@ -160,7 +227,9 @@ const Navbar = () => {
                                   ? '/dashboard/teacher'
                                   : '/dashboard'
                           }
-                          className={`flex items-center gap-3 w-full px-3 py-3 text-sm font-bold hover:bg-slate-800 rounded-xl transition-all`}
+                            
+                            
+                          className={`flex items-center gap-3 w-full px-3 py-3 text-sm font-bold ${textMain} hover:bg-slate-800 rounded-xl transition-all`}
                         >
                           <LucideLayoutDashboard
                             size={18}
@@ -176,9 +245,10 @@ const Navbar = () => {
                           className="flex items-center gap-3 w-full px-3 py-3 text-sm font-black text-red-400 hover:bg-red-950/30 rounded-xl transition-all"
                         >
                           <LogOut size={18} /> Log out
-                        </button>
+                          </button>
+                          
                       </motion.div>
-                    </>
+                    </div>
                   )}
                 </AnimatePresence>
               </div>
@@ -190,49 +260,52 @@ const Navbar = () => {
       {/* Mobile Dropdown */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`md:hidden ${navBg} border-b ${borderCol} shadow-xl`}
-          >
-            <div className="px-4 pt-2 pb-6 space-y-2">
-              {[
-                { label: 'Why Choose Us', href: '/why-choose-us' },
-                { label: 'Pricing', href: '/pricing' },
-                { label: 'Support', href: '/support' },
-                { label: 'Privacy', href: '/privacy' },
-                { label: 'Contact', href: '/contact' },
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`block ${textMuted} font-semibold hover:text-blue-400 transition-colors py-2`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              {mounted && !user && (
-                <div className="pt-4 flex flex-col gap-3">
-                  <Link href="/login" onClick={() => setIsOpen(false)}>
-                    <button className="w-full bg-slate-800 text-blue-400 font-bold py-3 rounded-xl">
-                      Login
-                    </button>
+          <div className="md:hidden relative z-40">
+            <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" />
+            <motion.div
+              ref={mobileMenuRef}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={`relative z-50 ${navBg} border-b ${borderCol} shadow-xl`}
+            >
+              <div className="px-4 pt-2 pb-6 space-y-2">
+                {[
+                  { label: 'Why Choose Us', href: '/why-choose-us' },
+                  { label: 'Pricing', href: '/pricing' },
+                  { label: 'Support', href: '/support' },
+                  { label: 'Privacy', href: '/privacy' },
+                  { label: 'Contact', href: '/contact' },
+                ].map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`block ${textMuted} font-semibold hover:text-blue-400 transition-colors py-2`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.label}
                   </Link>
-                  <Link href="/live-demo" onClick={() => setIsOpen(false)}>
-                    <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">
-                      Live Demo
-                    </button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          </motion.div>
+                ))}
+                {!user && (
+                  <div className="pt-4 flex flex-col gap-3">
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      <button className="w-full bg-slate-800 text-blue-400 font-bold py-3 rounded-xl">
+                        Login
+                      </button>
+                    </Link>
+                    <Link href="/live-demo" onClick={() => setIsOpen(false)}>
+                      <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">
+                        Live Demo
+                      </button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* Logout Modal - এটি সব সময় ডার্ক থাকবে */}
       <AnimatePresence>
         {showLogoutModal && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">

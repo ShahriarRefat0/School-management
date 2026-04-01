@@ -7,9 +7,9 @@ interface LogoProps {
     className?: string
     variant?: "light" | "dark" | "blue"
     size?: "sm" | "md" | "lg"
-    title?: string // ডাইনামিক নাম
-    subtitle?: string // ডাইনামিক সাবটাইটেল
-    logoUrl?: string | null // ডাটাবেস থেকে আসা লোগো ইমেজ
+    title?: string
+    subtitle?: string 
+    logoUrl?: string | null
 }
 
 export default function Logo({ 
@@ -38,7 +38,6 @@ export default function Logo({
 
     return (
         <div className={`flex items-center font-black ${currentSize.gap} ${currentSize.text} ${textColorClass} ${className}`}>
-            {/* আইকন বক্স বা ইমেজ */}
             <div className={`flex ${currentSize.container} items-center justify-center bg-blue-600 text-white shadow-lg shadow-blue-600/20 overflow-hidden`}>
                 {logoUrl ? (
                     <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
@@ -47,7 +46,6 @@ export default function Logo({
                 )}
             </div>
             
-            {/* টেক্সট (যদি title/subtitle না থাকে তবে ডিফল্ট Schoology BD দেখাবে) */}
             <div className="flex flex-col leading-tight">
                 <span className="tracking-tighter">
                     {title || "Schoology"}<span className="text-blue-500 ml-0.5">{subtitle || "BD"}</span>
