@@ -1,16 +1,28 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
-import { Loader2, DollarSign, BookOpen, AlertCircle, Layers, Plus, Trash2 } from "lucide-react";
-import { getAccountantClasses, getSectionsByClass, assignClassFee } from "@/app/actions/accountant/fee";
-import toast from "react-hot-toast";
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Loader2,
+  DollarSign,
+  BookOpen,
+  AlertCircle,
+  Layers,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+import {
+  getAccountantClasses,
+  getSectionsByClass,
+  assignClassFee,
+} from '@/app/actions/accountant/fee';
+import toast from 'react-hot-toast';
 
 const COMMON_FEE_TITLES = [
-  "Monthly Tuition Fee",
-  "Exam Fee",
-  "Session Fee",
-  "Library Fee",
-  "Transport Fee",
+  'Monthly Tuition Fee',
+  'Exam Fee',
+  'Session Fee',
+  'Library Fee',
+  'Transport Fee',
 ];
 
 export default function AssignFeePage() {
@@ -19,15 +31,22 @@ export default function AssignFeePage() {
   const [isLoadingClasses, setIsLoadingClasses] = useState(false);
   const [isLoadingSections, setIsLoadingSections] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
-    classId: "",
-    sectionId: "",
+    classId: '',
+    sectionId: '',
   });
 
   // State for multiple fees
-  const [feeInputs, setFeeInputs] = useState<{ id: string; title: string; amount: string; custom: boolean }[]>(
-    COMMON_FEE_TITLES.map((t, i) => ({ id: `common-${i}`, title: t, amount: "", custom: false }))
+  const [feeInputs, setFeeInputs] = useState<
+    { id: string; title: string; amount: string; custom: boolean }[]
+  >(
+    COMMON_FEE_TITLES.map((t, i) => ({
+      id: `common-${i}`,
+      title: t,
+      amount: '',
+      custom: false,
+    })),
   );
 
   useEffect(() => {
@@ -39,7 +58,7 @@ export default function AssignFeePage() {
       loadSections(formData.classId);
     } else {
       setSections([]);
-      setFormData(prev => ({ ...prev, sectionId: "" }));
+      setFormData((prev) => ({ ...prev, sectionId: '' }));
     }
   }, [formData.classId]);
 
@@ -49,7 +68,7 @@ export default function AssignFeePage() {
     if (res.success) {
       setClasses(res.data || []);
     } else {
-      toast.error(res.error || "Failed to load classes");
+      toast.error(res.error || 'Failed to load classes');
     }
     setIsLoadingClasses(false);
   };
@@ -60,28 +79,32 @@ export default function AssignFeePage() {
     if (res.success) {
       setSections(res.data || []);
     } else {
-      toast.error(res.error || "Failed to load sections");
+      toast.error(res.error || 'Failed to load sections');
     }
     setIsLoadingSections(false);
   };
 
   const handleAmountChange = (id: string, amount: string) => {
-    setFeeInputs(prev => prev.map(f => f.id === id ? { ...f, amount } : f));
+    setFeeInputs((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, amount } : f)),
+    );
   };
 
   const handleCustomTitleChange = (id: string, title: string) => {
-    setFeeInputs(prev => prev.map(f => f.id === id ? { ...f, title } : f));
+    setFeeInputs((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, title } : f)),
+    );
   };
 
   const addCustomFee = () => {
-    setFeeInputs(prev => [
+    setFeeInputs((prev) => [
       ...prev,
-      { id: `custom-${Date.now()}`, title: "", amount: "", custom: true }
+      { id: `custom-${Date.now()}`, title: '', amount: '', custom: true },
     ]);
   };
 
   const removeCustomFee = (id: string) => {
-    setFeeInputs(prev => prev.filter(f => f.id !== id));
+    setFeeInputs((prev) => prev.filter((f) => f.id !== id));
   };
 
   const totalAmount = useMemo(() => {
@@ -95,16 +118,16 @@ export default function AssignFeePage() {
     e.preventDefault();
 
     if (!formData.classId) {
-      toast.error("Please select a class");
+      toast.error('Please select a class');
       return;
     }
 
     const validFees = feeInputs
-      .filter(f => f.title.trim() !== "" && parseFloat(f.amount) > 0)
-      .map(f => ({ title: f.title.trim(), amount: parseFloat(f.amount) }));
+      .filter((f) => f.title.trim() !== '' && parseFloat(f.amount) > 0)
+      .map((f) => ({ title: f.title.trim(), amount: parseFloat(f.amount) }));
 
     if (validFees.length === 0) {
-      toast.error("Please enter an amount for at least one fee");
+      toast.error('Please enter an amount for at least one fee');
       return;
     }
 
@@ -112,16 +135,23 @@ export default function AssignFeePage() {
     const res = await assignClassFee({
       classId: formData.classId,
       sectionId: formData.sectionId || undefined,
-      fees: validFees
+      fees: validFees,
     });
 
     if (res.success) {
-      toast.success(res.message || "Fees assigned successfully");
-      setFormData({ classId: "", sectionId: "" });
-      setFeeInputs(COMMON_FEE_TITLES.map((t, i) => ({ id: `common-${i}`, title: t, amount: "", custom: false })));
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      toast.success(res.message || 'Fees assigned successfully');
+      setFormData({ classId: '', sectionId: '' });
+      setFeeInputs(
+        COMMON_FEE_TITLES.map((t, i) => ({
+          id: `common-${i}`,
+          title: t,
+          amount: '',
+          custom: false,
+        })),
+      );
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      toast.error(res.error || "Failed to assign fees");
+      toast.error(res.error || 'Failed to assign fees');
     }
     setIsSubmitting(false);
   };
@@ -145,22 +175,28 @@ export default function AssignFeePage() {
 
       <div className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-200">
         <form onSubmit={handleSubmit} className="space-y-10">
-          
           {/* Target Selection Section */}
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
-              <BookOpen size={20} className="text-blue-500"/>
+              <BookOpen size={20} className="text-blue-500" />
               Target Audience
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Class Select */}
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">Select Class <span className="text-rose-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">
+                  Select Class <span className="text-rose-500">*</span>
+                </label>
                 <div className="relative group">
-                  <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+                  <BookOpen
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                    size={18}
+                  />
                   <select
                     value={formData.classId}
-                    onChange={(e) => setFormData({ ...formData, classId: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, classId: e.target.value })
+                    }
                     className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all appearance-none"
                     disabled={isLoadingClasses}
                     required
@@ -173,19 +209,30 @@ export default function AssignFeePage() {
                     ))}
                   </select>
                   {isLoadingClasses && (
-                    <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-slate-400" size={18} />
+                    <Loader2
+                      className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-slate-400"
+                      size={18}
+                    />
                   )}
                 </div>
               </div>
 
               {/* Section Select */}
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">Select Section <span className="text-slate-400">(Optional)</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">
+                  Select Section{' '}
+                  <span className="text-slate-400">(Optional)</span>
+                </label>
                 <div className="relative group">
-                  <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+                  <Layers
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                    size={18}
+                  />
                   <select
                     value={formData.sectionId}
-                    onChange={(e) => setFormData({ ...formData, sectionId: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sectionId: e.target.value })
+                    }
                     className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all appearance-none disabled:opacity-50 disabled:grayscale"
                     disabled={!formData.classId || isLoadingSections}
                   >
@@ -197,7 +244,10 @@ export default function AssignFeePage() {
                     ))}
                   </select>
                   {isLoadingSections && (
-                    <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-blue-500" size={18} />
+                    <Loader2
+                      className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-blue-500"
+                      size={18}
+                    />
                   )}
                 </div>
               </div>
@@ -208,7 +258,7 @@ export default function AssignFeePage() {
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-slate-800 flex items-center justify-between border-b border-slate-100 pb-3">
               <span className="flex items-center gap-2">
-                <DollarSign size={20} className="text-emerald-500"/>
+                <DollarSign size={20} className="text-emerald-500" />
                 Fee Amounts
               </span>
               <button
@@ -222,39 +272,49 @@ export default function AssignFeePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {feeInputs.map((fee) => (
-                <div key={fee.id} className="flex flex-col sm:flex-row gap-3 items-center p-3 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-slate-300 transition-colors">
-                  
+                <div
+                  key={fee.id}
+                  className="flex flex-col sm:flex-row gap-3 items-center p-3 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-slate-300 transition-colors"
+                >
                   {fee.custom ? (
                     <div className="flex-1 w-full relative">
                       <input
                         type="text"
                         placeholder="e.g. Picnic Fee"
                         value={fee.title}
-                        onChange={(e) => handleCustomTitleChange(fee.id, e.target.value)}
+                        onChange={(e) =>
+                          handleCustomTitleChange(fee.id, e.target.value)
+                        }
                         className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:font-medium placeholder:text-slate-400"
                       />
                     </div>
                   ) : (
                     <div className="flex-1 w-full px-2 py-2">
-                      <p className="text-sm font-bold text-slate-700">{fee.title}</p>
+                      <p className="text-sm font-bold text-slate-700">
+                        {fee.title}
+                      </p>
                     </div>
                   )}
 
                   <div className="w-full sm:w-40 relative shrink-0 flex items-center gap-2">
                     <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">Tk</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                        Tk
+                      </span>
                       <input
                         type="number"
                         placeholder="0"
                         min="0"
                         value={fee.amount}
-                        onChange={(e) => handleAmountChange(fee.id, e.target.value)}
+                        onChange={(e) =>
+                          handleAmountChange(fee.id, e.target.value)
+                        }
                         className="w-full pl-8 pr-3 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                       />
                     </div>
                     {fee.custom && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => removeCustomFee(fee.id)}
                         className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition"
                       >
@@ -268,8 +328,12 @@ export default function AssignFeePage() {
 
             {/* Total Section */}
             <div className="mt-8 flex items-center justify-between p-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-lg border border-slate-700">
-              <span className="text-slate-400 font-bold tracking-widest uppercase text-sm">Grand Total per student</span>
-              <span className="text-3xl font-black text-emerald-400">Tk {totalAmount.toLocaleString()}</span>
+              <span className="text-slate-400 font-bold tracking-widest uppercase text-sm">
+                Grand Total per student
+              </span>
+              <span className="text-3xl font-black text-emerald-400">
+                Tk {totalAmount.toLocaleString()}
+              </span>
             </div>
           </div>
 
@@ -277,8 +341,17 @@ export default function AssignFeePage() {
           <div className="p-5 bg-amber-50 rounded-2xl border border-amber-100 flex gap-4 items-start">
             <AlertCircle size={24} className="text-amber-600 shrink-0 mt-0.5" />
             <p className="text-xs font-medium text-amber-800 leading-relaxed">
-              <strong>Important:</strong> Submitting this form will generate `PENDING` payment records for <strong>every fee title with a non-zero amount</strong> for all students in the specified {formData.sectionId ? "section" : "class"}. 
-              <br/>Total records created per student: <strong>{feeInputs.filter(f => parseFloat(f.amount) > 0).length}</strong>.
+              <strong>Important:</strong> Submitting this form will generate
+              `PENDING` payment records for{' '}
+              <strong>every fee title with a non-zero amount</strong> for all
+              students in the specified{' '}
+              {formData.sectionId ? 'section' : 'class'}.
+              <br />
+              Total records created per student:{' '}
+              <strong>
+                {feeInputs.filter((f) => parseFloat(f.amount) > 0).length}
+              </strong>
+              .
             </p>
           </div>
 
@@ -288,8 +361,12 @@ export default function AssignFeePage() {
               disabled={isSubmitting || isLoadingClasses || totalAmount === 0}
               className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:shadow-xl hover:shadow-indigo-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? <Loader2 className="animate-spin" size={24} /> : null}
-              {isSubmitting ? "Processing Assignments..." : `Assign Tk ${totalAmount.toLocaleString()} to Students`}
+              {isSubmitting ? (
+                <Loader2 className="animate-spin" size={24} />
+              ) : null}
+              {isSubmitting
+                ? 'Processing Assignments...'
+                : `Assign Tk ${totalAmount.toLocaleString()} to Students`}
             </button>
           </div>
         </form>
