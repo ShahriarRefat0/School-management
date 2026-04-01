@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Logo from '@/components/shared/logo/logo';
 import {
@@ -17,22 +17,35 @@ import { useAuth } from '@/hooks/useAuth';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const { user, role, signOut } = useAuth();
   const router = useRouter();
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  const rawRole = (role || user?.user_metadata?.role || 'user') as string;
+  const displayRole = rawRole
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char: string) => char.toUpperCase());
+
+  const displayName =
+    user?.name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    (typeof user?.email === 'string' ? user.email.split('@')[0] : 'User');
+
+  const userInitials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase())
+    .join('');
+
   const handleLogout = async () => {
     await signOut();
     setShowLogoutModal(false);
     router.replace('/');
   };
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleClickLogo = (e: React.MouseEvent) => {
     if (window.location.pathname === '/') {
@@ -96,11 +109,7 @@ const Navbar = () => {
           <div className="flex items-center gap-3 sm:gap-5">
             <ThemeToggle />
 
-            {!mounted ? (
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:block w-12 h-8 bg-slate-800 animate-pulse rounded-lg"></div>
-              </div>
-            ) : !user ? (
+            {!user ? (
               <>
                 <Link
                   href="/login"
@@ -121,7 +130,15 @@ const Navbar = () => {
                   className={`flex items-center gap-2 p-1 pr-2 rounded-xl border-2 border-blue-500/20 bg-slate-900 shadow-sm min-w-[75px] justify-center hover:border-blue-500/40 transition-all`}
                 >
                   <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
-                    {user?.name?.substring(0, 2).toUpperCase() || 'SR'}
+                    {userInitials || 'SR'}
+                  </div>
+                  <div className="hidden md:flex flex-col items-start leading-tight pr-1">
+                    <span className="text-xs font-bold text-white max-w-[110px] truncate">
+                      {displayName}
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-blue-300">
+                      {displayRole}
+                    </span>
                   </div>
                   <ChevronDown
                     className={`h-3 w-3 text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}
@@ -145,6 +162,16 @@ const Navbar = () => {
                           className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest ${textMuted} border-b ${borderCol} mb-1`}
                         >
                           Account
+                        </div>
+                        <div
+                          className={`px-3 py-2 mb-1 rounded-xl bg-slate-800/60 border ${borderCol}`}
+                        >
+                          <p className="text-sm font-bold text-white truncate">
+                            {displayName}
+                          </p>
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5">
+                            {displayRole}
+                          </p>
                         </div>
                         <Link
                           href={
@@ -209,7 +236,7 @@ const Navbar = () => {
                   {item.label}
                 </Link>
               ))}
-              {mounted && !user && (
+              {!user && (
                 <div className="pt-4 flex flex-col gap-3">
                   <Link href="/login" onClick={() => setIsOpen(false)}>
                     <button className="w-full bg-slate-800 text-blue-400 font-bold py-3 rounded-xl">
