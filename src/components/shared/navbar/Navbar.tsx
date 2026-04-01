@@ -21,6 +21,11 @@ const Navbar = () => {
   const { user, role, signOut } = useAuth();
   const router = useRouter();
 
+  const navBg = "bg-bg-page dark:bg-slate-900";
+  const borderCol = "border-border-light dark:border-slate-800";
+  const textMuted = "text-text-muted dark:text-slate-400";
+  const textMain = "text-text-primary dark:text-white";
+
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
