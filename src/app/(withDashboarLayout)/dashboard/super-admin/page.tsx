@@ -1,5 +1,5 @@
 "use client"
-import { getSuperAdminDashboardData } from "@/app/actions/superadmin"
+[UPDATE]super admin[UPDATE]super adminimport { getSuperAdminDashboardData } from "@/app/actions/superadmin"
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
