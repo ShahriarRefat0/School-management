@@ -1,190 +1,191 @@
 'use client';
 
+import React from 'react';
 import {
-  LineChart as LineIcon,
-  CheckCircle2,
   GraduationCap,
-  CreditCard,
-  TrendingUp,
   BookOpen,
-  Bell,
-  MessageSquare,
+  CheckCircle2,
+  Users,
+  TrendingUp,
+  ArrowRight,
+  Info,
+  ShieldCheck,
+  Heart,
+  Loader2,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useRoleGuard } from '@/hooks/useRoleGurad';
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from 'recharts';
+// Simple className merger
+const cn = (...classes: (string | boolean | undefined)[]) => {
+  return classes.filter(Boolean).join(' ');
+};
 
-const StatCard = ({ title, value, badge, icon: Icon, index }: any) => (
+const Card = ({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
   <div
-    className="bg-bg-card p-6 rounded-xl border border-border-light transition hover:border-primary/40"
-    style={{ animationDelay: `${index * 100}ms` }}
+    className={cn(
+      'bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300',
+      className,
+    )}
   >
-    <div className="flex items-center justify-between mb-4">
-      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-        <Icon className="text-primary" size={20} />
-      </div>
-
-      {badge && (
-        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary">
-          {badge}
-        </span>
-      )}
-    </div>
-
-    <h3 className="text-sm text-text-muted">{title}</h3>
-    <p className="text-2xl font-bold text-text-primary">{value}</p>
+    {children}
   </div>
 );
 
-export default function ParentOverview() {
-  const stats = [
-    {
-      title: 'মোট উপস্থিতি',
-      value: '৯৪%',
-      icon: CheckCircle2,
-      badge: 'নিয়মিত',
-    },
-    {
-      title: 'সর্বশেষ জিপিএ',
-      value: '৪.৮৫',
-      icon: GraduationCap,
-    },
-    {
-      title: 'ফি স্ট্যাটাস',
-      value: '৳ ৩,৫০০',
-      icon: CreditCard,
-      badge: 'বকেয়া',
-    },
-  ];
+const FeatureCard = ({
+  title,
+  desc,
+  icon: Icon,
+  iconBg,
+  iconColor,
+  link,
+}: any) => (
+  <Link href={link || '#'}>
+    <Card className="p-6 group cursor-pointer h-full border-b-4 border-b-transparent hover:border-b-blue-600">
+      <div className="flex flex-col gap-4">
+        <div
+          className={cn(
+            'w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110',
+            iconBg,
+          )}
+        >
+          <Icon className={iconColor} size={24} />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-gray-800 mb-1">{title}</h3>
+          <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
+        </div>
+        <div className="flex items-center text-blue-600 text-sm font-semibold mt-auto">
+          View Details <ArrowRight size={14} className="ml-1" />
+        </div>
+      </div>
+    </Card>
+  </Link>
+);
 
-  const notifications = [
-    {
-      id: 1,
-      date: '১৭ ফেব',
-      title: 'আজকের উপস্থিতি',
-      desc: 'সন্তান ১০:১৫ মিনিটে স্কুলে প্রবেশ করেছে।',
-      icon: CheckCircle2,
-    },
-    {
-      id: 2,
-      date: '১৫ ফেব',
-      title: 'পরীক্ষার ফলাফল',
-      desc: 'গণিত পরীক্ষায় প্রাপ্ত নম্বর: ৯৫',
-      icon: LineIcon,
-    },
-  ];
+export default function ParentDashboard() {
+  const { user, role, loading } = useRoleGuard('parent');
 
-  // GPA Data
-  const gpaData = [
-    { exam: 'Jan', gpa: 4.2 },
-    { exam: 'Feb', gpa: 4.4 },
-    { exam: 'Mar', gpa: 4.3 },
-    { exam: 'Apr', gpa: 4.6 },
-    { exam: 'May', gpa: 4.85 },
-  ];
+  if (loading) {
+    return (
+      <div className="h-[80vh] w-full flex flex-col items-center justify-center gap-4">
+        <div className="relative flex items-center justify-center">
+          <Loader2 className="animate-spin text-blue-600" size={48} />
+          <GraduationCap className="absolute text-blue-200" size={20} />
+        </div>
+        <div className="text-center">
+          <h3 className="text-lg font-bold text-gray-800 animate-pulse">
+            Verifying Access...
+          </h3>
+          <p className="text-sm text-gray-500">Preparing your dashboard</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 bg-bg-page min-h-screen p-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary">
-            সন্তানের অগ্রগতি
-          </h1>
-          <p className="text-sm text-text-muted">
-            ছাত্র: সাকিব আহমেদ • ক্লাস: ৮
+    <div className="max-w-7xl mx-auto space-y-10 p-4 md:p-8 animate-fadeIn">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden">
+        <div className="relative z-10">
+          <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">
+            Welcome, {user?.name || 'Parent'}! 👋
+          </h2>
+          <p className="text-blue-100 max-w-xl text-lg font-medium opacity-90 leading-relaxed">
+            Stay connected with your child's education and progress. Our portal
+            helps you navigate through the modern learning management system
+            with ease.
           </p>
         </div>
-
-        <button className="px-5 py-2.5 bg-primary text-white rounded-lg font-semibold flex items-center gap-2 transition hover:opacity-90">
-          <MessageSquare size={18} />
-          শিক্ষককে মেসেজ দিন
-        </button>
+        <GraduationCap className="absolute right-[-20px] bottom-[-20px] text-white/10 w-64 h-64 -rotate-12" />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((s, i) => (
-          <StatCard key={i} {...s} index={i} />
-        ))}
+      {/* Main Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <FeatureCard
+          title="Results & Progress"
+          desc="Check your child's examination results and overall academic performance."
+          icon={TrendingUp}
+          iconBg="bg-emerald-50"
+          iconColor="text-emerald-600"
+          link="/dashboard/parent/results"
+        />
+        <FeatureCard
+          title="Academic System"
+          desc="Learn about our teaching methodology and how we ensure student success."
+          icon={BookOpen}
+          iconBg="bg-blue-50"
+          iconColor="text-blue-600"
+          link="/dashboard/parent/about"
+        />
+        <FeatureCard
+          title="Features & Benefits"
+          desc="Explore the exclusive features and benefits available for parents and students."
+          icon={CheckCircle2}
+          iconBg="bg-amber-50"
+          iconColor="text-amber-600"
+          link="/dashboard/parent/benefits"
+        />
+        <FeatureCard
+          title="Teacher Profiles"
+          desc="Get to know the educators guiding your child and their professional experience."
+          icon={Users}
+          iconBg="bg-purple-50"
+          iconColor="text-purple-600"
+          link="/dashboard/parent/teachers"
+        />
       </div>
 
-      {/* Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Section */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Chart Section */}
-          <div className="bg-bg-card p-6 rounded-xl border border-border-light">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp size={18} className="text-primary" />
-              <h3 className="font-semibold text-text-primary">GPA Progress</h3>
-            </div>
-
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={gpaData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="rgba(100,116,139,0.2)"
-                  />
-                  <XAxis dataKey="exam" stroke="#64748B" />
-                  <YAxis domain={[3.5, 5]} stroke="#64748B" />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="gpa"
-                    stroke="var(--color-primary)"
-                    strokeWidth={3}
-                    dot={{ r: 5 }}
-                    activeDot={{ r: 7 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+        <Card className="lg:col-span-2 p-8 bg-gray-50 border-none">
+          <div className="flex items-center gap-3 mb-6">
+            <Info className="text-blue-600" />
+            <h3 className="text-xl font-bold text-gray-800">
+              Important Notes for Parents
+            </h3>
           </div>
-
-          {/* Upcoming Exam */}
-          <div className="p-4 bg-bg-card rounded-xl border border-border-light flex items-center gap-4">
-            <BookOpen className="text-primary" />
-            <div>
-              <p className="text-xs font-semibold text-text-muted">
-                আগামীকালকের পরীক্ষা
-              </p>
-              <p className="font-semibold text-text-primary">ইংরেজি ২য় পত্র</p>
-            </div>
+          <div className="space-y-4 text-gray-600 leading-relaxed">
+            <p>
+              Education is not limited to the classroom. As a parent, your
+              awareness and cooperation play a vital role in your child's mental
+              and academic development.
+            </p>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+              <li className="flex items-center gap-2 text-sm font-medium">
+                <ShieldCheck size={18} className="text-green-500" /> Secure
+                Campus Environment
+              </li>
+              <li className="flex items-center gap-2 text-sm font-medium">
+                <Heart size={18} className="text-red-400" /> Mental Health
+                Support
+              </li>
+              <li className="flex items-center gap-2 text-sm font-medium">
+                <CheckCircle2 size={18} className="text-blue-500" /> Regular
+                Class Attendance
+              </li>
+              <li className="flex items-center gap-2 text-sm font-medium">
+                <Users size={18} className="text-purple-500" /> Parent-Teacher
+                Meetings
+              </li>
+            </ul>
           </div>
-        </div>
+        </Card>
 
-        {/* Notifications */}
-        <div className="bg-bg-card rounded-xl border border-border-light p-6">
-          <h3 className="font-semibold text-text-primary mb-6 flex items-center gap-2">
-            <Bell size={18} className="text-primary" />
-            সাম্প্রতিক আপডেট
-          </h3>
-
-          <div className="space-y-6">
-            {notifications.map((n) => (
-              <div key={n.id} className="flex gap-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <n.icon size={14} className="text-primary" />
-                </div>
-
-                <div>
-                  <p className="text-xs text-text-muted">{n.date}</p>
-                  <p className="font-semibold text-text-primary text-sm">
-                    {n.title}
-                  </p>
-                  <p className="text-xs text-text-muted">{n.desc}</p>
-                </div>
-              </div>
-            ))}
+        <div className="space-y-6">
+          <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
+            <h4 className="font-bold text-blue-800 mb-2">Need Assistance?</h4>
+            <p className="text-sm text-blue-600 mb-4">
+              If you have any questions or feedback, please feel free to contact
+              our official support team.
+            </p>
+            <button className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
+              Contact Us
+            </button>
           </div>
         </div>
       </div>

@@ -124,7 +124,7 @@ if (loading) return <PageLoader></PageLoader>
                                                         onChange={handleChange}
                                                         required
                                                         placeholder="e.g. Skyline Academy"
-                                                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
+                                                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -141,7 +141,7 @@ if (loading) return <PageLoader></PageLoader>
                                                         onChange={handleChange}
                                                         required
                                                         placeholder="John Doe"
-                                                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
+                                                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -161,7 +161,7 @@ if (loading) return <PageLoader></PageLoader>
                                                         onChange={handleChange}
                                                         required
                                                         placeholder="admin@school.com"
-                                                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
+                                                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -178,7 +178,7 @@ if (loading) return <PageLoader></PageLoader>
                                                         onChange={handleChange}
                                                         required
                                                         placeholder="+1 (555) 000-0000"
-                                                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
+                                                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -196,7 +196,7 @@ if (loading) return <PageLoader></PageLoader>
                                                     value={formData.password}
                                                     onChange={handleChange}
                                                     placeholder="••••••••"
-                                                    className="w-full h-12 pl-12 pr-12 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
+                                                    className="w-full h-12 pl-12 pr-12 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all font-bold text-sm"
                                                     required
                                                 />
                                                 <button

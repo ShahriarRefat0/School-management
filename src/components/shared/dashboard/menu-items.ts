@@ -20,15 +20,13 @@ import {
   FileText,
   History,
   Settings,
-  UserCheck as UserCheckIcon,
   LineChart,
   ClipboardList,
-  MessageCircle,
+  BarChart3,
   LayoutDashboard as LayoutDashboardIcon,
   Users2,
 } from 'lucide-react';
 import { DashboardMenuItem } from './types';
-import { profile } from 'console';
 
 export const studentMenuItems: DashboardMenuItem[] = [
   { title: 'Dashboard', url: '/dashboard/student', icon: LayoutDashboard },
@@ -43,6 +41,21 @@ export const studentMenuItems: DashboardMenuItem[] = [
     url: '/dashboard/student/notices',
     icon: Bell,
     badge: '3',
+  },
+  {
+    title: 'Take Exam',
+    url: '/dashboard/student/take-exam',
+    icon: ClipboardList,
+  },
+  {
+    title: 'My Exams',
+    url: '/dashboard/student/my-exams',
+    icon: FileText,
+  },
+  {
+    title: 'Progress',
+    url: '/dashboard/student/progress',
+    icon: LineChart,
   },
   { title: 'Payments', url: '/dashboard/student/payments', icon: CreditCard },
   { title: 'Profile', url: '/dashboard/student/profile', icon: User },
@@ -68,6 +81,21 @@ export const teacherMenuItems: DashboardMenuItem[] = [
     icon: GraduationCap,
   },
   {
+    title: 'Create Exam',
+    url: '/dashboard/teacher/create-exam',
+    icon: ClipboardList,
+  },
+  {
+    title: 'My Exams',
+    url: '/dashboard/teacher/my-exams',
+    icon: FileText,
+  },
+  {
+    title: 'MCQ Results',
+    url: '/dashboard/teacher/mcq-results',
+    icon: BarChart3,
+  },
+  {
     title: 'Study Materials',
     url: '/dashboard/teacher/study-materials',
     icon: Upload,
@@ -79,6 +107,11 @@ export const teacherMenuItems: DashboardMenuItem[] = [
     badge: 'new',
   },
   { title: 'Feedback', url: '/dashboard/teacher/feedback', icon: Users },
+  {
+    title: 'Class Schedule',
+    url: '/dashboard/teacher/schedule',
+    icon: CalendarCheck,
+  },
   { title: 'profile', url: '/dashboard/teacher/profile', icon: Users },
 ];
 
@@ -110,9 +143,9 @@ export const superAdminMenuItems: DashboardMenuItem[] = [
     icon: LifeBuoy,
   },
   {
-    title: 'Add Users',
+    title: 'System Settings',
     url: '/dashboard/super-admin/add-users',
-    icon: Settings2,
+    icon: Settings,
   },
 ];
 
@@ -159,15 +192,14 @@ export const parentMenuItems: DashboardMenuItem[] = [
     icon: LayoutDashboardIcon,
   },
   {
-    title: 'Children',
-    url: '/dashboard/parent/children', // আপনার কাঙ্ক্ষিত রুট
-    icon: Users2,
+    title: 'About Website',
+    url: '/dashboard/parent/about',
+    icon: BookOpen,
   },
   {
-    title: 'Attendance',
-    url: '/dashboard/parent/attendance',
-    icon: UserCheckIcon,
-    badge: 'Today',
+    title: 'Website Benefits',
+    url: '/dashboard/parent/benefits',
+    icon: LifeBuoy,
   },
   {
     title: 'Results',
@@ -176,36 +208,9 @@ export const parentMenuItems: DashboardMenuItem[] = [
     badge: 'New',
   },
   {
-    title: 'Fees Status',
-    url: '/dashboard/parent/fees',
-    icon: CreditCard,
-    badge: 'Due',
-  },
-  {
-    title: 'Notices',
-    url: '/dashboard/parent/notices',
-    icon: ClipboardList,
-    badge: '3',
-  },
-  {
-    title: 'Communication',
-    url: '/dashboard/parent/communication',
-    icon: MessageCircle,
-  },
-  {
-    title: 'Reports',
-    url: '/dashboard/parent/reports',
-    icon: FileText,
-  },
-  {
     title: 'Profile',
     url: '/dashboard/parent/profile',
     icon: User,
-  },
-  {
-    title: 'Settings',
-    url: '/dashboard/parent/settings',
-    icon: Settings,
   },
 ];
 

@@ -1,11 +1,13 @@
-import HeroSection from "@/components/heroSection/HeroSection";
-import Contact from "@/components/home/Contact/Contact";
-import NoticeBoard from "@/components/home/NoticeBoard/NoticeBoard";
-import Statistics from "@/components/home/statistics/Statistics";
+import HeroSection from "@/components/home/heroSection/HeroSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection/TestimonialsSection";
 import Features from "@/components/home/Features/Features";
-import PrincipalMessage from "@/components/home/PricipalMessage/PricipalMessage";
-import SchoolMarquee from "@/components/home/SchoolMarquee/SchoolMarquee";
+
+import HowItWorks from "@/components/home/howitWorks/howitWorks";
+import FAQ from "@/components/home/FAQ/FAQ";
+import BlogSection from "@/components/home/blogSection/blog";
+import WhyChooseUs from "@/components/home/WhyChooseUs/WhyChooseUs";
+import ExploreOurDashboardFeatures from "@/components/home/ExploreOurDashboardFeatures/ExploreOurDashboardFeatures";
+
 import { FloatingClock } from "@/components/shared/FloatingClock";
 
 
@@ -15,16 +17,20 @@ const HomePage = () => {
   return (
     <div className="space-y-10">
       <HeroSection></HeroSection>
-      <PrincipalMessage />
+      <WhyChooseUs />
+      <ExploreOurDashboardFeatures />
       <Features />
-      <SchoolMarquee></SchoolMarquee>
-      <Statistics></Statistics>
-      <NoticeBoard></NoticeBoard>
+      <HowItWorks></HowItWorks>
       <TestimonialsSection></TestimonialsSection>
-      <Contact></Contact>
+      <FAQ></FAQ>
+      <BlogSection></BlogSection>
       <FloatingClock />
-      {/* <LoginPage></LoginPage>
-      <RegisterPage></RegisterPage>       */}
+      <Features />
+      <HowItWorks></HowItWorks>
+      <TestimonialsSection></TestimonialsSection>
+      <FAQ></FAQ>
+      <BlogSection></BlogSection>
+
     </div>
   );
 };

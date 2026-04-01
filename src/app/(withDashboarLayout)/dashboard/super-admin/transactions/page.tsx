@@ -9,8 +9,7 @@ export default function SuperAdminTransactions() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Prisma থেকে ডাটা লোড করার জন্য এটি সাধারণত একটি সার্ভার একশন বা API থেকে হবে
-  // সহজ করার জন্য এখানে সরাসরি API কল বা ডেটা ফেচিং মেকানিজম সিমুলেট করছি
+ 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -34,9 +33,10 @@ export default function SuperAdminTransactions() {
   );
 
   const stats = [
-    { title: "Total Revenue", value: "৳" + transactions.reduce((acc, curr) => acc + (curr.status === 'SUCCESS' ? curr.amount : 0), 0), icon: Wallet, color: "text-green-500", bg: "bg-green-500/10" },
+    { title: "Total Revenue", value: "৳" + transactions.reduce((acc, curr) => acc + (curr.status === 'SUCCESS' ? curr.amount : 0), 0), icon: Wallet, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { title: "Pending", value: transactions.filter(t => t.status === 'PENDING').length, icon: Clock, color: "text-orange-500", bg: "bg-orange-500/10" },
     { title: "Success", value: transactions.filter(t => t.status === 'SUCCESS').length, icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { title: "Failed", value: transactions.filter(t => t.status === 'FAILED' || t.status === 'FAIL').length, icon: AlertCircle, color: "text-rose-500", bg: "bg-rose-500/10" },
   ]
 
   return (
@@ -48,11 +48,11 @@ export default function SuperAdminTransactions() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="bg-[var(--color-bg-card)] p-6 rounded-3xl border border-[var(--color-border-light)]">
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${stat.bg}`}>
-              <stat.icon className={stat.color} />
+              <stat.icon size={24} className={stat.color} />
             </div>
             <h3 className="text-[var(--color-text-muted)] text-xs uppercase font-black tracking-widest">{stat.title}</h3>
             <p className="text-2xl font-black text-[var(--color-text-primary)] mt-1">{stat.value}</p>
@@ -102,7 +102,9 @@ export default function SuperAdminTransactions() {
                     <p className="text-xs text-[var(--color-text-muted)] font-bold">AMOUNT</p>
                     <p className="text-lg font-black text-[var(--color-text-primary)]">৳{trx.amount}</p>
                   </div>
-                  <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase ${trx.status === 'SUCCESS' ? 'bg-green-500/10 text-green-500' : 'bg-orange-500/10 text-orange-500'}`}>
+                  <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase ${trx.status === 'SUCCESS' ? 'bg-green-500/10 text-green-500' :
+                      (trx.status === 'FAILED' || trx.status === 'FAIL') ? 'bg-rose-500/10 text-rose-500' :
+                        'bg-orange-500/10 text-orange-500'}`}>
                     {trx.status}
                   </div>
                 </div>

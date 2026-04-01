@@ -1,0 +1,144 @@
+import { getCollection } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/getCurrentUser";
+import { ObjectId } from "mongodb";
+import { NextResponse } from "next/server";
+
+const serializeResult = (result) => ({
+    ...result,
+    _id: result?._id?.toString?.() ?? result?._id,
+});
+
+export async function POST(request) {
+    try {
+        const { roomCode, studentAnswers, studentEmail, studentName, questionID, schoolId } = await request.json();
+
+        if (!roomCode || !studentAnswers || !studentEmail || !studentName) {
+            return NextResponse.json({ success: false, message: "roomCode, studentAnswers, studentEmail and studentName are required" }, { status: 400 });
+        }
+
+        const examsCollection = await getCollection("questions");
+        const resultsCollection = await getCollection("results");
+        const currentUser = await getCurrentUser();
+
+        // ডাটাবেস থেকে আসল উত্তরসহ এক্সাম ডাটা আনা
+        const exam = await examsCollection.findOne({ roomCode: roomCode });
+
+        if (!exam) return NextResponse.json({ success: false, message: "Exam room not found" }, { status: 404 });
+
+        const examQuestionId = questionID || exam?._id?.toString?.();
+        const alreadySubmitted = await resultsCollection.findOne({
+            roomCode,
+            studentEmail,
+        });
+
+        if (alreadySubmitted) {
+            return NextResponse.json({ success: false, message: "You already submitted this exam" }, { status: 400 });
+        }
+
+        // সঠিক উত্তরের সাথে স্টুডেন্টের উত্তরের তুলনা (Mark calculation)
+        let totalMark = 0;
+        exam.questions.forEach((q) => {
+            if (studentAnswers[q.id] === q.correctAnswer) {
+                totalMark += 1;
+            }
+        });
+
+        // রেজাল্ট অবজেক্ট তৈরি
+        const resultDoc = {
+            questionID: examQuestionId,
+            studentName,
+            studentEmail,
+            schoolId: currentUser?.schoolId ?? schoolId ?? exam?.schoolId ?? null,
+            examSubject: exam.roomTitle,
+            teacherEmail: exam.teacherEmail,
+            roomCode,
+            totalMark,
+            totalQuestions: exam.questions.length,
+            submittedAt: new Date()
+        };
+
+        // ডাটাবেসে সেভ করা
+        await resultsCollection.insertOne(resultDoc);
+
+        return NextResponse.json({
+            success: true,
+            score: totalMark,
+            total: exam.questions.length
+        });
+
+    } catch (error) {
+        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    }
+}
+
+
+
+// আপনার বর্তমান POST মেথডের নিচে এটি যোগ করুন
+export async function GET(request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const email = searchParams.get("email"); // স্টুডেন্ট ইমেইল
+        const teacherEmail = searchParams.get("teacherEmail"); // টিচার ইমেইল
+        const questionID = searchParams.get("questionID");
+        const roomCode = searchParams.get("roomCode");
+        const scope = searchParams.get("scope");
+
+        const resultsCollection = await getCollection("results");
+
+        let query = {};
+        if (email) query.studentEmail = email;
+        if (teacherEmail) query.teacherEmail = teacherEmail.toLowerCase();
+        if (questionID) query.questionID = questionID;
+        if (roomCode) query.roomCode = roomCode;
+
+        // Teacher dashboard MCQ Results: only show results from the teacher's school.
+        if (scope === "teacherSchool") {
+            const currentUser = await getCurrentUser();
+
+            if (!currentUser) {
+                return NextResponse.json({ success: false, message: "Authentication required" }, { status: 401 });
+            }
+
+            if (!currentUser.schoolId) {
+                return NextResponse.json({ success: false, message: "Teacher school is not configured" }, { status: 400 });
+            }
+
+            query.schoolId = currentUser.schoolId;
+        }
+
+        const results = await resultsCollection.find(query).sort({ submittedAt: -1 }).toArray();
+
+        return NextResponse.json({ success: true, data: results.map(serializeResult) });
+    } catch (error) {
+        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    }
+}
+
+
+
+
+// আপনার বিদ্যমান GET মেথডের নিচে এটি যোগ করুন
+export async function DELETE(request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get("id");
+        const deleteAll = searchParams.get("all");
+
+        const resultsCollection = await getCollection("results");
+
+        // সব রেজাল্ট ডিলিট করার জন্য
+        if (deleteAll === "true") {
+            await resultsCollection.deleteMany({});
+            return NextResponse.json({ success: true, message: "All results cleared" });
+        }
+
+        // সিঙ্গেল রেজাল্ট ডিলিট করার জন্য
+        if (!id) return NextResponse.json({ success: false, message: "ID is required" }, { status: 400 });
+
+        await resultsCollection.deleteOne({ _id: new ObjectId(id) });
+        return NextResponse.json({ success: true, message: "Result deleted successfully" });
+
+    } catch (error) {
+        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    }
+}

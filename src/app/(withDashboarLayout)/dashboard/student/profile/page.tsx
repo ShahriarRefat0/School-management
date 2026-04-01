@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { User, Mail, Phone, MapPin, Calendar, Book, Shield, GraduationCap, Edit3, Save, X, Loader2 } from "lucide-react"
+import { User, Mail, Phone, MapPin, GraduationCap, Edit3, Save, X, Loader2 } from "lucide-react"
 import { getMyStudentProfile, updateMyStudentProfile } from "@/app/actions/principle/student"
 import Swal from "sweetalert2"
 

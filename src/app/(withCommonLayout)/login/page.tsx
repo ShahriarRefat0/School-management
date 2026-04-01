@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Mail,
   Lock,
@@ -14,71 +14,90 @@ import {
   Building2,
   LockKeyhole,
   School,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
-import ForgotPasswordModal from "@/components/shared/auth/ForgotPasswordModal";
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
+import ForgotPasswordModal from '@/components/shared/auth/ForgotPasswordModal';
 
 const UnifiedLoginPage = () => {
   const router = useRouter();
-  const { signIn, resetPassword, role } = useAuth();
+  const { user, role, signIn, resetPassword, loading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Forgot password modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
+  const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
-  const [resetError, setResetError] = useState("");
+  const [resetError, setResetError] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
+
+  // Auto-redirect if already logged in
+  React.useEffect(() => {
+    if (!authLoading && user && role) {
+      const roleRoutes: Record<string, string> = {
+        super_admin: '/dashboard/super-admin',
+        admin: '/dashboard/principal',
+        teacher: '/dashboard/teacher',
+        parent: '/dashboard/parent',
+        accountant: '/dashboard/accountant',
+        student: '/dashboard/student',
+      };
+      
+      const destination = roleRoutes[role] || '/dashboard';
+      window.location.href = destination;
+    }
+  }, [user, role, authLoading]);
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg-page">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     const { error: authError, role } = await signIn(identifier, password);
 
     if (authError) {
-      setError(authError.message || "Authentication failed. Please check your credentials.");
+      setError(
+        authError.message ||
+          'Authentication failed. Please check your credentials.',
+      );
       setIsLoading(false);
       return;
     }
 
-    router.refresh();
+    // Determine role-based destination
+    const roleRoutes: Record<string, string> = {
+      super_admin: '/dashboard/super-admin',
+      admin: '/dashboard/principal',
+      teacher: '/dashboard/teacher',
+      parent: '/dashboard/parent',
+      accountant: '/dashboard/accountant',
+      student: '/dashboard/student',
+    };
 
-    setTimeout(() => {
-     switch (role) {
-  case "admin":
-    router.replace("/dashboard/principal");
-    break;
-  case "teacher":
-    router.replace("/dashboard/teacher");
-    break;
-  case "super_admin":
-    router.replace("/dashboard/super-admin");
-    break;
-  case "parent":
-    router.replace("/dashboard/parent");
-    break;
-  case "accountant":
-    router.replace("/dashboard/accountant");
-    break;
-  default:
-    router.replace("/dashboard/student");
-}
-    }, 200);
+    const destination = (role && roleRoutes[role]) || '/dashboard';
 
-    setIsLoading(false);
+    // Hard navigation so the server receives the fresh session cookie
+    // before the /dashboard redirect logic runs
+    window.location.href = destination;
   };
+
 
   const openForgotModal = () => {
     // Pre-fill with whatever is typed in the login email field
     setResetEmail(identifier.trim());
-    setResetError("");
+    setResetError('');
     setResetSuccess(false);
     setShowForgotModal(true);
   };
@@ -86,12 +105,12 @@ const UnifiedLoginPage = () => {
   const handleSendResetLink = async () => {
     const email = resetEmail.trim();
     if (!email) {
-      setResetError("Please enter your email address.");
+      setResetError('Please enter your email address.');
       return;
     }
 
     setResetLoading(true);
-    setResetError("");
+    setResetError('');
 
     const { error } = await resetPassword(email);
 
@@ -106,16 +125,13 @@ const UnifiedLoginPage = () => {
 
   const closeForgotModal = () => {
     setShowForgotModal(false);
-    setResetEmail("");
-    setResetError("");
+    setResetEmail('');
+    setResetError('');
     setResetSuccess(false);
   };
 
-
   return (
     <div className="flex flex-col min-h-screen bg-bg-page relative overflow-hidden text-text-primary">
-      
-
       {/* Subtle Dynamic Background */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-[20%] left-[15%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
@@ -131,7 +147,6 @@ const UnifiedLoginPage = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-black text-[9px] uppercase tracking-[0.25em] mb-6"
             >
-             
               Universal Educational Infrastructure
             </motion.div>
             <motion.h1
@@ -159,11 +174,15 @@ const UnifiedLoginPage = () => {
             >
               <div className="px-6 py-3 rounded-2xl bg-bg-card/50 backdrop-blur-sm border border-border-light flex items-center gap-3">
                 <ShieldCheck size={20} className="text-emerald-500" />
-                <span className="text-xs font-black uppercase tracking-widest">Secure Access</span>
+                <span className="text-xs font-black uppercase tracking-widest">
+                  Secure Access
+                </span>
               </div>
               <div className="px-6 py-3 rounded-2xl bg-bg-card/50 backdrop-blur-sm border border-border-light flex items-center gap-3">
                 <Building2 size={20} className="text-blue-500" />
-                <span className="text-xs font-black uppercase tracking-widest">Multi-Tenant</span>
+                <span className="text-xs font-black uppercase tracking-widest">
+                  Multi-Tenant
+                </span>
               </div>
             </motion.div>
           </div>
@@ -196,7 +215,7 @@ const UnifiedLoginPage = () => {
                   {error && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
+                      animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold"
                     >
@@ -219,7 +238,7 @@ const UnifiedLoginPage = () => {
                         value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
                         placeholder="yourname@school.com"
-                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-sm"
+                        className="w-full h-12 pl-12 pr-6 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-sm"
                         required
                       />
                     </div>
@@ -244,11 +263,11 @@ const UnifiedLoginPage = () => {
                         <Lock size={16} />
                       </div>
                       <input
-                        type={showPassword ? "text" : "password"}
+                        type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full h-12 pl-12 pr-12 rounded-2xl bg-bg-page border border-border-light focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-sm"
+                        className="w-full h-12 pl-12 pr-12 rounded-2xl bg-bg-page border border-border-light focus:bg-bg-card focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-sm"
                         required
                       />
                       <button
@@ -256,7 +275,11 @@ const UnifiedLoginPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
                       >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -271,7 +294,10 @@ const UnifiedLoginPage = () => {
                     ) : (
                       <>
                         <span>Enter Dashboard</span>
-                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight
+                          size={18}
+                          className="group-hover:translate-x-1 transition-transform"
+                        />
                       </>
                     )}
                   </button>
@@ -287,7 +313,10 @@ const UnifiedLoginPage = () => {
                   >
                     <School size={16} />
                     Apply for Institution Admin
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight
+                      size={14}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
                   </Link>
                 </div>
               </div>
@@ -298,24 +327,24 @@ const UnifiedLoginPage = () => {
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
           <div className="flex items-center gap-2">
             <Building2 size={16} />
-            <span className="text-[9px] font-black uppercase tracking-[0.2em]">SaaS Infrastructure v2.0</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em]">
+              SaaS Infrastructure v2.0
+            </span>
           </div>
         </div>
       </main>
 
-   
-
       {/* Forgot Password Modal - rendered into document.body */}
-    <ForgotPasswordModal
-  showForgotModal={showForgotModal}
-  closeForgotModal={closeForgotModal}
-  resetEmail={resetEmail}
-  setResetEmail={setResetEmail}
-  resetLoading={resetLoading}
-  resetError={resetError}
-  resetSuccess={resetSuccess}
-  handleSendResetLink={handleSendResetLink}
-/>
+      <ForgotPasswordModal
+        showForgotModal={showForgotModal}
+        closeForgotModal={closeForgotModal}
+        resetEmail={resetEmail}
+        setResetEmail={setResetEmail}
+        resetLoading={resetLoading}
+        resetError={resetError}
+        resetSuccess={resetSuccess}
+        handleSendResetLink={handleSendResetLink}
+      />
     </div>
   );
 };

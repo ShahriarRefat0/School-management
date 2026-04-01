@@ -12,7 +12,9 @@ import {
     Calculator,
     ChevronDown,
     ChevronUp,
-    Loader2
+    Loader2,
+    Download,
+    FileText
 } from 'lucide-react';
 import { getClasses, getStudentsByClass, getResults, saveResults } from '@/app/actions/teacher/results';
 import toast from 'react-hot-toast';
@@ -86,7 +88,7 @@ export default function ResultsPage() {
             setIsLoading(false);
         };
         fetchData();
-    }, [selectedClass, examType]);
+    }, [selectedClass, examType, subjects]);
 
     const handleAddSubject = async () => {
         const { value: subjectName } = await Swal.fire({
@@ -190,7 +192,7 @@ export default function ResultsPage() {
     const calculateGPA = (studentMarks: Record<string, number>) => {
         const marks = Object.values(studentMarks);
         if (marks.length === 0) return { gpa: "0.00", grade: "N/A" };
-        const total = marks.reduce((sum, m) => sum + m, 0);
+        const total = marks.reduce((sum, m) => sum + (Number(m) || 0), 0);
         const avg = total / marks.length;
 
         if (avg >= 80) return { gpa: "5.00", grade: "A+" };
@@ -200,6 +202,50 @@ export default function ResultsPage() {
         if (avg >= 40) return { gpa: "2.00", grade: "C" };
         if (avg >= 33) return { gpa: "1.00", grade: "D" };
         return { gpa: "0.00", grade: "F" };
+    };
+
+    const handleExportCSV = () => {
+        if (!selectedClass || studentsData.length === 0) return;
+
+        const classInfo = classes.find(c => c.id === selectedClass);
+        const filename = `${classInfo?.name || "Results"}_${examType.replace(/\s+/g, '_')}_Results.csv`;
+
+        // 1. Headers
+        const headers = ["Roll", "Student Name", ...subjects, "Total", "GPA", "Grade"];
+        
+        // 2. Rows
+        const rows = studentsData.map(student => {
+            const { gpa, grade } = calculateGPA(student.marks);
+            const total = Object.values(student.marks).reduce((sum: number, m: any) => sum + (Number(m) || 0), 0);
+            
+            return [
+                student.roll,
+                `"${student.name}"`, // Quote names to handle potential commas
+                ...subjects.map(s => student.marks[s] || 0),
+                total,
+                gpa,
+                grade
+            ];
+        });
+
+        // 3. Assemble CSV
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(row => row.join(","))
+        ].join("\n");
+
+        // 4. Download Trigger
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.success(`Exported ${filename}`);
     };
 
     const filteredStudents = studentsData.filter(s =>
@@ -315,8 +361,11 @@ export default function ResultsPage() {
                             >
                                 <Settings size={14} /> Add Subject
                             </button>
-                            <button className="flex-1 md:flex-none px-4 py-2.5 bg-bg-page border border-border-light text-text-secondary rounded-xl text-xs font-black uppercase tracking-widest hover:bg-border-light transition-all flex items-center justify-center gap-2">
-                                <Settings size={14} /> Export CSV
+                            <button 
+                                onClick={handleExportCSV}
+                                className="flex-1 md:flex-none px-4 py-2.5 bg-bg-page border border-border-light text-text-secondary rounded-xl text-xs font-black uppercase tracking-widest hover:bg-border-light transition-all flex items-center justify-center gap-2"
+                            >
+                                <Download size={14} /> Export CSV
                             </button>
                             <button
                                 onClick={handleSave}

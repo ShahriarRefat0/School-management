@@ -1,9 +1,10 @@
 "use client"
-import { getAllSchools } from "@/app/actions/school"
+import { getSuperAdminDashboardData } from "@/app/actions/superadmin"
 import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   Building2,
-  Users,
+ 
   Wallet,
   AlertTriangle,
   TrendingUp,
@@ -13,7 +14,8 @@ import {
   ShieldCheck,
   Megaphone,
   CreditCard,
-  Wrench
+  Wrench,
+  Users2
 } from 'lucide-react'
 import {
   AreaChart,
@@ -43,59 +45,72 @@ const revenueData = [
 
 
 export default function SuperAdminOverview() {
-  const [schoolCount, setSchoolCount] = useState<number>(0)
-  const [schools, setSchools] = useState<any[]>([])
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [loadingData, setLoadingData] = useState(true)
   const { loading } = useRoleGuard('super_admin')
 
   useEffect(() => {
-    async function loadSchools() {
-      const res = await getAllSchools()
-
-      if (res.success && res.data) {
-        setSchools(res.data)
-        setSchoolCount(res.data.length)
-      } else {
-        setSchools([])
-        setSchoolCount(0)
+    async function loadData() {
+      const res = await getSuperAdminDashboardData()
+      if (res.success) {
+        setDashboardData(res.data)
       }
+      setLoadingData(false)
     }
-
-    loadSchools()
+    loadData()
   }, [])
 
-  if (loading) return <p>Super Admin Dashboard is Loading...</p>
+  if (loading || loadingData || !dashboardData) return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]"></div>
+    </div>
+  )
 
   const stats = [
     {
       title: "Total Schools",
-      value: schoolCount,
+      value: dashboardData.totalSchools,
       icon: Building2,
-      trend: "+12%",
+      trend: "Dynamic",
       up: true,
       subtitle: "Registered Schools"
     },
-    { title: "Active Subscriptions", value: "115", icon: ShieldCheck, trend: "+5%", up: true, subtitle: "Current Paying Tenants" },
-    { title: "Monthly Revenue", value: "৳4.50L", icon: Wallet, trend: "+18%", up: true, subtitle: "Total Earnings" },
-    { title: "Expiring Soon", value: "08", icon: AlertTriangle, trend: "Requires Action", up: false, subtitle: "Next 7 Days" },
+    { 
+      title: "Active Subscriptions", 
+      value: dashboardData.activeSubscriptions, 
+      icon: ShieldCheck, 
+      trend: "Real-time", 
+      up: true, 
+      subtitle: "Current Paying Tenants" 
+    },
+    { 
+      title: "Monthly Revenue", 
+      value: `Tk${((dashboardData.monthlyRevenue || 0) / 1000).toFixed(1)}k`, 
+      icon: Wallet, 
+      trend: "Recent", 
+      up: true, 
+      subtitle: "Current Month" 
+    },
+    { 
+      title: "Total Revenue", 
+      value: `Tk${((dashboardData.totalRevenue || 0) / 1000).toFixed(1)}k`, 
+      icon: CreditCard, 
+      trend: "All-time", 
+      up: true, 
+      subtitle: "Lifetime Earnings" 
+    },
+    { 
+      title: "Expiring Soon", 
+      value: (dashboardData.expiringSoonCount || 0).toString().padStart(2, '0'), 
+      icon: AlertTriangle, 
+      trend: "Action Required", 
+      up: false, 
+      subtitle: "Next 7 Days" 
+    },
   ]
 
-  const planDistribution = [
-    {
-      name: "Basic",
-      value: schools.filter(s => s.plan === "basic").length,
-      color: "#3b82f6"
-    },
-    {
-      name: "Premium",
-      value: schools.filter(s => s.plan === "premium").length,
-      color: "#8b5cf6"
-    },
-    {
-      name: "Enterprise",
-      value: schools.filter(s => s.plan === "enterprise").length,
-      color: "#10b981"
-    }
-  ]
+  const planDistribution = dashboardData.planDistribution;
+  const revenueData = dashboardData.revenueGrowth;
 
   return (
     <div className="space-y-8 animate-fade-in-up">
@@ -116,7 +131,7 @@ export default function SuperAdminOverview() {
 
 
       {/* ২. কি-ম্যাট্রিক্স (Stats Grid) */}
-      <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-[var(--color-border-light)] shadow-sm hover:shadow-md transition-all">
             <div className="flex justify-between items-start mb-4">
@@ -183,7 +198,7 @@ export default function SuperAdminOverview() {
                   contentStyle={{ backgroundColor: 'var(--color-bg-card)', borderRadius: '12px' }}
                 />
                 <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                  {planDistribution.map((entry, index) => (
+                  {planDistribution.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
@@ -191,7 +206,7 @@ export default function SuperAdminOverview() {
             </ResponsiveContainer>
           </div>
           <div className="space-y-3 mt-4">
-            {planDistribution.map((plan, i) => (
+            {planDistribution.map((plan: any, i: number) => (
               <div key={i} className="flex justify-between items-center text-xs font-bold">
                 <span className="flex items-center gap-2 text-[var(--color-text-muted)]">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: plan.color }} /> {plan.name}
@@ -219,16 +234,26 @@ export default function SuperAdminOverview() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border-light)]">
-              {[1, 2, 3].map((item) => (
-                <tr key={item} className="hover:bg-[var(--color-bg-page)] transition-colors">
-                  <td className="px-6 py-4 font-bold text-sm text-[var(--color-text-primary)]">Ideal High School</td>
-                  <td className="px-6 py-4 text-xs text-red-500 font-bold">Oct 30, 2023</td>
-                  <td className="px-6 py-4 text-xs font-bold text-[var(--color-text-secondary)]">Pro Plan</td>
-                  <td className="px-6 py-4">
-                    <button className="text-[var(--color-primary)] font-black text-[10px] uppercase hover:underline">Send Reminder</button>
+              {dashboardData.expiringSoonList.length > 0 ? (
+                dashboardData.expiringSoonList.map((item: any, index: number) => (
+                  <tr key={index} className="hover:bg-[var(--color-bg-page)] transition-colors">
+                    <td className="px-6 py-4 font-bold text-sm text-[var(--color-text-primary)]">{item.schoolName}</td>
+                    <td className="px-6 py-4 text-xs text-red-500 font-bold">
+                      {new Date(item.expiryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </td>
+                    <td className="px-6 py-4 text-xs font-bold text-[var(--color-text-secondary)]">{item.plan}</td>
+                    <td className="px-6 py-4">
+                      <button className="text-[var(--color-primary)] font-black text-[10px] uppercase hover:underline">Send Reminder</button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-xs text-[var(--color-text-muted)] font-medium">
+                    No subscriptions expiring in the next 7 days.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -236,22 +261,34 @@ export default function SuperAdminOverview() {
         <div className="bg-[var(--color-bg-card)] p-6 rounded-2xl border border-[var(--color-border-light)]">
           <h3 className="font-black text-[var(--color-text-primary)] mb-6">Master Quick Actions</h3>
           <div className="grid grid-cols-2 gap-4">
-            <button className="p-4 bg-[var(--color-bg-page)] rounded-xl border border-[var(--color-border-light)] hover:border-[var(--color-primary)] transition-all flex flex-col items-center gap-2 group">
+            <Link 
+              href="/dashboard/super-admin/schools/new"
+              className="p-4 bg-[var(--color-bg-page)] rounded-xl border border-[var(--color-border-light)] hover:border-[var(--color-primary)] transition-all flex flex-col items-center gap-2 group cursor-pointer"
+            >
               <Building2 className="text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)]" />
               <span className="text-xs font-black text-[var(--color-text-secondary)]">New School</span>
-            </button>
-            <button className="p-4 bg-[var(--color-bg-page)] rounded-xl border border-[var(--color-border-light)] hover:border-[var(--color-primary)] transition-all flex flex-col items-center gap-2 group">
-              <Megaphone className="text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)]" />
-              <span className="text-xs font-black text-[var(--color-text-secondary)]">Broadcast</span>
-            </button>
-            <button className="p-4 bg-[var(--color-bg-page)] rounded-xl border border-[var(--color-border-light)] hover:border-[var(--color-primary)] transition-all flex flex-col items-center gap-2 group">
+            </Link>
+            <Link 
+              href="/dashboard/super-admin/add-users?tab=users"
+              className="p-4 bg-[var(--color-bg-page)] rounded-xl border border-[var(--color-border-light)] hover:border-[var(--color-primary)] transition-all flex flex-col items-center gap-2 group cursor-pointer"
+            >
+              <Users2 className="text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)]" />
+              <span className="text-xs font-black text-[var(--color-text-secondary)]">Admins</span>
+            </Link>
+            <Link 
+              href="/dashboard/super-admin/transactions"
+              className="p-4 bg-[var(--color-bg-page)] rounded-xl border border-[var(--color-border-light)] hover:border-[var(--color-primary)] transition-all flex flex-col items-center gap-2 group cursor-pointer"
+            >
               <CreditCard className="text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)]" />
               <span className="text-xs font-black text-[var(--color-text-secondary)]">Billing</span>
-            </button>
-            <button className="p-4 bg-[var(--color-bg-page)] rounded-xl border border-[var(--color-border-light)] hover:border-[var(--color-primary)] transition-all flex flex-col items-center gap-2 group">
+            </Link>
+            <Link 
+              href="/dashboard/super-admin/maintenance"
+              className="p-4 bg-[var(--color-bg-page)] rounded-xl border border-[var(--color-border-light)] hover:border-[var(--color-primary)] transition-all flex flex-col items-center gap-2 group cursor-pointer"
+            >
               <Wrench className="text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)]" />
               <span className="text-xs font-black text-[var(--color-text-secondary)]">System</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>

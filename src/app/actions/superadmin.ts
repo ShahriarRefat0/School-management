@@ -21,6 +21,25 @@ export async function getSuperAdminUsers() {
   }
 }
 
+// ১.৫ সব ধরনের ইউজারদের লিস্ট নিয়ে আসা (স্কুলের নাম সহ)
+export async function getAllUsers() {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        school: {
+          select: {
+            schoolName: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { success: true, data: users };
+  } catch (error: any) {
+    return { success: false, error: "ইউজার ডাটা আনতে সমস্যা হয়েছে।" };
+  }
+}
+
 // ২. নতুন SUPER_ADMIN তৈরি করা
 export async function createSuperAdmin(userData: { name: string; email: string; password?: string }) {
   let authUserId: string | null = null;
@@ -36,7 +55,6 @@ export async function createSuperAdmin(userData: { name: string; email: string; 
     authUserId = authData.user.id;
 
     const firstSchool = await prisma.school.findFirst();
-    // schoolId is now optional, so we don't throw error if no school exists
 
     const newUser = await prisma.user.create({
       data: {
@@ -49,7 +67,9 @@ export async function createSuperAdmin(userData: { name: string; email: string; 
       }
     });
 
-    revalidatePath("/dashboard/super-admin/profile");
+    // Correct revalidation paths
+    revalidatePath("/dashboard/super-admin/add-users");
+    revalidatePath("/dashboard/super-admin/all-users");
     return { success: true, data: newUser };
   } catch (error: any) {
     if (authUserId) await supabaseAdmin.auth.admin.deleteUser(authUserId);
@@ -57,30 +77,23 @@ export async function createSuperAdmin(userData: { name: string; email: string; 
   }
 }
 
-
-
-// ১. সুপার এডমিন ডিলিট করা (Auth + DB)
+// ৩. সুপার এডমিন ডিলিট করা (Auth + DB)
 export async function deleteSuperAdmin(userId: string, authUserId: string) {
   try {
-    // ক) সুপাবেস অথেন্টিকেশন থেকে ডিলিট
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(authUserId);
     if (authError) throw new Error(authError.message);
 
-    // খ) প্রিজমা ডাটাবেস থেকে ডিলিট
     await prisma.user.delete({
       where: { id: userId }
     });
 
-    revalidatePath("/dashboard/super-admin/profile");
+    revalidatePath("/dashboard/super-admin/add-users");
+    revalidatePath("/dashboard/super-admin/all-users");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
 }
-
-
-
-// ৩. সুপার এডমিন তৈরি (আগের কোড)
 
 // ৪. কনফিগ হ্যান্ডলিং (লোগো সহ)
 export async function getSystemConfig() {
@@ -99,7 +112,7 @@ export async function updateSystemConfig(data: any) {
         update: data,
         create: { id: "system_config", ...data }
       });
-      revalidatePath("/dashboard/super-admin/profile");
+      revalidatePath("/dashboard/super-admin/add-users");
       return { success: true, data: config };
     } catch (error: any) {
       return { success: false, error: error.message };
@@ -110,3 +123,85 @@ export async function updateSystemConfig(data: any) {
 
 
 
+
+// ৫. সুপার এডমিন ড্যাশবোর্ড ওভারভিউ ডাটা
+export async function getSuperAdminDashboardData() {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const [totalSchools, activeSubscriptions, monthlyRevenue, totalRevenue, expiringSoon, schoolsData] = await Promise.all([
+      prisma.school.count(),
+      prisma.subscription.count({
+        where: { status: "SUCCESS", endDate: { gte: now } }
+      }),
+      prisma.subscription.aggregate({
+        where: { status: "SUCCESS", createdAt: { gte: startOfMonth } },
+        _sum: { amount: true }
+      }),
+      prisma.subscription.aggregate({
+        where: { status: "SUCCESS" },
+        _sum: { amount: true }
+      }),
+      prisma.subscription.findMany({
+        where: { status: "SUCCESS", endDate: { gte: now, lte: in7Days } },
+        include: { school: true },
+        orderBy: { endDate: "asc" },
+        take: 5
+      }),
+      prisma.school.findMany({
+        select: { plan: true }
+      })
+    ]);
+
+    // Revenue Growth (Last 6 Months)
+    const revenueGrowth = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const monthRevenue = await prisma.subscription.aggregate({
+        where: { status: "SUCCESS", createdAt: { gte: d, lte: end } },
+        _sum: { amount: true }
+      });
+      revenueGrowth.push({
+        name: d.toLocaleString('default', { month: 'short' }),
+        amount: monthRevenue._sum.amount || 0
+      });
+    }
+
+    // Plan Distribution
+    const planCounts = schoolsData.reduce((acc: any, school: any) => {
+      acc[school.plan] = (acc[school.plan] || 0) + 1;
+      return acc;
+    }, {});
+
+    const total = schoolsData.length || 1;
+    const planDistribution = [
+      { name: "Basic", value: Math.round(((planCounts.basic || 0) / total) * 100), color: "#3b82f6" },
+      { name: "Premium", value: Math.round(((planCounts.premium || 0) / total) * 100), color: "#8b5cf6" },
+      { name: "Enterprise", value: Math.round(((planCounts.enterprise || 0) / total) * 100), color: "#10b981" }
+    ];
+
+    return {
+      success: true,
+      data: {
+        totalSchools,
+        activeSubscriptions,
+        monthlyRevenue: monthlyRevenue._sum.amount || 0,
+        totalRevenue: totalRevenue._sum.amount || 0,
+        expiringSoonCount: expiringSoon.length,
+        expiringSoonList: expiringSoon.map((s: any) => ({
+          schoolName: s.school.schoolName,
+          expiryDate: s.endDate,
+          plan: s.planName
+        })),
+        planDistribution,
+        revenueGrowth
+      }
+    };
+  } catch (error: any) {
+    console.error("Dashboard Stats Error:", error);
+    return { success: false, error: error.message };
+  }
+}

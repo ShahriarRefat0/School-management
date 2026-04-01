@@ -1,27 +1,37 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { getAllUsers } from '@/app/actions/school' 
+import { getAllUsers } from '@/app/actions/superadmin' 
 import { Mail, Building, Search, User as UserIcon, Loader2, Filter } from 'lucide-react'
 
 export default function UsersList() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   
   // ফিল্টার স্টেটসমূহ
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedRole, setSelectedRole] = useState("all")
   const [selectedSchool, setSelectedSchool] = useState("all")
 
-  useEffect(() => {
-    const loadUsers = async () => {
-      setLoading(true)
+  const loadUsers = async () => {
+    setLoading(true)
+    setError(null)
+    try {
       const result = await getAllUsers()
       if (result.success) {
         setUsers(result.data || [])
+      } else {
+        setError(result.error || "ইউজার ডাটা লোড করতে ব্যর্থ হয়েছে।")
       }
+    } catch (err) {
+      setError("সার্ভার এরর: ডাটা আনা সম্ভব হয়নি।")
+    } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
     loadUsers()
   }, [])
 
@@ -124,7 +134,27 @@ export default function UsersList() {
                 <tr>
                   <td colSpan={4} className="p-20 text-center text-[var(--color-text-muted)]">
                     <Loader2 className="animate-spin mx-auto mb-2" size={32} />
-                    <p className="text-xs font-bold uppercase">Fetching Data...</p>
+                    <p className="text-xs font-bold uppercase tracking-widest">Fetching Data...</p>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={4} className="p-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="p-4 bg-rose-50 rounded-full text-rose-500">
+                        <UserIcon size={32} />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-rose-600 font-bold tracking-tight">{error}</p>
+                        <p className="text-xs text-slate-400">Please try again later or contact support.</p>
+                      </div>
+                      <button 
+                        onClick={loadUsers}
+                        className="px-6 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold transition-transform active:scale-95"
+                      >
+                        Try Again
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ) : filteredUsers.length > 0 ? (
@@ -164,7 +194,10 @@ export default function UsersList() {
               ) : (
                 <tr>
                   <td colSpan={4} className="p-20 text-center text-gray-400 italic">
-                    No results found for current filters.
+                    <div className="flex flex-col items-center gap-2">
+                       <Search size={32} className="opacity-20 mb-2" />
+                       No results found for current filters.
+                    </div>
                   </td>
                 </tr>
               )}
