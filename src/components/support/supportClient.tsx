@@ -67,14 +67,11 @@ const SupportClient = ({ initialOptions }: { initialOptions: any[] }) => {
             
             return (
               <motion.div
+                key={option.id}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                key={option.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
                 className="group relative bg-[var(--color-bg-card)] border border-[var(--color-border-light)] p-8 rounded-3xl hover:border-primary transition-all duration-300 flex flex-col items-start"
               >
                 {/* Subtle Background Icon Decoration */}
