@@ -25,11 +25,11 @@ const HomePage = () => {
       <FAQ></FAQ>
       <BlogSection></BlogSection>
       <FloatingClock />
-      <Features />
-      <HowItWorks></HowItWorks>
-      <TestimonialsSection></TestimonialsSection>
-      <FAQ></FAQ>
-      <BlogSection></BlogSection>
+
+
+
+
+
 
     </div>
   );
