@@ -102,20 +102,36 @@ export async function POST(req: Request) {
 
         // 5. Verify API Response
         if (result && result.status === 'SUCCESS' && result.GatewayPageURL) {
+            
             // 6. Persistence via Prisma
-            await prisma.payment.create({
-                data: {
-                    transactionId: transactionId,
-                    amount: parseFloat(amount),
-                    status: 'PENDING',
-                    studentId: studentId,
-                    schoolId: schoolId,
-                    feeCategory: feeCategory || 'School Fee',
-                    customerName: customerName || 'Default Student',
-                    customerEmail: customerEmail || 'student@school.com',
-                    customerPhone: customerPhone || '01XXXXXXXXX',
-                }
-            });
+            // If the student is paying an EXISTING assigned fee, update that record
+            const existingPaymentId = body.existingPaymentId;
+
+            if (existingPaymentId) {
+                await prisma.payment.update({
+                    where: { id: existingPaymentId },
+                    data: {
+                        transactionId: transactionId,
+                        updatedAt: new Date(),
+                        // Important: Keep it PENDING until SSLCommerz callback confirms it's SUCCESS
+                    }
+                });
+            } else {
+                // Otherwise, create a new record (for Custom Payments)
+                await prisma.payment.create({
+                    data: {
+                        transactionId: transactionId,
+                        amount: parseFloat(amount),
+                        status: 'PENDING',
+                        studentId: studentId,
+                        schoolId: schoolId,
+                        feeCategory: feeCategory || 'School Fee',
+                        customerName: customerName || 'Default Student',
+                        customerEmail: customerEmail || 'student@school.com',
+                        customerPhone: customerPhone || '01XXXXXXXXX',
+                    }
+                });
+            }
 
             return NextResponse.json({ url: result.GatewayPageURL });
         } else {
