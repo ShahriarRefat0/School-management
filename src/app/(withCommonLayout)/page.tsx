@@ -19,19 +19,14 @@ const HomePage = () => {
       <HeroSection></HeroSection>
       <WhyChooseUs />
       <ExploreOurDashboardFeatures />
-
-
-   
       <Features />
       <HowItWorks></HowItWorks>
       <TestimonialsSection></TestimonialsSection>
       <FAQ></FAQ>
       <BlogSection></BlogSection>
       <FloatingClock />
-
       <Features />
       <HowItWorks></HowItWorks>
-
       <TestimonialsSection></TestimonialsSection>
       <FAQ></FAQ>
       <BlogSection></BlogSection>

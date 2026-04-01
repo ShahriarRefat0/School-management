@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { Loader2, Plus, Trash2, X, Globe, Save, Link as LinkIcon } from 'lucide-react'
+import { Loader2, Plus, Trash2, X, Globe, Save, Link as LinkIcon, User as UserIcon, Users } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Swal from 'sweetalert2'
 import { 
@@ -24,19 +24,26 @@ export default function SuperAdminProfileControl() {
   const [siteSubtitle, setSiteSubtitle] = useState("Management System")
   const [siteLogo, setSiteLogo] = useState("")
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        setLoading(true)
-        const [userRes, configRes] = await Promise.all([getSuperAdminUsers(), getSystemConfig()])
-        if (userRes?.success) setUsers(userRes.data || [])
-        if (configRes?.success && configRes.data) {
-          setSiteName(configRes.data.siteName || "")
-          setSiteSubtitle(configRes.data.siteSubtitle || "")
-          setSiteLogo(configRes.data.siteLogo || "")
-        }
-      } finally { setLoading(false) }
+  const init = async () => {
+    try {
+      setLoading(true)
+      const [userRes, configRes] = await Promise.all([getSuperAdminUsers(), getSystemConfig()])
+      if (userRes?.success) {
+        setUsers(userRes.data || [])
+      }
+      if (configRes?.success && configRes.data) {
+        setSiteName(configRes.data.siteName || "Schoology BD")
+        setSiteSubtitle(configRes.data.siteSubtitle || "Management System")
+        setSiteLogo(configRes.data.siteLogo || "")
+      }
+    } catch (err) {
+      console.error("Initialization error:", err)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
     init()
   }, [])
 
@@ -121,23 +128,43 @@ export default function SuperAdminProfileControl() {
                     <table className="w-full text-left">
                         <tbody className="divide-y divide-[var(--color-border-light)]">
                             {loading ? (
-                              <tr><td className="py-20 text-center"><Loader2 size={32} className="animate-spin mx-auto text-blue-600" /></td></tr>
-                            ) : users.map((user) => (
+                              <tr><td className="py-20 text-center"><Loader2 size={32} className="animate-spin mx-auto text-blue-600 mb-2" /><p className="text-xs font-bold uppercase tracking-widest text-slate-400">Loading Admins...</p></td></tr>
+                            ) : users.length > 0 ? (
+                               users.map((user) => (
                                 <tr key={user.id} className="group hover:bg-[var(--color-bg-page)]/50 transition-all">
                                     <td className="py-8">
                                         <div className="flex items-center gap-4">
-                                            <div className="size-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600 font-bold group-hover:bg-blue-600 group-hover:text-white transition-all">{user.name?.charAt(0)}</div>
-                                            <div><p className="font-black text-base">{user.name}</p><p className="text-xs text-slate-400">{user.email}</p></div>
+                                            <div className="size-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600 font-bold group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                                {user.name?.charAt(0) || <UserIcon size={20} />}
+                                            </div>
+                                            <div>
+                                                <p className="font-black text-base">{user.name}</p>
+                                                <p className="text-xs text-slate-400">{user.email}</p>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td className="py-8"><span className="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest">{user.role}</span></td>
+                                    <td className="py-8">
+                                        <span className="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                            {user.role}
+                                        </span>
+                                    </td>
                                     <td className="py-8 text-right">
                                         <button onClick={() => handleDeleteUser(user)} className="p-4 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all opacity-0 group-hover:opacity-100">
                                             <Trash2 size={20}/>
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                            ))
+                            ) : (
+                                <tr>
+                                    <td className="py-20 text-center">
+                                        <div className="flex flex-col items-center gap-2 text-slate-300">
+                                            <Users size={48} className="opacity-20" />
+                                            <p className="font-bold">No Super Admins Found</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

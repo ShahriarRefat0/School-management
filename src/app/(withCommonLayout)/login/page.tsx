@@ -21,7 +21,7 @@ import ForgotPasswordModal from '@/components/shared/auth/ForgotPasswordModal';
 
 const UnifiedLoginPage = () => {
   const router = useRouter();
-  const { signIn, resetPassword } = useAuth();
+  const { user, role, signIn, resetPassword, loading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -35,12 +35,37 @@ const UnifiedLoginPage = () => {
   const [resetError, setResetError] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
 
+  // Auto-redirect if already logged in
+  React.useEffect(() => {
+    if (!authLoading && user && role) {
+      const roleRoutes: Record<string, string> = {
+        super_admin: '/dashboard/super-admin',
+        admin: '/dashboard/principal',
+        teacher: '/dashboard/teacher',
+        parent: '/dashboard/parent',
+        accountant: '/dashboard/accountant',
+        student: '/dashboard/student',
+      };
+      
+      const destination = roleRoutes[role] || '/dashboard';
+      window.location.href = destination;
+    }
+  }, [user, role, authLoading]);
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg-page">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    const { error: authError } = await signIn(identifier, password);
+    const { error: authError, role } = await signIn(identifier, password);
 
     if (authError) {
       setError(
@@ -51,14 +76,23 @@ const UnifiedLoginPage = () => {
       return;
     }
 
-    router.refresh();
+    // Determine role-based destination
+    const roleRoutes: Record<string, string> = {
+      super_admin: '/dashboard/super-admin',
+      admin: '/dashboard/principal',
+      teacher: '/dashboard/teacher',
+      parent: '/dashboard/parent',
+      accountant: '/dashboard/accountant',
+      student: '/dashboard/student',
+    };
 
-    setTimeout(() => {
-      router.replace('/dashboard');
-    }, 200);
+    const destination = (role && roleRoutes[role]) || '/dashboard';
 
-    setIsLoading(false);
+    // Hard navigation so the server receives the fresh session cookie
+    // before the /dashboard redirect logic runs
+    window.location.href = destination;
   };
+
 
   const openForgotModal = () => {
     // Pre-fill with whatever is typed in the login email field

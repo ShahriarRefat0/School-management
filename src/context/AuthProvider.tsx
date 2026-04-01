@@ -111,12 +111,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             session.user.user_metadata?.role,
           );
           setRole(resolvedRole);
+          setLoading(false); // only mark done AFTER role is known
         })();
       } else {
         setUser(null);
         setRole(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {

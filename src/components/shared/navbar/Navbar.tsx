@@ -38,17 +38,16 @@ const Navbar = () => {
     .replace(/\b\w/g, (char: string) => char.toUpperCase());
 
   const displayName =
-    user?.name ||
     user?.user_metadata?.full_name ||
     user?.user_metadata?.name ||
     (typeof user?.email === 'string' ? user.email.split('@')[0] : 'User');
 
-  const userInitials = displayName
+  const userInitials = (displayName || 'U')
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map((part: string) => part[0]?.toUpperCase())
-    .join('');
+    .map((part: string) => part[0]?.toUpperCase() || '')
+    .join('') || 'U';
 
   const handleLogout = async () => {
     await signOut();
@@ -62,11 +61,6 @@ const Navbar = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-
-  if (!mounted) {
-    // We only skip rendering the dynamic interactive bits to avoid layout shift.
-    // The main nav bar skeleton will still render SSR.
-  }
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
@@ -225,10 +219,15 @@ const Navbar = () => {
                                 ? '/dashboard/student'
                                 : role === 'teacher'
                                   ? '/dashboard/teacher'
-                                  : '/dashboard'
+                                  : role === 'super_admin'
+                                    ? '/dashboard/super-admin'
+                                    : role === 'admin'
+                                      ? '/dashboard/principal'
+                                      : role === 'accountant'
+                                        ? '/dashboard/accountant'
+                                        : '/dashboard'
                           }
-                            
-                            
+                          onClick={() => setIsProfileOpen(false)}
                           className={`flex items-center gap-3 w-full px-3 py-3 text-sm font-bold ${textMain} hover:bg-slate-800 rounded-xl transition-all`}
                         >
                           <LucideLayoutDashboard

@@ -17,7 +17,7 @@ export default function AccountantSettingsPage() {
     const [formData, setFormData] = useState({
         name: "",
         email: "",
-        profileImage: "https://via.placeholder.com/150",
+        profileImage: "",
     });
 
     const [passwordData, setPasswordData] = useState({
@@ -25,22 +25,23 @@ export default function AccountantSettingsPage() {
         confirmPassword: ""
     });
 
+    const loadProfile = async () => {
+        setLoading(true);
+        const res = await getAccountantProfile();
+        if (res.success && res.data) {
+            const u = res.data;
+            setFormData({
+                name: u.name || "",
+                email: u.email || "",
+                profileImage: u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'Accountant')}&background=4f46e5&color=fff&size=200`,
+            });
+        }
+        setLoading(false);
+    };
+
     useEffect(() => {
-        const loadProfile = async () => {
-            setLoading(true);
-            const res = await getAccountantProfile();
-            
-            if (res.success && res.data) {
-                const user = res.data;
-                setFormData({
-                    name: user.name || "",
-                    email: user.email || "",
-                    profileImage: user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'Accountant')}&background=random`,
-                });
-            }
-            setLoading(false);
-        };
         loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleProfileUpdate = async () => {
@@ -51,17 +52,19 @@ export default function AccountantSettingsPage() {
         setUpdating(true);
         const res = await updateAccountantProfile({
             name: formData.name,
-            profileImage: formData.profileImage
+            profileImage: formData.profileImage,
         });
         setUpdating(false);
-        
+
         if (res.success) {
+            // Reload from DB so UI shows the persisted values
+            await loadProfile();
             Swal.fire({
                 title: "Success!",
                 text: res.message,
                 icon: "success",
                 timer: 2000,
-                showConfirmButton: false
+                showConfirmButton: false,
             });
         } else {
             Swal.fire("Error!", res.error, "error");
