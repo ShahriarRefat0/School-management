@@ -1,8 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Clock, Calendar } from "lucide-react"
+import { motion } from "framer-motion"
 
 export function FloatingClock() {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -51,14 +50,14 @@ export function FloatingClock() {
 
                     {/* Date - Secondary Focus */}
                     <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                             {dateStr}
                         </span>
                     </div>
                 </div>
 
                 {/* Subtle Bottom Highlight */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-linear-to-r from-transparent via-primary/40 to-transparent"></div>
             </div>
         </motion.div>
     )
