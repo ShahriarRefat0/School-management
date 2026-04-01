@@ -24,11 +24,6 @@ const Navbar = () => {
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const profileToggleRef = useRef<HTMLButtonElement | null>(null);
 
-  const navBg = "bg-bg-page dark:bg-slate-900";
-  const borderCol = "border-border-light dark:border-slate-800";
-  const textMuted = "text-text-muted dark:text-slate-400";
-  const textMain = "text-text-primary dark:text-white";
-
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -103,7 +98,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80  backdrop-blur-xl shadow transition-all duration-300`}
+      className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg-card)]/80 backdrop-blur-xl border-b border-[var(--color-border-light)] shadow-sm transition-all duration-300"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -112,7 +107,7 @@ const Navbar = () => {
             <button
               ref={mobileToggleRef}
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-lg bg-slate-800 text-blue-400 transition-all"
+              className="md:hidden p-2 rounded-lg bg-[var(--color-bg-page)] text-[var(--color-primary)] transition-all"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -122,7 +117,6 @@ const Navbar = () => {
               onClick={handleClickLogo}
               className="hover:opacity-90 transition-opacity"
             >
-              {/* লোগো সব সময় ডার্ক ভ্যারিয়েন্ট থাকবে */}
               <Logo variant="dark" />
             </Link>
           </div>
@@ -138,10 +132,10 @@ const Navbar = () => {
               <Link
                 key={item.label}
                 href={item.href}
-                className={` text-sm font-bold hover:text-blue-400 transition-all relative group`}
+                className="text-sm font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all relative group"
               >
                 {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--color-primary)] transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
           </div>
@@ -154,12 +148,12 @@ const Navbar = () => {
               <>
                 <Link
                   href="/login"
-                  className="hidden sm:block text-blue-400 font-bold hover:text-blue-300 px-4 py-2 transition-colors text-sm"
+                  className="hidden sm:block text-[var(--color-primary)] font-bold hover:opacity-80 px-4 py-2 transition-colors text-sm"
                 >
                   Login
                 </Link>
                 <Link href="/live-demo">
-                  <button className="hidden md:block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-bold shadow-md active:scale-95 transition-all text-sm">
+                  <button className="hidden md:block bg-[var(--color-primary)] hover:opacity-90 text-white px-6 py-2.5 rounded-full font-bold shadow-md active:scale-95 transition-all text-sm">
                     Live Demo
                   </button>
                 </Link>
@@ -169,45 +163,41 @@ const Navbar = () => {
                 <button
                   ref={profileToggleRef}
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className={`flex items-center gap-2 p-1 pr-2 rounded-xl border-2 border-blue-500/20 bg-slate-900 shadow-sm min-w-[75px] justify-center hover:border-blue-500/40 transition-all`}
+                  className="flex items-center gap-2 p-1 pr-2 rounded-xl border border-[var(--color-border-light)] bg-[var(--color-bg-page)] shadow-sm min-w-[75px] justify-center hover:border-[var(--color-primary)]/40 transition-all"
                 >
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
+                  <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
                     {userInitials || 'SR'}
                   </div>
                   <div className="hidden md:flex flex-col items-start leading-tight pr-1">
-                    <span className="text-xs font-bold text-white max-w-[110px] truncate">
+                    <span className="text-xs font-bold text-[var(--color-text-primary)] max-w-[110px] truncate">
                       {displayName}
                     </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-blue-300">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">
                       {displayRole}
                     </span>
                   </div>
                   <ChevronDown
-                    className={`h-3 w-3 text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}
+                    className={`h-3 w-3 text-[var(--color-text-muted)] transition-transform ${isProfileOpen ? 'rotate-180 text-[var(--color-primary)]' : ''}`}
                   />
                 </button>
 
                 <AnimatePresence>
                   {isProfileOpen && (
-                    <div ref={profileMenuRef}>
+                    <div ref={profileMenuRef} className="absolute right-0 mt-2 z-[70]">
                       <motion.div
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className={`absolute right-0 mt-2 w-52 rounded-2xl border border-gray-300  p-2 shadow-2xl z-[70]`}
+                        className="w-52 rounded-2xl border border-[var(--color-border-light)] bg-[var(--color-bg-card)] p-2 shadow-2xl backdrop-blur-lg"
                       >
-                        <div
-                          className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest border-b  mb-1`}
-                        >
+                        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] border-b border-[var(--color-border-light)] mb-1">
                           Account
                         </div>
-                        <div
-                          className={`px-3 py-2 mb-1 rounded-xl bg-slate-800/60 border ${borderCol}`}
-                        >
-                          <p className="text-sm font-bold text-white truncate">
+                        <div className="px-3 py-2 mb-1 rounded-xl bg-[var(--color-bg-page)]/50 border border-[var(--color-border-light)]">
+                          <p className="text-sm font-bold text-[var(--color-text-primary)] truncate">
                             {displayName}
                           </p>
-                          <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)] mt-0.5">
                             {displayRole}
                           </p>
                         </div>
@@ -228,11 +218,11 @@ const Navbar = () => {
                                         : '/dashboard'
                           }
                           onClick={() => setIsProfileOpen(false)}
-                          className={`flex items-center gap-3 w-full px-3 py-3 text-sm font-bold ${textMain} hover:bg-slate-800 rounded-xl transition-all`}
+                          className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-page)] rounded-xl transition-all"
                         >
                           <LucideLayoutDashboard
                             size={18}
-                            className="text-blue-500"
+                            className="text-[var(--color-primary)]"
                           />
                           Dashboard
                         </Link>
@@ -241,11 +231,10 @@ const Navbar = () => {
                             setShowLogoutModal(true);
                             setIsProfileOpen(false);
                           }}
-                          className="flex items-center gap-3 w-full px-3 py-3 text-sm font-black text-red-400 hover:bg-red-950/30 rounded-xl transition-all"
+                          className="flex items-center gap-3 w-full px-3 py-3 text-sm font-black text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
                         >
                           <LogOut size={18} /> Log out
-                          </button>
-                          
+                        </button>
                       </motion.div>
                     </div>
                   )}
@@ -260,26 +249,25 @@ const Navbar = () => {
       <AnimatePresence>
         {isOpen && (
           <div className="md:hidden relative z-40">
-            <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" />
+            <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" onClick={() => setIsOpen(false)} />
             <motion.div
               ref={mobileMenuRef}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className={`relative z-50 ${navBg} border-b ${borderCol} shadow-xl`}
+              className="relative z-50 bg-[var(--color-bg-card)] border-b border-[var(--color-border-light)] shadow-xl"
             >
               <div className="px-4 pt-2 pb-6 space-y-2">
                 {[
                   { label: 'Why Choose Us', href: '/why-choose-us' },
                   { label: 'Pricing', href: '/pricing' },
-                  { label: 'Support', href: '/support' },
+                  { label: 'Support', href: '/Support' },
                   { label: 'Privacy', href: '/privacy' },
-                  { label: 'Contact', href: '/contact' },
                 ].map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`block ${textMuted} font-semibold hover:text-blue-400 transition-colors py-2`}
+                    className="block text-[var(--color-text-secondary)] font-bold hover:text-[var(--color-primary)] transition-colors py-3 px-2 rounded-lg hover:bg-[var(--color-bg-page)]"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.label}
@@ -288,12 +276,12 @@ const Navbar = () => {
                 {!user && (
                   <div className="pt-4 flex flex-col gap-3">
                     <Link href="/login" onClick={() => setIsOpen(false)}>
-                      <button className="w-full bg-slate-800 text-blue-400 font-bold py-3 rounded-xl">
+                      <button className="w-full bg-[var(--color-bg-page)] text-[var(--color-primary)] font-bold py-3 rounded-xl border border-[var(--color-border-light)]">
                         Login
                       </button>
                     </Link>
                     <Link href="/live-demo" onClick={() => setIsOpen(false)}>
-                      <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">
+                      <button className="w-full bg-[var(--color-primary)] text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-600/20">
                         Live Demo
                       </button>
                     </Link>
@@ -313,43 +301,41 @@ const Navbar = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowLogoutModal(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className={`relative w-[92%] max-w-[400px] ${navBg} rounded-[32px] p-8 shadow-2xl border ${borderCol} overflow-hidden`}
+              className="relative w-[92%] max-w-[400px] bg-[var(--color-bg-card)] rounded-[32px] p-8 shadow-2xl border border-[var(--color-border-light)] overflow-hidden"
             >
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className={`absolute top-5 right-5 p-2 ${textMuted} hover:bg-slate-800 rounded-full`}
+                className="absolute top-5 right-5 p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-page)] rounded-full transition-all"
               >
                 <X size={24} />
               </button>
               <div className="flex flex-col items-center text-center">
-                <div className="h-20 w-20 bg-red-950/30 rounded-full flex items-center justify-center mb-6 text-red-500">
+                <div className="h-20 w-20 bg-rose-100 dark:bg-rose-950/30 rounded-full flex items-center justify-center mb-6 text-rose-500">
                   <AlertCircle size={40} strokeWidth={2.5} />
                 </div>
-                <h3
-                  className={`text-2xl font-black ${textMain} tracking-tight`}
-                >
+                <h3 className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight">
                   Confirm Logout
                 </h3>
-                <p className={`${textMuted} mt-3 font-medium text-base px-2`}>
+                <p className="text-[var(--color-text-muted)] mt-3 font-medium text-base px-2">
                   Are you sure you want to sign out from{' '}
-                  <span className="text-blue-500 font-bold">Schoology BD</span>?
+                  <span className="text-[var(--color-primary)] font-bold">Schoology BD</span>?
                 </p>
                 <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 w-full mt-10">
                   <button
                     onClick={() => setShowLogoutModal(false)}
-                    className={`order-2 sm:order-1 py-4 rounded-2xl border-2 ${borderCol} font-bold ${textMuted} hover:bg-slate-800 transition-all active:scale-95`}
+                    className="order-2 sm:order-1 py-4 rounded-2xl border-2 border-[var(--color-border-light)] font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] transition-all active:scale-95"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleLogout}
-                    className="order-1 sm:order-2 py-4 rounded-2xl bg-red-500 text-white font-black shadow-xl shadow-red-500/30 hover:bg-red-600 transition-all active:scale-95"
+                    className="order-1 sm:order-2 py-4 rounded-2xl bg-rose-500 text-white font-black shadow-xl shadow-rose-500/30 hover:bg-rose-600 transition-all active:scale-95"
                   >
                     Yes, Log Out
                   </button>
@@ -359,8 +345,7 @@ const Navbar = () => {
           </div>
         )}
       </AnimatePresence>
-      </nav>
-    
+    </nav>
   );
 };
 
