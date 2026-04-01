@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 
-// ১. লজিক এবং UI একটি আলাদা কম্পোনেন্টে
 const ExamResultContent = () => {
   const { user } = useAuth();
   const searchParams = useSearchParams();
