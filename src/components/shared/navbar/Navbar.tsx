@@ -109,6 +109,7 @@ const Navbar = () => {
   ];
 
   return (
+    <>
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg-card)]/80 backdrop-blur-xl border-b border-[var(--color-border-light)] shadow-sm transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -268,27 +269,60 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
-      {/* Logout Modal */}
-      <AnimatePresence>
-        {showLogoutModal && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowLogoutModal(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-[92%] max-w-[400px] bg-[var(--color-bg-card)] rounded-[32px] p-8 shadow-2xl border border-[var(--color-border-light)] overflow-hidden">
-              <button onClick={() => setShowLogoutModal(false)} className="absolute top-5 right-5 p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-page)] rounded-full transition-all"><X size={24} /></button>
-              <div className="flex flex-col items-center text-center">
-                <div className="h-20 w-20 bg-rose-100 dark:bg-rose-950/30 rounded-full flex items-center justify-center mb-6 text-rose-500"><AlertCircle size={40} strokeWidth={2.5} /></div>
-                <h3 className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight">Confirm Logout</h3>
-                <p className="text-[var(--color-text-muted)] mt-3 font-medium text-base px-2">Are you sure you want to sign out from <span className="text-[var(--color-primary)] font-bold">Schoology BD</span>?</p>
-                <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 w-full mt-10">
-                  <button onClick={() => setShowLogoutModal(false)} className="order-2 sm:order-1 py-4 rounded-2xl border-2 border-[var(--color-border-light)] font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] transition-all active:scale-95">Cancel</button>
-                  <button onClick={handleLogout} className="order-1 sm:order-2 py-4 rounded-2xl bg-rose-500 text-white font-black shadow-xl shadow-rose-500/30 hover:bg-rose-600 transition-all active:scale-95">Yes, Log Out</button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </nav>
+
+    {/* Logout Modal — outside <nav> so it centers correctly on the viewport */}
+    <AnimatePresence>
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowLogoutModal(false)}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          />
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="relative w-[92%] max-w-[400px] bg-[var(--color-bg-card)] rounded-[32px] p-8 shadow-2xl border border-[var(--color-border-light)] overflow-hidden"
+          >
+            <button
+              onClick={() => setShowLogoutModal(false)}
+              className="absolute top-5 right-5 p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-page)] rounded-full transition-all"
+            >
+              <X size={24} />
+            </button>
+            <div className="flex flex-col items-center text-center">
+              <div className="h-20 w-20 bg-rose-100 dark:bg-rose-950/30 rounded-full flex items-center justify-center mb-6 text-rose-500">
+                <AlertCircle size={40} strokeWidth={2.5} />
+              </div>
+              <h3 className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight">Confirm Logout</h3>
+              <p className="text-[var(--color-text-muted)] mt-3 font-medium text-base px-2">
+                Are you sure you want to sign out from{' '}
+                <span className="text-[var(--color-primary)] font-bold">Schoology BD</span>?
+              </p>
+              <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 w-full mt-10">
+                <button
+                  onClick={() => setShowLogoutModal(false)}
+                  className="order-2 sm:order-1 py-4 rounded-2xl border-2 border-[var(--color-border-light)] font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] transition-all active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="order-1 sm:order-2 py-4 rounded-2xl bg-rose-500 text-white font-black shadow-xl shadow-rose-500/30 hover:bg-rose-600 transition-all active:scale-95"
+                >
+                  Yes, Log Out
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 

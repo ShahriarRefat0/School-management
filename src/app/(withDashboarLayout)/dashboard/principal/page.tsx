@@ -1,5 +1,6 @@
 'use client';
 
+import PageLoader from '@/components/shared/PageLoader';
 import { useRoleGuard } from '@/hooks/useRoleGurad';
 import {
   TrendingUp,
@@ -46,7 +47,7 @@ const StatCard = ({ title, value, desc, icon: Icon, colorClass = "bg-blue-50 tex
 export default function PrincipalDashboard() {
   const { loading } = useRoleGuard("admin")
 
-  if (loading) return <p>Loading.......</p>
+  if (loading) return <PageLoader />
 
   /* KPI Data */
   const stats = [
