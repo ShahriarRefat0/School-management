@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation'; // ACTIVE ROUTE TRACKER
 import Logo from '@/components/shared/logo/logo';
 import {
   LucideLayoutDashboard,
@@ -19,6 +20,8 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, role, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname(); // current URL path niteche
+
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileToggleRef = useRef<HTMLButtonElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -96,13 +99,21 @@ const Navbar = () => {
     };
   }, [isOpen, isProfileOpen]);
 
+  // Nav Links Data
+  const navLinks = [
+    { label: "Home", href: "/" },
+    { label: "Why Choose Us", href: "/why-choose-us" },
+    { label: "Pricing", href: "/pricing" },
+    { label: "Support", href: "/support" },
+    { label: "Privacy", href: "/privacy" }
+  ];
+
   return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg-card)]/80 backdrop-blur-xl border-b border-[var(--color-border-light)] shadow-sm transition-all duration-300"
-    >
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg-card)]/80 backdrop-blur-xl border-b border-[var(--color-border-light)] shadow-sm transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* LEFT: Hamburger (mobile) + Logo */}
+          
+          {/* LEFT: Hamburger + Logo */}
           <div className="flex items-center gap-3">
             <button
               ref={mobileToggleRef}
@@ -112,32 +123,30 @@ const Navbar = () => {
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
-            <Link
-              href="/"
-              onClick={handleClickLogo}
-              className="hover:opacity-90 transition-opacity"
-            >
+            <Link href="/" onClick={handleClickLogo} className="hover:opacity-90 transition-opacity">
               <Logo variant="dark" />
             </Link>
           </div>
 
-          {/* CENTER: Desktop nav links */}
+          {/* CENTER: Desktop nav links WITH ACTIVE STATE */}
           <div className="hidden md:flex items-center gap-10">
-            {[
-              { label: "Why Choose Us", href: "/why-choose-us" },
-              { label: "Pricing", href: "/pricing" },
-              { label: "Support", href: "/Support" },
-              { label: "Privacy", href: "/privacy" }
-            ].map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="text-sm font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-all relative group"
-              >
-                {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--color-primary)] transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-            ))}
+            {navLinks.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`text-sm font-bold transition-all relative group ${
+                    isActive ? "text-[var(--color-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-primary)]"
+                  }`}
+                >
+                  {item.label}
+                  <span className={`absolute -bottom-1 left-0 h-0.5 bg-[var(--color-primary)] transition-all duration-300 ${
+                    isActive ? "w-full" : "w-0 group-hover:w-full"
+                  }`}></span>
+                </Link>
+              );
+            })}
           </div>
 
           {/* RIGHT: Theme + Profile/Login */}
@@ -146,10 +155,7 @@ const Navbar = () => {
 
             {!user ? (
               <>
-                <Link
-                  href="/login"
-                  className="hidden sm:block text-[var(--color-primary)] font-bold hover:opacity-80 px-4 py-2 transition-colors text-sm"
-                >
+                <Link href="/login" className="hidden sm:block text-[var(--color-primary)] font-bold hover:opacity-80 px-4 py-2 transition-colors text-sm">
                   Login
                 </Link>
                 <Link href="/live-demo">
@@ -169,16 +175,10 @@ const Navbar = () => {
                     {userInitials || 'SR'}
                   </div>
                   <div className="hidden md:flex flex-col items-start leading-tight pr-1">
-                    <span className="text-xs font-bold text-[var(--color-text-primary)] max-w-[110px] truncate">
-                      {displayName}
-                    </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">
-                      {displayRole}
-                    </span>
+                    <span className="text-xs font-bold text-[var(--color-text-primary)] max-w-[110px] truncate">{displayName}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-primary)]">{displayRole}</span>
                   </div>
-                  <ChevronDown
-                    className={`h-3 w-3 text-[var(--color-text-muted)] transition-transform ${isProfileOpen ? 'rotate-180 text-[var(--color-primary)]' : ''}`}
-                  />
+                  <ChevronDown className={`h-3 w-3 text-[var(--color-text-muted)] transition-transform ${isProfileOpen ? 'rotate-180 text-[var(--color-primary)]' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -190,47 +190,27 @@ const Navbar = () => {
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         className="w-52 rounded-2xl border border-[var(--color-border-light)] bg-[var(--color-bg-card)] p-2 shadow-2xl backdrop-blur-lg"
                       >
-                        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] border-b border-[var(--color-border-light)] mb-1">
-                          Account
-                        </div>
+                        <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] border-b border-[var(--color-border-light)] mb-1">Account</div>
                         <div className="px-3 py-2 mb-1 rounded-xl bg-[var(--color-bg-page)]/50 border border-[var(--color-border-light)]">
-                          <p className="text-sm font-bold text-[var(--color-text-primary)] truncate">
-                            {displayName}
-                          </p>
-                          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)] mt-0.5">
-                            {displayRole}
-                          </p>
+                          <p className="text-sm font-bold text-[var(--color-text-primary)] truncate">{displayName}</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-primary)] mt-0.5">{displayRole}</p>
                         </div>
                         <Link
                           href={
-                            role === 'parent'
-                              ? '/dashboard/parent'
-                              : role === 'student'
-                                ? '/dashboard/student'
-                                : role === 'teacher'
-                                  ? '/dashboard/teacher'
-                                  : role === 'super_admin'
-                                    ? '/dashboard/super-admin'
-                                    : role === 'admin'
-                                      ? '/dashboard/principal'
-                                      : role === 'accountant'
-                                        ? '/dashboard/accountant'
-                                        : '/dashboard'
+                            role === 'parent' ? '/dashboard/parent' : 
+                            role === 'student' ? '/dashboard/student' : 
+                            role === 'teacher' ? '/dashboard/teacher' : 
+                            role === 'super_admin' ? '/dashboard/super-admin' : 
+                            role === 'admin' ? '/dashboard/principal' : 
+                            role === 'accountant' ? '/dashboard/accountant' : '/dashboard'
                           }
                           onClick={() => setIsProfileOpen(false)}
                           className="flex items-center gap-3 w-full px-3 py-3 text-sm font-bold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-page)] rounded-xl transition-all"
                         >
-                          <LucideLayoutDashboard
-                            size={18}
-                            className="text-[var(--color-primary)]"
-                          />
-                          Dashboard
+                          <LucideLayoutDashboard size={18} className="text-[var(--color-primary)]" /> Dashboard
                         </Link>
                         <button
-                          onClick={() => {
-                            setShowLogoutModal(true);
-                            setIsProfileOpen(false);
-                          }}
+                          onClick={() => { setShowLogoutModal(true); setIsProfileOpen(false); }}
                           className="flex items-center gap-3 w-full px-3 py-3 text-sm font-black text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
                         >
                           <LogOut size={18} /> Log out
@@ -245,7 +225,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Dropdown WITH ACTIVE STATE */}
       <AnimatePresence>
         {isOpen && (
           <div className="md:hidden relative z-40">
@@ -258,16 +238,15 @@ const Navbar = () => {
               className="relative z-50 bg-[var(--color-bg-card)] border-b border-[var(--color-border-light)] shadow-xl"
             >
               <div className="px-4 pt-2 pb-6 space-y-2">
-                {[
-                  { label: 'Why Choose Us', href: '/why-choose-us' },
-                  { label: 'Pricing', href: '/pricing' },
-                  { label: 'Support', href: '/Support' },
-                  { label: 'Privacy', href: '/privacy' },
-                ].map((item) => (
+                {navLinks.map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="block text-[var(--color-text-secondary)] font-bold hover:text-[var(--color-primary)] transition-colors py-3 px-2 rounded-lg hover:bg-[var(--color-bg-page)]"
+                    className={`block font-bold py-3 px-2 rounded-lg transition-colors ${
+                      pathname === item.href 
+                        ? "text-[var(--color-primary)] bg-[var(--color-bg-page)]" 
+                        : "text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg-page)]"
+                    }`}
                     onClick={() => setIsOpen(false)}
                   >
                     {item.label}
@@ -276,14 +255,10 @@ const Navbar = () => {
                 {!user && (
                   <div className="pt-4 flex flex-col gap-3">
                     <Link href="/login" onClick={() => setIsOpen(false)}>
-                      <button className="w-full bg-[var(--color-bg-page)] text-[var(--color-primary)] font-bold py-3 rounded-xl border border-[var(--color-border-light)]">
-                        Login
-                      </button>
+                      <button className="w-full bg-[var(--color-bg-page)] text-[var(--color-primary)] font-bold py-3 rounded-xl border border-[var(--color-border-light)]">Login</button>
                     </Link>
                     <Link href="/live-demo" onClick={() => setIsOpen(false)}>
-                      <button className="w-full bg-[var(--color-primary)] text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-600/20">
-                        Live Demo
-                      </button>
+                      <button className="w-full bg-[var(--color-primary)] text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-600/20">Live Demo</button>
                     </Link>
                   </div>
                 )}
@@ -293,52 +268,20 @@ const Navbar = () => {
         )}
       </AnimatePresence>
 
+      {/* Logout Modal */}
       <AnimatePresence>
         {showLogoutModal && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowLogoutModal(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-[92%] max-w-[400px] bg-[var(--color-bg-card)] rounded-[32px] p-8 shadow-2xl border border-[var(--color-border-light)] overflow-hidden"
-            >
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                className="absolute top-5 right-5 p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-page)] rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowLogoutModal(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-[92%] max-w-[400px] bg-[var(--color-bg-card)] rounded-[32px] p-8 shadow-2xl border border-[var(--color-border-light)] overflow-hidden">
+              <button onClick={() => setShowLogoutModal(false)} className="absolute top-5 right-5 p-2 text-[var(--color-text-muted)] hover:bg-[var(--color-bg-page)] rounded-full transition-all"><X size={24} /></button>
               <div className="flex flex-col items-center text-center">
-                <div className="h-20 w-20 bg-rose-100 dark:bg-rose-950/30 rounded-full flex items-center justify-center mb-6 text-rose-500">
-                  <AlertCircle size={40} strokeWidth={2.5} />
-                </div>
-                <h3 className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight">
-                  Confirm Logout
-                </h3>
-                <p className="text-[var(--color-text-muted)] mt-3 font-medium text-base px-2">
-                  Are you sure you want to sign out from{' '}
-                  <span className="text-[var(--color-primary)] font-bold">Schoology BD</span>?
-                </p>
+                <div className="h-20 w-20 bg-rose-100 dark:bg-rose-950/30 rounded-full flex items-center justify-center mb-6 text-rose-500"><AlertCircle size={40} strokeWidth={2.5} /></div>
+                <h3 className="text-2xl font-black text-[var(--color-text-primary)] tracking-tight">Confirm Logout</h3>
+                <p className="text-[var(--color-text-muted)] mt-3 font-medium text-base px-2">Are you sure you want to sign out from <span className="text-[var(--color-primary)] font-bold">Schoology BD</span>?</p>
                 <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 w-full mt-10">
-                  <button
-                    onClick={() => setShowLogoutModal(false)}
-                    className="order-2 sm:order-1 py-4 rounded-2xl border-2 border-[var(--color-border-light)] font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] transition-all active:scale-95"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="order-1 sm:order-2 py-4 rounded-2xl bg-rose-500 text-white font-black shadow-xl shadow-rose-500/30 hover:bg-rose-600 transition-all active:scale-95"
-                  >
-                    Yes, Log Out
-                  </button>
+                  <button onClick={() => setShowLogoutModal(false)} className="order-2 sm:order-1 py-4 rounded-2xl border-2 border-[var(--color-border-light)] font-bold text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-page)] transition-all active:scale-95">Cancel</button>
+                  <button onClick={handleLogout} className="order-1 sm:order-2 py-4 rounded-2xl bg-rose-500 text-white font-black shadow-xl shadow-rose-500/30 hover:bg-rose-600 transition-all active:scale-95">Yes, Log Out</button>
                 </div>
               </div>
             </motion.div>

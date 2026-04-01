@@ -21,10 +21,12 @@ const HeroSection = () => {
     schools: 0,
     users: 0
   });
+  const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<keyof RevenueData>('allTime');
 
   useEffect(() => {
     const fetchStats = async () => {
+      setLoading(true);
       const res = await getHeroStats();
       if (res.success) {
         setStats({
@@ -33,6 +35,7 @@ const HeroSection = () => {
           users: res.users
         });
       }
+      setLoading(false);
     };
     fetchStats();
   }, []);
@@ -40,7 +43,7 @@ const HeroSection = () => {
   const currentRevenue = stats.revenue[period];
 
   return (
-    <section id="home" className="relative pt-32 pb-24 overflow-hidden bg-[#1e1e62]">
+    <section id="home" className="relative pt-32 pb-24 overflow-hidden bg-white dark:bg-[#1e1e62]">
       <Herobackground />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -54,9 +57,9 @@ const HeroSection = () => {
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-400/10 border border-blue-400/20 w-fit"
             >
               <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-              <span className="text-blue-100 text-[10px] font-black uppercase tracking-widest">#1 Online Software</span>
-              <ShieldCheck size={12} className="text-blue-400" />
-              <span className="text-blue-300 text-[10px] font-bold">Verified</span>
+              <span className="text-slate-600 dark:text-blue-100 text-[10px] font-black uppercase tracking-widest">#1 Online Software</span>
+              <ShieldCheck size={12} className="text-blue-500 dark:text-blue-400" />
+              <span className="text-blue-600 dark:text-blue-300 text-[10px] font-bold">Verified</span>
             </motion.div>
 
             <motion.div
@@ -65,13 +68,13 @@ const HeroSection = () => {
               transition={{ delay: 0.2 }}
               className="space-y-4"
             >
-              <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] tracking-tight">
-                <span className="text-blue-400">Schoology</span>BD <br />
-                <span className="text-white/90">Smart School</span> <br />
-                <span className="text-white">Management</span>
+              <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white leading-[1.1] tracking-tight">
+                <span className="text-blue-600 dark:text-blue-400">Schoology</span>BD <br />
+                <span className="text-slate-800 dark:text-white/90">Smart School</span> <br />
+                <span className="text-slate-700 dark:text-white">Management</span>
               </h1>
-              <p className="text-lg text-blue-100/70 max-w-xl font-medium leading-relaxed">
-                Empower your educational institution with <span className="text-white font-bold underline decoration-blue-500 decoration-2 underline-offset-4">Schoology BD</span>.
+              <p className="text-lg text-slate-600 dark:text-blue-100/70 max-w-xl font-medium leading-relaxed">
+                Empower your educational institution with <span className="text-slate-900 dark:text-white font-bold underline decoration-blue-500 decoration-2 underline-offset-4">Schoology BD</span>.
                 Experience the most advanced, cloud-based automation for admissions, finance, and academics.
                 Trusted by elite educators in Bangladesh.
               </p>
@@ -91,13 +94,13 @@ const HeroSection = () => {
                 <ChevronRight className="group-hover:translate-x-1 transition-transform" />
               </Link>
 
-              <div className="flex items-center gap-4 text-white">
-                <div className="w-12 h-12 rounded-full bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-400 cursor-pointer hover:bg-blue-400 hover:text-white transition-all">
+              <div className="flex items-center gap-4 text-slate-700 dark:text-white">
+                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-400/10 border border-blue-200 dark:border-blue-400/30 flex items-center justify-center text-blue-600 dark:text-blue-400 cursor-pointer hover:bg-blue-600 hover:text-white transition-all">
                   <PlayCircle size={24} />
                 </div>
                 <div>
-                  <p className="font-bold text-sm">Watch 2-min Demo</p>
-                  <p className="text-blue-400 font-bold text-xs mt-0.5">See how to automate your school</p>
+                  <p className="font-bold text-sm text-slate-900 dark:text-white">Watch 2-min Demo</p>
+                  <p className="text-blue-600 dark:text-blue-400 font-bold text-xs mt-0.5">See how to automate your school</p>
                 </div>
               </div>
             </motion.div>
@@ -111,9 +114,9 @@ const HeroSection = () => {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 1 }}
-              className="absolute w-[450px] h-[450px] rounded-full bg-gradient-to-br from-blue-600/40 via-purple-600/40 to-transparent border border-white/10 overflow-hidden shadow-2xl shadow-blue-900/50"
+              className="absolute w-[450px] h-[450px] rounded-full bg-gradient-to-br from-blue-100 dark:from-blue-600/40 via-purple-100 dark:via-purple-600/40 to-transparent border border-slate-200 dark:border-white/10 overflow-hidden shadow-2xl shadow-blue-200 dark:shadow-blue-900/50"
             >
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05] dark:opacity-10" />
             </motion.div>
 
             {/* Character Image */}
@@ -137,16 +140,22 @@ const HeroSection = () => {
             <motion.div
               animate={{ y: [0, -10, 0], rotate: [0, 1, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-10 -left-6 z-30 bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl shadow-2xl flex items-center gap-4 group"
+              className="absolute top-10 -left-6 z-30 bg-white/80 dark:bg-white/10 backdrop-blur-xl border border-slate-200 dark:border-white/20 p-6 rounded-3xl shadow-2xl flex items-center gap-4 group"
             >
               <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
                 <Building2 size={24} />
               </div>
               <div>
-                <p className="text-blue-200 text-[10px] font-black uppercase tracking-widest leading-none mb-1">Schools Joined</p>
+                <p className="text-slate-500 dark:text-blue-200 text-[10px] font-black uppercase tracking-widest leading-none mb-1">Schools Joined</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-white">{stats.schools.toLocaleString()}</span>
-                  <span className="text-[10px] font-bold text-green-400">+02 Today</span>
+                  {loading ? (
+                    <div className="w-20 h-8 bg-slate-200 dark:bg-white/10 rounded-lg animate-pulse mt-1" />
+                  ) : (
+                    <>
+                      <span className="text-3xl font-black text-slate-900 dark:text-white">{stats.schools.toLocaleString()}</span>
+                      <span className="text-[10px] font-bold text-green-600 dark:text-green-400">+02 Today</span>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -155,19 +164,23 @@ const HeroSection = () => {
             <motion.div
               animate={{ y: [0, 10, 0], x: [0, 5, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute top-2 right-4 z-30 bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-[2rem] shadow-2xl space-y-3 min-w-[210px]"
+              className="absolute top-2 right-4 z-30 bg-white/80 dark:bg-white/10 backdrop-blur-xl border border-slate-200 dark:border-white/20 p-5 rounded-[2rem] shadow-2xl space-y-3 min-w-[210px]"
             >
-              <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                <p className="text-white/60 text-[10px] font-black uppercase tracking-widest">Active Users</p>
+              <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/10 pb-2">
+                <p className="text-slate-500 dark:text-white/60 text-[10px] font-black uppercase tracking-widest">Active Users</p>
                 <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center text-white">
                   <UserCheck size={16} />
                 </div>
               </div>
               <div className="flex justify-between items-end">
-                <span className="text-4xl font-black text-white">{stats.users.toLocaleString()}</span>
+                {loading ? (
+                  <div className="w-24 h-10 bg-slate-200 dark:bg-white/10 rounded-xl animate-pulse" />
+                ) : (
+                  <span className="text-4xl font-black text-slate-900 dark:text-white">{stats.users.toLocaleString()}</span>
+                )}
                 <div className="text-right">
-                  <p className="text-[10px] font-bold text-white/50 uppercase">Verified</p>
-                  <p className="text-xs font-black text-white">100%</p>
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-white/50 uppercase">Verified</p>
+                  <p className="text-xs font-black text-slate-800 dark:text-white">100%</p>
                 </div>
               </div>
             </motion.div>
@@ -176,51 +189,57 @@ const HeroSection = () => {
             <motion.div
               animate={{ scale: [1, 1.02, 1] }}
               transition={{ duration: 6, repeat: Infinity }}
-              className="absolute -bottom-10 left-1/4 z-30 bg-white/10 backdrop-blur-2xl border border-white/20 p-6 rounded-[2.5rem] shadow-2xl w-[260px] group"
+              className="absolute -bottom-10 left-1/4 z-30 bg-white/90 dark:bg-white/10 backdrop-blur-2xl border border-slate-200 dark:border-white/20 p-6 rounded-[2.5rem] shadow-2xl w-[260px] group"
             >
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <p className="text-[10px] font-black text-blue-200/50 uppercase tracking-widest">
+                  <p className="text-[10px] font-black text-blue-600 dark:text-blue-200/50 uppercase tracking-widest">
                     {period === 'allTime' ? 'Total' : period.charAt(0).toUpperCase() + period.slice(1)} Revenue
                   </p>
                   <AnimatePresence mode="wait">
-                    <motion.p
-                      key={period}
+                    <motion.div
+                      key={period + loading}
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -5 }}
-                      className="text-2xl font-black text-white mt-1"
+                      className="mt-1"
                     >
-                      ৳{currentRevenue.toLocaleString()}
-                    </motion.p>
+                      {loading ? (
+                        <div className="w-32 h-8 bg-slate-200 dark:bg-white/10 rounded-lg animate-pulse" />
+                      ) : (
+                        <p className="text-2xl font-black text-slate-900 dark:text-white">
+                          ৳{currentRevenue.toLocaleString()}
+                        </p>
+                      )}
+                    </motion.div>
                   </AnimatePresence>
                 </div>
                 <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400">
                   <TrendingUp size={20} />
                 </div>
               </div>
-              <div className="flex gap-2 items-baseline text-[10px] font-bold text-white/40 uppercase font-mono">
+              <div className="flex gap-2 items-baseline text-[10px] font-bold text-slate-400 dark:text-white/40 uppercase font-mono">
                 <button
                   onClick={() => setPeriod('daily')}
-                  className={`transition-colors hover:text-white ${period === 'daily' ? 'text-blue-400' : ''}`}
+                  className={`transition-colors hover:text-blue-600 dark:hover:text-white ${period === 'daily' ? 'text-blue-600 dark:text-blue-400' : ''}`}
                 >
                   Daily
                 </button>
                 <button
                   onClick={() => setPeriod('weekly')}
-                  className={`transition-colors hover:text-white ${period === 'weekly' ? 'text-blue-400' : ''}`}
+                  className={`transition-colors hover:text-blue-600 dark:hover:text-white ${period === 'weekly' ? 'text-blue-600 dark:text-blue-400' : ''}`}
                 >
                   Weekly
                 </button>
                 <button
                   onClick={() => setPeriod('monthly')}
-                  className={`transition-colors hover:text-white ${period === 'monthly' ? 'text-blue-400' : ''}`}
+                  className={`transition-colors hover:text-blue-600 dark:hover:text-white ${period === 'monthly' ? 'text-blue-600 dark:text-blue-400' : ''}`}
                 >
                   Monthly
                 </button>
                 <button
                   onClick={() => setPeriod('allTime')}
-                  className={`transition-colors hover:text-white ${period === 'allTime' ? 'text-blue-400' : ''}`}
+                  className={`transition-colors hover:text-blue-600 dark:hover:text-white ${period === 'allTime' ? 'text-blue-600 dark:text-blue-400' : ''}`}
                 >
                   Total
                 </button>
@@ -231,16 +250,16 @@ const HeroSection = () => {
                   <motion.div
                     key={i + period}
                     initial={{ height: 0 }}
-                    animate={{ height: `${h + (period === 'weekly' ? 10 : 0)}%` }}
-                    className="flex-1 bg-gradient-to-t from-blue-500/50 to-blue-400 rounded-t-sm"
+                    animate={{ height: loading ? "20%" : `${h + (period === 'weekly' ? 10 : 0)}%` }}
+                    className={`flex-1 rounded-t-sm transition-all duration-500 ${loading ? 'bg-slate-200 dark:bg-white/5 animate-pulse' : 'bg-gradient-to-t from-blue-500/50 to-blue-400'}`}
                   />
                 ))}
               </div>
             </motion.div>
 
             {/* Decorative Arrow */}
-            <div className="absolute top-1/2 -right-10 opacity-20 rotate-45">
-              <ArrowRight size={100} className="text-white" />
+            <div className="absolute top-1/2 -right-10 opacity-10 dark:opacity-20 rotate-45">
+              <ArrowRight size={100} className="text-slate-400 dark:text-white" />
             </div>
 
           </div>

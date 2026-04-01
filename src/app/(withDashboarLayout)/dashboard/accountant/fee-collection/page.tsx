@@ -160,36 +160,36 @@ export default function AssignFeePage() {
     <div className="space-y-6 max-w-4xl mx-auto py-8 px-4">
       {/* Header */}
       <div className="flex items-center gap-4 mb-4">
-        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
+        <div className="w-16 h-16 bg-blue-500/10 dark:bg-blue-400/10 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm border border-blue-500/20">
           <DollarSign size={32} />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="text-3xl font-bold text-text-primary">
             Multi-Fee Assignment
           </h1>
-          <p className="text-slate-500 font-medium">
+          <p className="text-text-muted font-medium">
             Assign multiple fees simultaneously to a class or section
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-200">
+      <div className="bg-bg-card rounded-[2rem] p-6 sm:p-10 shadow-sm border border-border-light">
         <form onSubmit={handleSubmit} className="space-y-10">
           {/* Target Selection Section */}
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2 border-b border-border-light pb-3">
               <BookOpen size={20} className="text-blue-500" />
               Target Audience
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Class Select */}
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">
+                <label className="text-sm font-bold text-text-secondary ml-1">
                   Select Class <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative group">
                   <BookOpen
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-blue-500 transition-colors"
                     size={18}
                   />
                   <select
@@ -197,7 +197,7 @@ export default function AssignFeePage() {
                     onChange={(e) =>
                       setFormData({ ...formData, classId: e.target.value })
                     }
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all appearance-none"
+                    className="w-full pl-12 pr-4 py-4 bg-bg-page border border-border-light rounded-2xl text-sm font-medium text-text-primary focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all appearance-none"
                     disabled={isLoadingClasses}
                     required
                   >
@@ -219,13 +219,13 @@ export default function AssignFeePage() {
 
               {/* Section Select */}
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 ml-1">
+                <label className="text-sm font-bold text-text-secondary ml-1">
                   Select Section{' '}
-                  <span className="text-slate-400">(Optional)</span>
+                  <span className="text-text-muted">(Optional)</span>
                 </label>
                 <div className="relative group">
                   <Layers
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-blue-500 transition-colors"
                     size={18}
                   />
                   <select
@@ -233,7 +233,7 @@ export default function AssignFeePage() {
                     onChange={(e) =>
                       setFormData({ ...formData, sectionId: e.target.value })
                     }
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all appearance-none disabled:opacity-50 disabled:grayscale"
+                    className="w-full pl-12 pr-4 py-4 bg-bg-page border border-border-light rounded-2xl text-sm font-medium text-text-primary focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all appearance-none disabled:opacity-50 disabled:grayscale"
                     disabled={!formData.classId || isLoadingSections}
                   >
                     <option value="">All Sections</option>
@@ -256,7 +256,7 @@ export default function AssignFeePage() {
 
           {/* Fee Amounts Section */}
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-800 flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="text-xl font-bold text-text-primary flex items-center justify-between border-b border-border-light pb-3">
               <span className="flex items-center gap-2">
                 <DollarSign size={20} className="text-emerald-500" />
                 Fee Amounts
@@ -264,7 +264,7 @@ export default function AssignFeePage() {
               <button
                 type="button"
                 onClick={addCustomFee}
-                className="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition flex items-center gap-1"
+                className="text-sm font-bold text-blue-600 bg-blue-500/10 dark:bg-blue-400/10 px-3 py-1.5 rounded-xl hover:bg-blue-500/20 transition flex items-center gap-1"
               >
                 <Plus size={16} /> Add Custom
               </button>
@@ -274,7 +274,7 @@ export default function AssignFeePage() {
               {feeInputs.map((fee) => (
                 <div
                   key={fee.id}
-                  className="flex flex-col sm:flex-row gap-3 items-center p-3 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-slate-300 transition-colors"
+                  className="flex flex-col sm:flex-row gap-3 items-center p-3 bg-bg-page border border-border-light rounded-2xl group hover:border-blue-500/30 transition-colors"
                 >
                   {fee.custom ? (
                     <div className="flex-1 w-full relative">
@@ -285,12 +285,12 @@ export default function AssignFeePage() {
                         onChange={(e) =>
                           handleCustomTitleChange(fee.id, e.target.value)
                         }
-                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:font-medium placeholder:text-slate-400"
+                        className="w-full px-4 py-3 bg-bg-card border border-border-light rounded-xl text-sm font-bold text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:font-medium placeholder:text-text-muted"
                       />
                     </div>
                   ) : (
                     <div className="flex-1 w-full px-2 py-2">
-                      <p className="text-sm font-bold text-slate-700">
+                      <p className="text-sm font-bold text-text-secondary">
                         {fee.title}
                       </p>
                     </div>
@@ -298,7 +298,7 @@ export default function AssignFeePage() {
 
                   <div className="w-full sm:w-40 relative shrink-0 flex items-center gap-2">
                     <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-bold">
                         Tk
                       </span>
                       <input
@@ -309,14 +309,14 @@ export default function AssignFeePage() {
                         onChange={(e) =>
                           handleAmountChange(fee.id, e.target.value)
                         }
-                        className="w-full pl-8 pr-3 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        className="w-full pl-8 pr-3 py-3 bg-bg-card border border-border-light rounded-xl text-sm font-bold text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                       />
                     </div>
                     {fee.custom && (
                       <button
                         type="button"
                         onClick={() => removeCustomFee(fee.id)}
-                        className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition"
+                        className="p-3 text-text-muted hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -327,8 +327,8 @@ export default function AssignFeePage() {
             </div>
 
             {/* Total Section */}
-            <div className="mt-8 flex items-center justify-between p-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-lg border border-slate-700">
-              <span className="text-slate-400 font-bold tracking-widest uppercase text-sm">
+            <div className="mt-8 flex items-center justify-between p-6 bg-slate-900 dark:bg-bg-page border border-border-light rounded-2xl shadow-lg">
+              <span className="text-slate-400 dark:text-text-muted font-bold tracking-widest uppercase text-sm">
                 Grand Total per student
               </span>
               <span className="text-3xl font-black text-emerald-400">
@@ -338,9 +338,9 @@ export default function AssignFeePage() {
           </div>
 
           {/* Warning Note */}
-          <div className="p-5 bg-amber-50 rounded-2xl border border-amber-100 flex gap-4 items-start">
-            <AlertCircle size={24} className="text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-xs font-medium text-amber-800 leading-relaxed">
+          <div className="p-5 bg-amber-500/10 dark:bg-amber-400/10 rounded-2xl border border-amber-500/20 flex gap-4 items-start">
+            <AlertCircle size={24} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-xs font-medium text-amber-800 dark:text-amber-200 leading-relaxed">
               <strong>Important:</strong> Submitting this form will generate
               `PENDING` payment records for{' '}
               <strong>every fee title with a non-zero amount</strong> for all

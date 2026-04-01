@@ -35,7 +35,7 @@ export async function POST(req: Request) {
             }
 
             // 3. Update Database via Prisma
-            await prisma.payment.update({
+            const payment = await prisma.payment.update({
                 where: { transactionId: tran_id },
                 data: {
                     status: 'SUCCESS',
@@ -45,7 +45,54 @@ export async function POST(req: Request) {
                 }
             });
 
-            // 4. Final Redirect to Frontend Success View
+            // 4. Handle Reconciliation Logic (Waterfall Debt Deduction)
+            // Whether it's "All Outstanding Dues" or a "Custom Payment", we apply the amount to existing PENDING debts.
+            if (payment.feeCategory === 'All Outstanding Dues' || payment.feeCategory === 'Custom Payment') {
+                // Fetch all PENDING payments for this student (oldest first)
+                const pendingFees = await prisma.payment.findMany({
+                    where: {
+                        studentId: payment.studentId,
+                        status: 'PENDING',
+                        id: { not: payment.id } // Don't try to reconcile the transaction we just completed
+                    },
+                    orderBy: { createdAt: 'asc' }
+                });
+
+                let remainingPaidAmount = payment.amount;
+
+                // Waterfall through each pending fee
+                for (const fee of pendingFees) {
+                    if (remainingPaidAmount <= 0) break;
+
+                    if (remainingPaidAmount >= fee.amount) {
+                        // This fee is FULLY COVERED
+                        await prisma.payment.update({
+                            where: { id: fee.id },
+                            data: {
+                                status: 'SUCCESS',
+                                method: 'SETTLED_BY_LUMP_SUM',
+                                valId: val_id,
+                                updatedAt: new Date()
+                            }
+                        });
+                        remainingPaidAmount -= fee.amount;
+                    } else {
+                        // This fee is PARTIALLY COVERED
+                        // Reduce the amount of the existing fee record
+                        await prisma.payment.update({
+                            where: { id: fee.id },
+                            data: {
+                                amount: fee.amount - remainingPaidAmount,
+                                updatedAt: new Date()
+                                // Status remains PENDING for the remaining balance
+                            }
+                        });
+                        remainingPaidAmount = 0;
+                    }
+                }
+            }
+
+            // 5. Final Redirect to Frontend Success View
             // Status code 303 (See Other) is used for manual redirect after a POST request
             return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/student/payments?status=success&transactionId=${tran_id}`, { status: 303 });
         }
