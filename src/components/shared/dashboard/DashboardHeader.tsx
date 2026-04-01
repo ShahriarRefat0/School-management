@@ -11,7 +11,6 @@ import {
   AlertCircle,
   User,
 } from 'lucide-react';
-import Logo from '@/components/shared/logo/logo';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -184,9 +183,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             >
               <Menu className="h-6 w-6" />
             </button>
-            <Link href="/" className="flex items-center">
-              <Logo variant="dark" size="sm" />
-            </Link>
+            
           </div>
 
           {/* Real-time Clock - AI Project Styled */}

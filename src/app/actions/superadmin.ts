@@ -21,6 +21,25 @@ export async function getSuperAdminUsers() {
   }
 }
 
+// ১.৫ সব ধরনের ইউজারদের লিস্ট নিয়ে আসা (স্কুলের নাম সহ)
+export async function getAllUsers() {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        school: {
+          select: {
+            schoolName: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { success: true, data: users };
+  } catch (error: any) {
+    return { success: false, error: "ইউজার ডাটা আনতে সমস্যা হয়েছে।" };
+  }
+}
+
 // ২. নতুন SUPER_ADMIN তৈরি করা
 export async function createSuperAdmin(userData: { name: string; email: string; password?: string }) {
   let authUserId: string | null = null;
@@ -36,7 +55,6 @@ export async function createSuperAdmin(userData: { name: string; email: string; 
     authUserId = authData.user.id;
 
     const firstSchool = await prisma.school.findFirst();
-    // schoolId is now optional, so we don't throw error if no school exists
 
     const newUser = await prisma.user.create({
       data: {
@@ -49,7 +67,9 @@ export async function createSuperAdmin(userData: { name: string; email: string; 
       }
     });
 
-    revalidatePath("/dashboard/super-admin/profile");
+    // Correct revalidation paths
+    revalidatePath("/dashboard/super-admin/add-users");
+    revalidatePath("/dashboard/super-admin/all-users");
     return { success: true, data: newUser };
   } catch (error: any) {
     if (authUserId) await supabaseAdmin.auth.admin.deleteUser(authUserId);
@@ -57,30 +77,23 @@ export async function createSuperAdmin(userData: { name: string; email: string; 
   }
 }
 
-
-
-// ১. সুপার এডমিন ডিলিট করা (Auth + DB)
+// ৩. সুপার এডমিন ডিলিট করা (Auth + DB)
 export async function deleteSuperAdmin(userId: string, authUserId: string) {
   try {
-    // ক) সুপাবেস অথেন্টিকেশন থেকে ডিলিট
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(authUserId);
     if (authError) throw new Error(authError.message);
 
-    // খ) প্রিজমা ডাটাবেস থেকে ডিলিট
     await prisma.user.delete({
       where: { id: userId }
     });
 
-    revalidatePath("/dashboard/super-admin/profile");
+    revalidatePath("/dashboard/super-admin/add-users");
+    revalidatePath("/dashboard/super-admin/all-users");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
 }
-
-
-
-// ৩. সুপার এডমিন তৈরি (আগের কোড)
 
 // ৪. কনফিগ হ্যান্ডলিং (লোগো সহ)
 export async function getSystemConfig() {
@@ -99,7 +112,7 @@ export async function updateSystemConfig(data: any) {
         update: data,
         create: { id: "system_config", ...data }
       });
-      revalidatePath("/dashboard/super-admin/profile");
+      revalidatePath("/dashboard/super-admin/add-users");
       return { success: true, data: config };
     } catch (error: any) {
       return { success: false, error: error.message };

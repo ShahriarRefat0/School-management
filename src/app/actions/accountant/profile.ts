@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/getCurrentUser";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function getAccountantProfile() {
@@ -27,16 +28,26 @@ export async function updateAccountantProfile(data: { name: string; profileImage
         }
 
         const updateData: any = {
-            name: data.name
+            name: data.name,
         };
 
         if (data.profileImage !== undefined) {
             updateData.profileImage = data.profileImage;
         }
 
+        // 1. Update the Prisma DB record
         const updatedUser = await prisma.user.update({
             where: { id: user.id },
-            data: updateData
+            data: updateData,
+        });
+
+        // 2. Sync name to Supabase user_metadata so Navbar shows updated name
+        const supabase = await createSupabaseServerClient();
+        await supabase.auth.updateUser({
+            data: {
+                full_name: data.name,
+                name: data.name,
+            },
         });
 
         revalidatePath("/dashboard/accountant/settings");
