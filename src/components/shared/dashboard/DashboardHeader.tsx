@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Bell,
@@ -42,6 +42,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Notification State
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -82,6 +83,39 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
       clearTimeout(kickoff);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isProfileOpen) {
+      return;
+    }
+
+    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+      if (!profileMenuRef.current) {
+        return;
+      }
+
+      const target = event.target as Node;
+      if (!profileMenuRef.current.contains(target)) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isProfileOpen]);
 
   const handleMarkAsRead = async (id: string) => {
     const res = await markAsRead(id);
@@ -205,9 +239,9 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
               />
             </div>
 
-            <div className="relative">
+            <div className="relative" ref={profileMenuRef}>
               <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                onClick={() => setIsProfileOpen(true)}
                 className="flex items-center gap-2 p-1 pr-2 rounded-xl border-2 border-primary/20 bg-bg-page shadow-sm min-w-[75px] justify-center hover:border-primary/40 transition-all"
               >
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-[10px] font-black shadow-md">
@@ -229,10 +263,6 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
               <AnimatePresence>
                 {isProfileOpen && (
                   <>
-                    <div
-                      className="fixed inset-0 z-[60]"
-                      onClick={() => setIsProfileOpen(false)}
-                    />
                     <motion.div
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
