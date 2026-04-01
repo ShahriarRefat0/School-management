@@ -10,15 +10,15 @@ import {
   Target,
 } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   CartesianGrid,
-  LabelList,
+  ReferenceLine,
 } from 'recharts';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -215,11 +215,23 @@ const StudentProgressClient = () => {
 
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+            <AreaChart
               data={results}
-              barCategoryGap="30%"
-              margin={{ top: 18, right: 8, left: 0, bottom: 4 }}
+              margin={{ top: 18, right: 12, left: 2, bottom: 4 }}
             >
+              <defs>
+                <linearGradient
+                  id="scoreAreaGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
+                  <stop offset="55%" stopColor="#2563eb" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
               <CartesianGrid
                 vertical={false}
                 strokeDasharray="4 4"
@@ -240,38 +252,38 @@ const StudentProgressClient = () => {
                 tickFormatter={(value) => `${value}%`}
                 width={36}
               />
+              <ReferenceLine
+                y={averageScore}
+                stroke="#64748b"
+                strokeDasharray="5 5"
+                strokeOpacity={0.7}
+              />
               <Tooltip cursor={false} content={<CustomProgressTooltip />} />
-              <Bar
+              <Area
                 dataKey="score"
-                radius={[12, 12, 6, 6]}
-                barSize={30}
-                activeBar={false}
-              >
-                <LabelList
-                  dataKey="score"
-                  position="top"
-                  formatter={(value) => `${value}%`}
-                  style={{
-                    fill: '#475569',
-                    fontSize: 11,
-                    fontWeight: 800,
-                  }}
-                />
-                {results.map((entry) => (
-                  <Cell
-                    key={entry.name}
-                    fill={
-                      entry.score >= 80
-                        ? '#10b981'
-                        : entry.score >= 60
-                          ? '#f59e0b'
-                          : '#f43f5e'
-                    }
-                    fillOpacity={0.88}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
+                type="monotone"
+                stroke="none"
+                fill="url(#scoreAreaGradient)"
+              />
+              <Line
+                dataKey="score"
+                type="monotone"
+                stroke="#2563eb"
+                strokeWidth={3}
+                dot={{
+                  r: 4,
+                  fill: '#ffffff',
+                  stroke: '#2563eb',
+                  strokeWidth: 2,
+                }}
+                activeDot={{
+                  r: 6,
+                  fill: '#2563eb',
+                  stroke: '#ffffff',
+                  strokeWidth: 2,
+                }}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
