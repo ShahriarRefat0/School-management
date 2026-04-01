@@ -200,9 +200,20 @@ const StudentProgressClient = () => {
                 labelFormatter={(label, payload) =>
                   `${label} - ${payload?.[0]?.payload?.subject || 'Exam'}`
                 }
+                cursor={false}
+                contentStyle={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  boxShadow: 'none',
+                }}
               />
-              <Bar dataKey="score" radius={[8, 8, 4, 4]} barSize={26}>
-                {results.map((entry, index) => (
+              <Bar
+                dataKey="score"
+                radius={[8, 8, 4, 4]}
+                barSize={26}
+                activeBar={false}
+              >
+                {results.map((entry) => (
                   <Cell
                     key={entry.name}
                     fill="#2563eb"
