@@ -1,6 +1,6 @@
 import { getAnnouncementById } from "@/app/actions/announcement"
 import Link from "next/link"
-import { Calendar, Tag, Users, ArrowLeft } from "lucide-react"
+import { Calendar,Users, ArrowLeft } from "lucide-react"
 
 export default async function NoticeDetails({
   params,
