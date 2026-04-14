@@ -1,12 +1,50 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, BookOpen, Settings, ShieldCheck, Users, Wallet, ArrowRight } from 'lucide-react';
-
-
+import { GraduationCap, BookOpen, Settings, ShieldCheck, Users, Wallet, ArrowRight, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const AllLogin = () => {
+  const { signIn } = useAuth();
+  const [loadingRole, setLoadingRole] = useState(null);
+
+  const demoCredentials = {
+    'student': { email: 'student@demo.com', password: 'demo_password_123' },
+    'teacher': { email: 'teacher@demo.com', password: 'demo_password_123' },
+    'principal': { email: 'admin@demo.com', password: 'demo_password_123' },
+    'super-admin': { email: 'superadmin@demo.com', password: 'demo_password_123' },
+    'parent': { email: 'parent@demo.com', password: 'demo_password_123' },
+    'accountant': { email: 'accountant@demo.com', password: 'demo_password_123' },
+  };
+
+  const handleDemoLogin = async (roleKey, destination) => {
+    const creds = demoCredentials[roleKey];
+    if (!creds) {
+      toast.error("Demo credentials not configured for this role.");
+      return;
+    }
+
+    setLoadingRole(roleKey);
+    try {
+      const { error } = await signIn(creds.email, creds.password);
+      
+      if (error) {
+        toast.error(error.message || "Failed to login to demo account.");
+        setLoadingRole(null);
+      } else {
+        toast.success(`Logging in as ${roleKey}...`);
+        // Redirect is handled by window.location.href in AuthProvider/Login logic usually, 
+        // but since we want immediate feel:
+        window.location.href = destination;
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred.");
+      setLoadingRole(null);
+    }
+  };
+
   const loginOptions = [
     {
       title: "Student Portal",
@@ -14,6 +52,7 @@ const AllLogin = () => {
       icon: <GraduationCap />,
       type: 'standard',
       color: 'blue',
+      roleKey: 'student',
       link: '/dashboard/student'
     },
     {
@@ -22,6 +61,7 @@ const AllLogin = () => {
       icon: <BookOpen />,
       type: 'standard',
       color: 'indigo',
+      roleKey: 'teacher',
       link: '/dashboard/teacher'
     },
     {
@@ -30,6 +70,7 @@ const AllLogin = () => {
       icon: <Settings />,
       type: 'standard',
       color: 'emerald',
+      roleKey: 'principal',
       link: '/dashboard/principal'
     },
     {
@@ -38,6 +79,7 @@ const AllLogin = () => {
       icon: <ShieldCheck />,
       type: 'special',
       color: 'rose',
+      roleKey: 'super-admin',
       link: '/dashboard/super-admin'
     },
     {
@@ -46,6 +88,7 @@ const AllLogin = () => {
       icon: <Users />,
       type: 'standard',
       color: 'amber',
+      roleKey: 'parent',
       link: '/dashboard/parent'
     },
     {
@@ -54,14 +97,13 @@ const AllLogin = () => {
       icon: <Wallet />,
       type: 'standard',
       color: 'cyan',
+      roleKey: 'accountant',
       link: '/dashboard/accountant'
     },
   ];
 
   return (
     <div className="flex flex-col min-h-screen">
-     
-
       <main className="flex-grow relative overflow-hidden bg-bg-page pt-32 pb-20 px-6">
         {/* Abstract Background Shapes */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
@@ -71,11 +113,9 @@ const AllLogin = () => {
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-
           {/* Header Section */}
-          <header className="text-center mb-20 animate-fade-in-down">
+          <header className="text-center mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-sm">
-             
               <span className="text-primary font-bold tracking-wider text-xs uppercase">Choose Your Access</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-black text-text-primary mb-6 tracking-tight leading-tight">
@@ -93,9 +133,8 @@ const AllLogin = () => {
                 key={idx}
                 className={`group relative p-10 rounded-[2.5rem] border border-border-light bg-bg-card/80 backdrop-blur-md
                   hover:border-primary/50 transition-all duration-500 shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-2 
-                  animate-fade-in-up flex flex-col items-center text-center overflow-hidden
+                  flex flex-col items-center text-center overflow-hidden
                   ${item.type === 'special' ? 'ring-2 ring-rose-500/20' : ''}`}
-                style={{ animationDelay: `${idx * 100}ms` }}
               >
                 {/* Visual Accent */}
                 <div className={`absolute top-0 left-0 w-full h-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r 
@@ -125,23 +164,36 @@ const AllLogin = () => {
                   {item.desc}
                 </p>
 
-                <Link href={item.link} className="w-full mt-auto">
-                  <button className={`px-8 py-3.5 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center gap-3 w-full justify-center
-                    ${item.type === 'special'
-                      ? 'bg-rose-500 text-white hover:bg-rose-600'
-                      : 'bg-primary/10 text-primary hover:bg-primary hover:text-white'}`}>
-                    <span>Enter Portal</span>
-                    <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-                  </button>
-                </Link>
+                <button 
+                  onClick={() => handleDemoLogin(item.roleKey, item.link)}
+                  disabled={loadingRole !== null}
+                  className={`px-8 py-3.5 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center gap-3 w-full justify-center mt-auto
+                    ${loadingRole === item.roleKey 
+                      ? 'bg-primary/20 text-primary cursor-wait'
+                      : item.type === 'special'
+                        ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20'
+                        : 'bg-primary/10 text-primary hover:bg-primary hover:text-white'}`}
+                >
+                  {loadingRole === item.roleKey ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>Entering...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Enter Portal</span>
+                      <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
+                </button>
               </div>
             ))}
           </div>
 
           {/* Bottom Hint */}
-          <div className="mt-20 text-center animate-fade-in-up" style={{ animationDelay: '800ms' }}>
+          <div className="mt-20 text-center">
             <p className="text-text-muted font-semibold bg-bg-card/50 backdrop-blur-sm border border-border-light inline-block px-8 py-4 rounded-full shadow-sm">
-              Don't have an account? <span className="text-primary cursor-pointer hover:underline">Contact school administration</span> to get your login credentials.
+              Don't have an account? <Link href="/support" className="text-primary hover:underline">Contact school administration</Link> to get your login credentials.
             </p>
           </div>
         </div>
@@ -150,4 +202,4 @@ const AllLogin = () => {
   );
 };
 
-export default AllLogin;
+export default AllLogin;
