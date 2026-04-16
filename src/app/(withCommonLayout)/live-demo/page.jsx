@@ -14,8 +14,7 @@ const AllLogin = () => {
     'student': { email: 'student@demo.com', password: 'demo_password_123' },
     'teacher': { email: 'teacher@demo.com', password: 'demo_password_123' },
     'admin': { email: 'admin@demo.com', password: 'demo_password_123' },
-    'admin': { email: 'admin111@demo.com', password: 'demo_password_123' },
-    'super-admin': { email: 'superadmin@demo.com', password: 'demo_password_123' },
+    'super_admin': { email: 'superadmin@demo.com', password: 'demo_password_123' },
     'parent': { email: 'parent@demo.com', password: 'demo_password_123' },
     'accountant': { email: 'accountant@demo.com', password: 'demo_password_123' },
   };
@@ -49,10 +48,11 @@ const AllLogin = () => {
   const handleCreateDemoUsers = async () => {
     try {
       await signUp('admin@demo.com', 'demo_password_123', 'admin');
-      await signUp('admin11@demo.com', 'demo_password_123', 'admin');
       await signUp('student@demo.com', 'demo_password_123', 'student');
       await signUp('teacher@demo.com', 'demo_password_123', 'teacher');
       await signUp('superadmin@demo.com', 'demo_password_123', 'super_admin');
+      await signUp('parent@demo.com', 'demo_password_123', 'parent');
+      await signUp('accountant@demo.com', 'demo_password_123', 'accountant');
       toast.success("All Demo users initialized successfully with proper roles!");
     } catch (e) {
       toast.error("Failed to initialize demo users.");
@@ -93,7 +93,7 @@ const AllLogin = () => {
       icon: <ShieldCheck />,
       type: 'special',
       color: 'rose',
-      roleKey: 'super-admin',
+      roleKey: 'super_admin',
       link: '/dashboard/super-admin'
     },
     {
