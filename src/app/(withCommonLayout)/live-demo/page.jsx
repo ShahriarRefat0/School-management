@@ -7,13 +7,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 const AllLogin = () => {
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const [loadingRole, setLoadingRole] = useState(null);
 
   const demoCredentials = {
     'student': { email: 'student@demo.com', password: 'demo_password_123' },
     'teacher': { email: 'teacher@demo.com', password: 'demo_password_123' },
-    'principal': { email: 'admin@demo.com', password: 'demo_password_123' },
+    'admin': { email: 'admin@demo.com', password: 'demo_password_123' },
+    'admin': { email: 'admin111@demo.com', password: 'demo_password_123' },
     'super-admin': { email: 'superadmin@demo.com', password: 'demo_password_123' },
     'parent': { email: 'parent@demo.com', password: 'demo_password_123' },
     'accountant': { email: 'accountant@demo.com', password: 'demo_password_123' },
@@ -29,7 +30,7 @@ const AllLogin = () => {
     setLoadingRole(roleKey);
     try {
       const { error } = await signIn(creds.email, creds.password);
-      
+
       if (error) {
         toast.error(error.message || "Failed to login to demo account.");
         setLoadingRole(null);
@@ -42,6 +43,19 @@ const AllLogin = () => {
     } catch (err) {
       toast.error("An unexpected error occurred.");
       setLoadingRole(null);
+    }
+  };
+
+  const handleCreateDemoUsers = async () => {
+    try {
+      await signUp('admin@demo.com', 'demo_password_123', 'admin');
+      await signUp('admin11@demo.com', 'demo_password_123', 'admin');
+      await signUp('student@demo.com', 'demo_password_123', 'student');
+      await signUp('teacher@demo.com', 'demo_password_123', 'teacher');
+      await signUp('superadmin@demo.com', 'demo_password_123', 'super_admin');
+      toast.success("All Demo users initialized successfully with proper roles!");
+    } catch (e) {
+      toast.error("Failed to initialize demo users.");
     }
   };
 
@@ -70,7 +84,7 @@ const AllLogin = () => {
       icon: <Settings />,
       type: 'standard',
       color: 'emerald',
-      roleKey: 'principal',
+      roleKey: 'admin',
       link: '/dashboard/principal'
     },
     {
@@ -124,6 +138,12 @@ const AllLogin = () => {
             <p className="text-text-muted max-w-2xl mx-auto text-lg md:text-xl font-medium">
               Select your role to explore our comprehensive school management system features and experience the future of digital education.
             </p>
+            <button
+              onClick={handleCreateDemoUsers}
+              className="mt-6 px-6 py-2 bg-rose-500 text-white rounded-full font-semibold shadow-lg hover:bg-rose-600 transition-colors"
+            >
+              Fix Demo Roles (Click me once before checking)
+            </button>
           </header>
 
           {/* Cards Grid */}
@@ -164,11 +184,11 @@ const AllLogin = () => {
                   {item.desc}
                 </p>
 
-                <button 
+                <button
                   onClick={() => handleDemoLogin(item.roleKey, item.link)}
                   disabled={loadingRole !== null}
                   className={`px-8 py-3.5 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center gap-3 w-full justify-center mt-auto
-                    ${loadingRole === item.roleKey 
+                    ${loadingRole === item.roleKey
                       ? 'bg-primary/20 text-primary cursor-wait'
                       : item.type === 'special'
                         ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20'
@@ -202,4 +222,4 @@ const AllLogin = () => {
   );
 };
 
-export default AllLogin;
+export default AllLogin;
