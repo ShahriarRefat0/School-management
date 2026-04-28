@@ -6,6 +6,8 @@ import { DashboardHeader } from "./DashboardHeader"
 import { DashboardMenuItem, UserProfile } from "./types"
 import { motion, AnimatePresence } from "framer-motion"
 import { DashboardSidebar } from "./DashboardSidebar"
+import { useAuth } from "@/hooks/useAuth"
+import { Info, ExternalLink } from "lucide-react"
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -19,11 +21,12 @@ export default function DashboardLayout({
     children,
     menuItems,
     title,
-    user,
+    user: propUser,
     activeColor
 }: DashboardLayoutProps) {
     const [isMobileOpen, setIsMobileOpen] = useState(false)
-    const pathname = usePathname()
+    const { user: authUser } = useAuth()
+    const isDemo = authUser?.email?.endsWith('@demo.com');
 
     return (
         <div className="min-h-screen bg-bg-page overflow-x-hidden">
@@ -69,8 +72,20 @@ export default function DashboardLayout({
                 <DashboardHeader
                     title={title}
                     onMenuClick={() => setIsMobileOpen(true)}
-                    user={user}
+                    user={propUser}
                 />
+
+                {isDemo && (
+                    <div className="bg-primary/10 border-b border-primary/20 px-6 py-2 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top duration-500">
+                        <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+                            <Info size={14} />
+                            <span>Demo Mode: You are exploring the {title} as a guest.</span>
+                        </div>
+                        <a href="/login/apply" className="hidden sm:flex items-center gap-1.5 text-[10px] font-black uppercase text-primary hover:underline">
+                            Get Full Access <ExternalLink size={10} />
+                        </a>
+                    </div>
+                )}
 
                 <main className="p-4 md:p-6 lg:p-8 flex-1">
                     {children}
@@ -78,4 +93,4 @@ export default function DashboardLayout({
             </div>
         </div>
     )
-}
+}

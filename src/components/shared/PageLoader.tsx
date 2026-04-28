@@ -12,7 +12,7 @@ export default function PageLoader() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "#F8FAFC",
+                background: "#030712",
                 fontFamily: "'Inter', 'Segoe UI', sans-serif",
                 position: "relative",
                 overflow: "hidden",
