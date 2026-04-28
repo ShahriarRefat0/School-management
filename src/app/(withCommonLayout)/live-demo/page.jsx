@@ -10,14 +10,43 @@ const AllLogin = () => {
   const { signIn, signUp } = useAuth();
   const [loadingRole, setLoadingRole] = useState(null);
 
-  const demoCredentials = {
-    'student': { email: 'student@demo.com', password: 'demo_password_123' },
-    'teacher': { email: 'teacher@demo.com', password: 'demo_password_123' },
-    'admin': { email: 'admin@demo.com', password: 'demo_password_123' },
-    'super_admin': { email: 'superadmin@demo.com', password: 'demo_password_123' },
-    'parent': { email: 'parent@demo.com', password: 'demo_password_123' },
-    'accountant': { email: 'accountant@demo.com', password: 'demo_password_123' },
-  };
+  // const demoCredentials = {
+  //   'student': { email: 'student@demo.com', password: 'demo_password_123' },
+  //   'teacher': { email: 'teacher@demo.com', password: 'demo_password_123' },
+  //   'admin': { email: 'admin@demo.com', password: 'demo_password_123' },
+  //   'super_admin': { email: 'superadmin@demo.com', password: 'demo_password_123' },
+  //   'parent': { email: 'parent@demo.com', password: 'demo_password_123' },
+  //   'accountant': { email: 'accountant@demo.com', password: 'demo_password_123' },
+  // };
+
+const demoCredentials = {
+  super_admin: {
+    email: 'hero69@gmail.com',
+    password: 'hero69@gmail.com',
+  },
+  admin: {
+    email: 'hero@gmail.com',
+    password: 'hero@gmail.com',
+  },
+  student: {
+    email: 'puhujyku@gmail.com',
+    password: 'puhujyku@gmail.com',
+  },
+  parent: {
+    email: 'parents69@gmail.com',
+    password: 'parents69@gmail.com',
+  },
+  teacher: {
+    email: 'teacher69@gmial.com',
+    password: 'Teacher@1234',
+  },
+  accountant: {
+    email: 'hero2@gmail.com',
+    password: 'hero2@gmail.com',
+  },
+};
+
+
 
   const handleDemoLogin = async (roleKey, destination) => {
     const creds = demoCredentials[roleKey];
@@ -45,19 +74,37 @@ const AllLogin = () => {
     }
   };
 
-  const handleCreateDemoUsers = async () => {
-    try {
-      await signUp('admin@demo.com', 'demo_password_123', 'admin');
-      await signUp('student@demo.com', 'demo_password_123', 'student');
-      await signUp('teacher@demo.com', 'demo_password_123', 'teacher');
-      await signUp('superadmin@demo.com', 'demo_password_123', 'super_admin');
-      await signUp('parent@demo.com', 'demo_password_123', 'parent');
-      await signUp('accountant@demo.com', 'demo_password_123', 'accountant');
-      toast.success("All Demo users initialized successfully with proper roles!");
-    } catch (e) {
-      toast.error("Failed to initialize demo users.");
-    }
-  };
+  // const handleCreateDemoUsers = async () => {
+  //   try {
+  //     await signUp('admin@demo.com', 'demo_password_123', 'admin');
+  //     await signUp('student@demo.com', 'demo_password_123', 'student');
+  //     await signUp('teacher@demo.com', 'demo_password_123', 'teacher');
+  //     await signUp('superadmin@demo.com', 'demo_password_123', 'super_admin');
+  //     await signUp('parent@demo.com', 'demo_password_123', 'parent');
+  //     await signUp('accountant@demo.com', 'demo_password_123', 'accountant');
+  //     toast.success("All Demo users initialized successfully with proper roles!");
+  //   } catch (e) {
+  //     toast.error("Failed to initialize demo users.");
+  //   }
+  // };
+
+const handleCreateDemoUsers = async () => {
+  try {
+    await signUp('hero@gmail.com', 'hero@gmail.com', 'admin');
+    await signUp('puhujyku@gmail.com', 'puhujyku@gmail.com', 'student');
+    await signUp('teacher69@gmial.com', 'Teacher@1234', 'teacher');
+    await signUp('hero69@gmail.com', 'hero69@gmail.com', 'super_admin');
+    await signUp('parents69@gmail.com', 'parents69@gmail.com', 'parent');
+    await signUp('hero2@gmail.com', 'hero2@gmail.com', 'accountant');
+
+    toast.success("All Demo users initialized successfully with proper roles!");
+  } catch (e) {
+    toast.error("Failed to initialize demo users.");
+  }
+};
+
+
+
 
   const loginOptions = [
     {
